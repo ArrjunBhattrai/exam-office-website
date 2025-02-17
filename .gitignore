@@ -1,0 +1,22 @@
+# dependencies related files
+node_modules
+dist
+package-lock.json
+
+#log files
+/logs
+
+# dotenv environment variables file
+.env
+.env.test
+.*.env
+.dev.env
+.env2
+.env.production
+.production.env
+
+#upload folder 
+/uploads/*
+
+#depyoment hints
+deplyoment.txt
