@@ -1,4 +1,6 @@
 module.exports = function (app) {
+  app.use("/api/exam_officer", require("../routes/examOfficer.routes"));
+
   // app.use("/api/departments", require("./routes/departments")(db));
   // app.use("/api/courses", require("./routes/courses")(db));
   // app.use("/api/branches", require("./routes/branches")(db));
