@@ -1,14 +1,20 @@
+const { configDotenv } = require("dotenv");
+
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
+require("dotenv").config();
+
 module.exports = {
   development: {
     client: "mysql2",
     connection: {
-      host: "127.0.0.1", // Change this if MySQL is running on a different host
-      user: "root", // Your MySQL username
-      password: "1234", // Your MySQL password
-      database: "exam_office", // Your database name
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      port: process.env.DB_PORT || 3306,
+      charset: process.env.DB_CHARSET || "utf8mb4",
     },
     pool: {
       min: 2,
