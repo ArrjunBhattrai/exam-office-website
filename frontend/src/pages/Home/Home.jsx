@@ -11,7 +11,7 @@ const Home = () => {
     <div className="home-container">
       <BlueHeader />
       <div className="background">
-        <div className="overlay"></div> {/* Semi-transparent effect */}
+        <div className="overlay"></div> 
         
         <div className="login-card">
           <Link to="/admin-login" className="login-btn-home">

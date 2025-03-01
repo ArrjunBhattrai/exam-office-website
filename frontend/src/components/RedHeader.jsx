@@ -2,8 +2,8 @@ import React from "react";
 
 const RedHeader = () => {
     return (
-        <div>
-
+        <div className="r-header">
+            <p></p>
         </div>
     )
 }
