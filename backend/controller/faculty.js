@@ -30,8 +30,8 @@ const studentBySubject = async (req, res) => {
     }
   };
 
-  //Submit marks for students
-  router.post("/submit-marks", async (req, res) => {
+  /*//Submit marks for students
+  const subitMarks = async (req, res) => {
     try {
       const { faculty_id, subject_id, marks } = req.body;
       if (!faculty_id || !subject_id || !Array.isArray(marks)) {
@@ -57,6 +57,6 @@ const studentBySubject = async (req, res) => {
     } catch (error) {
       res.status(500).json({ error: "Error submitting marks" });
     }
-  });
+  };*/
   
   
