@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { authenticateHOD } = require("../middleware/auth");
+const { authenticateHOD, authenticate } = require("../util/middleware");
 const {
   hodLogin,
   getDepartment,
@@ -13,27 +13,25 @@ const {
   deleteSubject,
   getFacultyBySubject,
   assignSubjectToFaculty,
-  removeFacultyFromSubject
-} = require("../controllers/hod");
+  removeFacultyFromSubject,
+} = require("../controller/hod");
 
 // HOD Login
 router.post("/login", hodLogin);
 
 // Department & Semester Management
-router.get("/department", authenticateHOD, getDepartment);
-router.post("/semester", authenticateHOD, addSemester);
-router.put("/semester/:id", authenticateHOD, updateSemester);
-router.delete("/semester/:id", authenticateHOD, deleteSemester);
-
-// Subject Management
-router.get("/semester/:id/subjects", authenticateHOD, getSubjectsBySemester);
-router.post("/semester/:id/subject", authenticateHOD, addSubject);
-router.put("/subject/:id", authenticateHOD, updateSubject);
-router.delete("/subject/:id", authenticateHOD, deleteSubject);
+router.get("/", getDepartment);
+router.post("/semester", authenticate, addSemester);
+router.post("/semester/subject/", authenticate, addSubject);
+router.get("/semester/:id/subjects", getSubjectsBySemester);
+router.put("/semester/:id", authenticate, updateSemester);
+router.delete("/semester/:id", authenticate, deleteSemester);
+router.put("/subject/", authenticate, updateSubject);
+router.delete("/subject/:id", authenticate, deleteSubject);
 
 // Faculty Assignment
-router.get("/subject/:id/faculty", authenticateHOD, getFacultyBySubject);
-router.post("/assign-subject", authenticateHOD, assignSubjectToFaculty);
-router.delete("/remove-faculty", authenticateHOD, removeFacultyFromSubject);
+router.get("/subject/:id/faculty", getFacultyBySubject);
+router.post("/assign-subject", authenticate, assignSubjectToFaculty);
+router.delete("/remove-faculty", authenticate, removeFacultyFromSubject);
 
 module.exports = router;
