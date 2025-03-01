@@ -203,10 +203,11 @@ exports.up = function (knex) {
       table.integer("obtained_marks").notNullable();
       table.integer("total_marks").notNullable();
     })
-    .createTable("exam_officer", (table) => {
+    .createTable("user", (table) => {
       table.increments("officer_id").primary();
       table.string("officer_name").notNullable();
       table.string("email").unique().notNullable();
+      table.enu("user_type", ["ADMIN", "HOD", "FACULTY"]).notNullable();
       table.string("password").notNullable();
     })
     .createTable("marks_update_request", (table) => {
@@ -246,21 +247,95 @@ exports.up = function (knex) {
 };
 
 exports.down = function (knex) {
-  return knex.schema
-    .dropTableIfExists("update_logs")
-    .dropTableIfExists("marks_update_request")
-    .dropTableIfExists("exam_officer")
-    .dropTableIfExists("co_marks")
-    .dropTableIfExists("co_marks_temp")
-    .dropTableIfExists("course_outcome")
-    .dropTableIfExists("assessment_component")
-    .dropTableIfExists("student_subject")
-    .dropTableIfExists("student")
-    .dropTableIfExists("faculty_subject")
-    .dropTableIfExists("faculty")
-    .dropTableIfExists("subject")
-    .dropTableIfExists("hod")
-    .dropTableIfExists("branch")
-    .dropTableIfExists("course")
-    .dropTableIfExists("college");
+  return (
+    knex.schema
+      // Drop foreign keys
+      .table("marks_update_request", (table) => {
+        table.dropForeign(["student_id"]);
+        table.dropForeign(["subject_id"]);
+        table.dropForeign(["requested_by"]);
+      })
+      .table("co_marks", (table) => {
+        table.dropForeign(["student_id"]);
+        table.dropForeign(["subject_id"]);
+        table.dropForeign(["co_id"]);
+      })
+      .table("co_marks_temp", (table) => {
+        table.dropForeign(["student_id"]);
+        table.dropForeign(["subject_id"]);
+        table.dropForeign(["co_id"]);
+        table.dropForeign(["faculty_id"]);
+      })
+      .table("course_outcome", (table) => {
+        table.dropForeign(["component_id"]);
+      })
+      .table("assessment_component", (table) => {
+        table.dropForeign(["subject_id"]);
+      })
+      .table("student_subject", (table) => {
+        table.dropForeign(["student_id"]);
+        table.dropForeign(["subject_id"]);
+      })
+      .table("student", (table) => {
+        table.dropForeign(["branch_id"]);
+      })
+      .table("faculty_subject", (table) => {
+        table.dropForeign(["faculty_id"]);
+        table.dropForeign(["subject_id"]);
+      })
+      .table("faculty", (table) => {
+        table.dropForeign(["branch_id"]);
+      })
+      .table("subject", (table) => {
+        table.dropForeign(["branch_id"]);
+      })
+      .table("branch", (table) => {
+        table.dropForeign(["course_id"]);
+        table.dropForeign(["hod_id"]);
+      })
+      .table("hod", (table) => {
+        table.dropForeign(["branch_id"]);
+      })
+      .table("course", (table) => {
+        table.dropForeign(["college_id"]);
+      })
+
+      // Drop tables
+      .dropTableIfExists("update_logs")
+      .dropTableIfExists("marks_update_request")
+      .dropTableIfExists("user")
+      .dropTableIfExists("co_marks")
+      .dropTableIfExists("co_marks_temp")
+      .dropTableIfExists("course_outcome")
+      .dropTableIfExists("assessment_component")
+      .dropTableIfExists("student_subject")
+      .dropTableIfExists("student")
+      .dropTableIfExists("faculty_subject")
+      .dropTableIfExists("faculty")
+      .dropTableIfExists("subject")
+      .dropTableIfExists("branch")
+      .dropTableIfExists("hod")
+      .dropTableIfExists("course")
+      .dropTableIfExists("college")
+  );
 };
+
+// exports.down = function (knex) {
+//   return knex.schema
+//     .dropTableIfExists("update_logs")
+//     .dropTableIfExists("marks_update_request")
+//     .dropTableIfExists("user")
+//     .dropTableIfExists("co_marks")
+//     .dropTableIfExists("co_marks_temp")
+//     .dropTableIfExists("course_outcome")
+//     .dropTableIfExists("assessment_component")
+//     .dropTableIfExists("student_subject")
+//     .dropTableIfExists("student")
+//     .dropTableIfExists("faculty_subject")
+//     .dropTableIfExists("faculty")
+//     .dropTableIfExists("subject")
+//     .dropTableIfExists("hod")
+//     .dropTableIfExists("branch")
+//     .dropTableIfExists("course")
+//     .dropTableIfExists("college");
+// };
