@@ -9,6 +9,7 @@ import Home from "./pages/Home/Home";
 import AdminLogin from "./pages/Admin/AdminAuth/AdminLogin";
 import AdminRegister from "./pages/Admin/AdminAuth/AdminRegsiter";
 import HODHome from "./pages/HOD/HODActivities/HODHome";
+import FacultyAllocation from "./pages/HOD/HODActivities/FacultyAllocation";
 
 function App() {
 
@@ -24,6 +25,7 @@ function App() {
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admin-register" element={<AdminRegister />} />          
           <Route path="/hod-home" element={<HODHome />} />          
+          <Route path="/hod-fac-alloc" element={<FacultyAllocation />} />          
         </Routes>
       </div>
     </Router>

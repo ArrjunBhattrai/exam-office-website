@@ -8,7 +8,7 @@ import RedHeader from "../../../components/RedHeader";
 
 const HODHome = () => {
   const user = useSelector((state) => state.auth.user); // Get logged-in user
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+//   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   return (
     <div className="hod-home-container">
@@ -67,30 +67,7 @@ const HODHome = () => {
         </div>
       </div>
     </div>
-    // <div>
-    //   <ActivityHeader />
-    //   <div>
-    //
-    //     <div className="hod-info">
-
-    //         <>
-    //           <p>
-    //             <span>Welcome: </span>
-    //             <span>{user?.name || "HOD IT"}</span>
-    //           </p>
-    //           <p>
-    //             <span>Role: </span>
-    //             <span>[{user?.role || "HOD"}]</span>
-    //           </p>
-    //           <p>
-    //             <span>Department: </span>
-    //             <span>[{user?.department || "Department of Information Technology"}]</span>
-    //           </p>
-    //         </>
-
-    //     </div>
-    //   </div>
-    // </div>
+   
   );
 };
 
