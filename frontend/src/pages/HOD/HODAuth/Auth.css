@@ -36,41 +36,50 @@ border-bottom: 2px solid white;
 }
 
 .input-group {
-margin: 10px 0;
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+width: 100%;
 }
 
 label {
-display: block;
 font-weight: bold;
 color: #fff;
 }
 
 input {
 width: 100%;
-padding: 8px;
-margin-top: 5px;
 border: 1px solid #ccc;
 border-radius: 4px;
+max-width: 200px;
 }
 
 .captcha-box {
-display: flex;
-align-items: center;
-justify-content: center;
-margin: 10px 0;
+  display: flex;
+    align-items: center;
+    justify-content: center; /* Ensures proper spacing */
+    width: 80%; /* Make it fit within the form */
+    flex-wrap: nowrap;
+    margin-top: 10px;
 }
 
-.captcha {
-width: 80px;
-height: 30px;
-margin-right: 10px;
+.captcha-text {
+  background-color: white;
+  padding: 5px 10px;
+  flex-grow: 1; 
+  text-align: center;
+  font-weight: bold;
+  white-space: nowrap;
 }
 
 .refresh-btn {
-background: none;
-border: none;
-font-size: 1.5rem;
-cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .auth-btn {

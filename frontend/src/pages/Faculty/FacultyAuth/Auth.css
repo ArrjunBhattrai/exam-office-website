@@ -53,18 +53,18 @@ border: 1px solid #ccc;
 border-radius: 4px;
 }
 
-.captcha-box {
+/* .captcha-box {
 display: flex;
 align-items: center;
 justify-content: center;
 margin: 10px 0;
-}
+} */
 
-.captcha {
+/* .captcha {
 width: 80px;
 height: 30px;
 margin-right: 10px;
-}
+} */
 
 .refresh-btn {
 background: none;

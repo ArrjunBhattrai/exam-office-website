@@ -106,7 +106,7 @@ const HODLogin = () => {
               required
             />
             {errors.captcha && <span className="error">{errors.captcha}</span>}
-
+              <br/>
             {/* Login Button */}
             <button type="submit" className="auth-btn">
               Login

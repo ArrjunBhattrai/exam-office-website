@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import "./HODHome.css";
 import Sidebar from "../../../components/Sidebar";
@@ -7,9 +7,23 @@ import RedFooter from "../../../components/RedFooter";
 import RedHeader from "../../../components/RedHeader";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
-const HODHome = () => {
-  const user = useSelector((state) => state.auth.user); // Get logged-in user
-  //   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+const CreateNewFaculty = () => {
+  const user = useSelector((state) => state.auth.user);
+
+  const [formData, setFormData] = useState({
+    department: "",
+    name: "",
+    facultyCode: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Form Submitted:", formData);
+  };
 
   return (
     <div className="hod-home-container">
@@ -70,20 +84,75 @@ const HODHome = () => {
               <div className="hod-sec">
                 <p>
                   <span>Welcome: </span>
-                  <span className="hod-name">{user?.name || "HOD IT"}</span>
+                  <span className="hod-name">
+                    [{user?.name || "Please Login"}]
+                  </span>
                 </p>
                 <p>
                   <span className="hod-role">Role: </span>
-                  <span className="hod-name">[{user?.role || "HOD"}]</span>
+                  <span className="hod-name">
+                    [{user?.role || "Please Login"}]
+                  </span>
                 </p>
                 <p>
                   <span className="hod-role">Department: </span>
                   <span className="hod-name">
-                    [
-                    {user?.department || "Department of Information Technology"}
-                    ]
+                    [{user?.department || "Please Login"}]
                   </span>
                 </p>
+              </div>
+
+              <div className="fac-alloc">
+                <h3>Create New Faculty</h3>
+                <p className="session-text">Current Session: June 2025</p>
+
+                <span className="box-overlay-text">Add Details</span>
+
+                <div className="faculty-box">
+                  <p className="institute-text">
+                    <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
+                    TECHNOLOGY & SCIENCE
+                  </p>
+
+                  <form onSubmit={handleSubmit}>
+                    <div className="input-group">
+                      <label>Department:</label>
+                      <input
+                        type="text"
+                        name="department"
+                        value={formData.department}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="input-group">
+                      <label>Name:</label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="input-group">
+                      <label>Faculty Code:</label>
+                      <input
+                        type="text"
+                        name="facultyCode"
+                        value={formData.facultyCode}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <button type="submit" className="submit-btn btn">
+                      Submit
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
@@ -95,4 +164,4 @@ const HODHome = () => {
   );
 };
 
-export default HODHome;
+export default CreateNewFaculty;

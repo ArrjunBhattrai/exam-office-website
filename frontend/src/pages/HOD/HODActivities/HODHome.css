@@ -177,3 +177,48 @@ th, td {
   background-color: #e7d290; 
   text-decoration: underline;
 }
+
+
+.btn {
+  background-color: #ffefc4; 
+    color: black;
+    border: 1.2px solid black;
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-size: 16px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+
+.btn:hover {
+  background-color: #e7d290; 
+  text-decoration: underline;
+}
+
+/* new faculty */
+
+.input-group {
+  margin-bottom: 15px;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  width: 600px;
+}
+
+.input-group label {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #333;
+  margin-left: 0.7rem;
+  width: 100px;
+}
+
+.input-group input {
+  width: 70%;
+  padding: 8px;
+  border: 1px solid #aaa; 
+  border-radius: 4px;
+  font-size: 14px;
+}
+

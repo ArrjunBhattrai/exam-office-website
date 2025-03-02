@@ -114,6 +114,7 @@ const generateCaptcha = () => {
               {errors.captcha && <span className="error">{errors.captcha}</span>}
   
               {/* Register Button */}
+              <br />
               <button type="submit" className="auth-btn">Register</button>
             </form>
             <p>
