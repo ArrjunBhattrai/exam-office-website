@@ -8,7 +8,7 @@ import RedHeader from "../../../components/RedHeader";
 import Dropdown from "../../../components/Dropdown";
 import Button from "../../../components/Button";
 
-const FacultyAllocation = () => {
+const FacultyAllocationTable = () => {
       const user = useSelector((state) => state.auth.user); // Get logged-in user
 
       const [course, setCourse] = useState("");
@@ -98,7 +98,29 @@ const FacultyAllocation = () => {
                             onChange={setSemester}
                         />
                      </div>
-                        <Button className="btn" text="Show" navigateTo="/hod-fac-alloc-table" />
+
+                     <table>
+                        <thead>
+                            <tr>
+                                <th>Subject Code</th>
+                                <th>Subject Name</th>
+                                <th>Faculty Code</th>
+                                <th>Faculty Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {[...Array(4)].map((_, index) => (
+                             <tr key={index}>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>3</td>
+                            <td>4</td>
+                        </tr>
+                        ))}
+                        </tbody>
+                     </table>
+
+                     <Button className="back-btn" text="Back" navigateTo="/hod-fac-alloc" />
                     </div>
 
                     
@@ -114,4 +136,4 @@ const FacultyAllocation = () => {
       )
 }
 
-export default FacultyAllocation;
+export default FacultyAllocationTable;

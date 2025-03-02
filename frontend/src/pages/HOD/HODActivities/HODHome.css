@@ -53,9 +53,17 @@ body {
  
   
   /* HOD Info Section */
+
+  .hod-info {
+    display: flex;  
+    flex-direction: column;
+    width: 100%;
+    margin: 0;
+}
+
   .hod-sec {
     display: flex;
-    padding: 20px;
+    padding: 5px;
     background: white;
     border-bottom: 1px solid black;
     gap: 2rem;
@@ -77,6 +85,63 @@ body {
     font-weight: bold;
   }
   
+ /* dropdown */
+ .dropdown-container {
+  display: flex;
+
+ }
+
  
 
+ .fac-alloc h3{
+  color: #8b0000;
+  border-bottom: 1px solid black;
+  width: 100%;
+  display: flex;
+  padding: 5px;
+  padding-top: 1rem;
+  margin: 0;
+ }
   
+ .fac-alloc .session-text{
+  text-align: center;
+  color: #8b0000;
+ padding: 5px;
+ font-size: 1.2rem;
+ }
+
+ .box-overlay-text {
+  background-color: white;
+ margin-left: 1.2rem;
+ font-size: 0.8rem;
+ }
+
+ .faculty-box {
+  border: 1px solid black;
+  padding: 2rem;
+  margin-top: -1rem;
+  height: 400px;
+ }
+
+ .institute-text {
+  margin-left: 0.7rem;
+ }
+
+ Button {
+  margin-left: 0.7rem;
+  margin-top: 0.7rem;
+ }
+
+ /* table */
+
+ table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  border: 1px solid #000;
+  padding: 8px;
+  text-align: center;
+}

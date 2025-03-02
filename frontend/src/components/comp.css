@@ -39,7 +39,7 @@
 /* red footer */
 .r-footer {
   background-color: #903B57;
-  padding: 1rem;
+  padding: 0.5rem;
   position: fixed;
   bottom: 0;
   left: 0;
@@ -47,8 +47,8 @@
   height: auto;
   width: 100%;
   text-align: center;
-  font-size: 1.2rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 400;
   z-index: 0;
 }
 
@@ -188,4 +188,67 @@
 }
 
 
-/* curved shape */
+/* Dropdown */
+.dropdown {
+  position: relative;
+  display: flex;
+  width: 200px;
+  margin: 10px;
+  align-items: center;
+}
+
+.dropdown-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+}
+
+.dropdown select {
+  width: 120px;
+  padding: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  border: 1px solid black;
+  border-radius: 5px;
+  background: white;
+  cursor: pointer;
+  appearance: none;  
+  -webkit-appearance: none;
+  -moz-appearance: none; 
+  padding-right: 30px; 
+  align-items: center;
+}
+
+.dropdown-arrow {
+  position: absolute;
+  right: 10px;
+  font-size: 16px;
+  pointer-events: none;
+}
+
+.dropdown label {
+  font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: black; 
+  align-items: center;
+}
+
+/* button component */
+.custom-button {
+  background-color: #ffefc4; 
+    color: black;
+    border: 1.2px solid black;
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-size: 16px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+
+.custom-button:hover {
+  background-color: #e7d290; 
+  text-decoration: underline;
+}
