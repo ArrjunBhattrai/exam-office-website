@@ -9,109 +9,111 @@ import Dropdown from "../../../components/Dropdown";
 import Button from "../../../components/Button";
 
 const FacultyAllocation = () => {
-      const user = useSelector((state) => state.auth.user); // Get logged-in user
+  const user = useSelector((state) => state.auth.user); // Get logged-in user
 
-      const [course, setCourse] = useState("");
-      const [branch, setBranch] = useState("");
-      const [semester, setSemester] = useState("");
-    
-      return (
-        <div className="hod-home-container">
-          <div className="hod-bg">
-            <RedHeader />
-            <div className="hod-content">
-              <ActivityHeader />
-    
-              <div className="hod-main">
-                <div className="sidebars">
-                <Sidebar 
+  const [course, setCourse] = useState("");
+  const [branch, setBranch] = useState("");
+  const [semester, setSemester] = useState("");
+
+
+  return (
+    <div className="hod-home-container">
+      <div className="hod-bg">
+        <RedHeader />
+        <div className="hod-content">
+          <ActivityHeader />
+
+          <div className="hod-main">
+            <div className="sidebars">
+              <Sidebar
                 className="sidebar-1"
-                  title=" HOD Activity"
-                  activities={[
-                    "Faculty Allocation",
-                    "Create New Faculty",
-                    "Upload Data for Electives",
-                    "View Correction Requests",
-                    "View Department Details",
-                  ]}
-                />
-                <Sidebar
+                title="HOD Activity"
+                activities={[
+                  { name: "Faculty Allocation", path: "/hod-fac-alloc" },
+                  { name: "Create New Faculty", path: "/" },
+                  { name: "Upload Data for Electives", path: "/hod-upload" },
+                  { name: "View Correction Requests", path: "/" },
+                  { name: "View Department Details", path: "/" }
+                ]}
+              />
+
+              <Sidebar
                 className="sidebar-2"
-                  title=" Form Dashboard"
-                  activities={[
-                    "View Saved Form",
-                    "View Filled Form",
-                    "Delete Filled Form",
-                  ]}
-                />
-                </div>
-                
-    
-                <div className="hod-info">
-                    <div className="hod-sec">
-                    <p>
-                    <span>Welcome: </span>
-                    <span className="hod-name">[{user?.name || "Please Login"}]</span>
-                  </p>
-                  <p>
-                    <span className="hod-role">Role: </span>
-                    <span className="hod-name">[{user?.role || "Please Login"}]</span>
-                  </p>
-                  <p>
-                    <span className="hod-role">Department: </span>
-                    <span className="hod-name">
-                      [{user?.department || "Please Login"}]
-                    </span>
-                  </p>
-                </div>
+                title="Form Dashboard"
+                activities={[
+                  { name: "View Saved Form", path: "/" },
+                  { name: "View Filled Form", path: "/" },
+                  { name: "Delete Filled Form", path: "/" }
+                ]}
+              />
+            </div>
 
-                <div className="fac-alloc">
-                    <h3>Faculty Allocation</h3>
-                    <p className="session-text">Current Session: June 2025</p>
 
-                    <span className="box-overlay-text">Select Option To View Details</span>
-
-                    <div className="faculty-box">
-                     <p className="institute-text">
-                        <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF TECHNOLOGY & SCIENCE
-                     </p>
-
-                     <div className="dropdown-container">
-                        <Dropdown 
-                            label="Course"
-                            options={["BE", "ME", "B.Pharma"]}
-                            selectedValue={course}
-                            onChange={setCourse}
-                        />
-
-                        <Dropdown
-                            label="Branch"
-                            options={["CSE", "IT", "ECE", "EI"]}
-                            selectedValue={branch}
-                            onChange={setBranch}
-                        />
-
-                        <Dropdown
-                            label="Semester"
-                            options={["I", "II", "III", "IV", "V", "VI", "VII", "VIII"]}
-                            selectedValue={semester}
-                            onChange={setSemester}
-                        />
-                     </div>
-                        <Button className="btn" text="Show" navigateTo="/hod-fac-alloc-table" />
-                    </div>
-
-                    
-                </div>
-                
-                </div>
+            <div className="hod-info">
+              <div className="hod-sec">
+                <p>
+                  <span>Welcome: </span>
+                  <span className="hod-name">[{user?.name || "Please Login"}]</span>
+                </p>
+                <p>
+                  <span className="hod-role">Role: </span>
+                  <span className="hod-name">[{user?.role || "Please Login"}]</span>
+                </p>
+                <p>
+                  <span className="hod-role">Department: </span>
+                  <span className="hod-name">
+                    [{user?.department || "Please Login"}]
+                  </span>
+                </p>
               </div>
-    
-              <RedFooter />
+
+              <div className="fac-alloc">
+                <h3>Faculty Allocation</h3>
+                <p className="session-text">Current Session: June 2025</p>
+
+                <span className="box-overlay-text">Select Option To View Details</span>
+
+                <div className="faculty-box">
+                  <p className="institute-text">
+                    <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF TECHNOLOGY & SCIENCE
+                  </p>
+
+                  <div className="dropdown-container">
+                    <Dropdown
+                      label="Course"
+                      options={["BE", "ME", "B.Pharma"]}
+                      selectedValue={course}
+                      onChange={setCourse}
+                    />
+
+                    <Dropdown
+                      label="Branch"
+                      options={["CSE", "IT", "ECE", "EI"]}
+                      selectedValue={branch}
+                      onChange={setBranch}
+                    />
+
+                    <Dropdown
+                      label="Semester"
+                      options={["I", "II", "III", "IV", "V", "VI", "VII", "VIII"]}
+                      selectedValue={semester}
+                      onChange={setSemester}
+                    />
+                  </div>
+                  <Button className="btn" text="Show" navigateTo="/hod-fac-alloc-table" />
+                </div>
+
+
+              </div>
+
             </div>
           </div>
+
+          <RedFooter />
         </div>
-      )
+      </div>
+    </div>
+  )
 }
 
 export default FacultyAllocation;

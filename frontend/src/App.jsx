@@ -11,6 +11,7 @@ import AdminRegister from "./pages/Admin/AdminAuth/AdminRegsiter";
 import HODHome from "./pages/HOD/HODActivities/HODHome";
 import FacultyAllocation from "./pages/HOD/HODActivities/FacultyAllocation";
 import FacultyAllocationTable from "./pages/HOD/HODActivities/FacultyAllocationTable";
+import UploadCSV from "./pages/HOD/HODActivities/UploadCSV";
 
 function App() {
 
@@ -28,6 +29,7 @@ function App() {
           <Route path="/hod-home" element={<HODHome />} />          
           <Route path="/hod-fac-alloc" element={<FacultyAllocation />} />          
           <Route path="/hod-fac-alloc-table" element={<FacultyAllocationTable />} />          
+          <Route path="/hod-upload" element={<UploadCSV />} />          
         </Routes>
       </div>
     </Router>

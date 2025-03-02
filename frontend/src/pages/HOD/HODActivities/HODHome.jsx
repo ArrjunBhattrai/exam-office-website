@@ -19,26 +19,27 @@ const HODHome = () => {
 
           <div className="hod-main">
             <div className="sidebars">
-            <Sidebar 
-            className="sidebar-1"
-              title=" HOD Activity"
-              activities={[
-                "Faculty Allocation",
-                "Create New Faculty",
-                "Upload Data for Electives",
-                "View Correction Requests",
-                "View Department Details",
-              ]}
-            />
             <Sidebar
-            className="sidebar-2"
-              title=" Form Dashboard"
-              activities={[
-                "View Saved Form",
-                "View Filled Form",
-                "Delete Filled Form",
-              ]}
-            />
+                className="sidebar-1"
+                title="HOD Activity"
+                activities={[
+                  { name: "Faculty Allocation", path: "/hod-fac-alloc" },
+                  { name: "Create New Faculty", path: "/" },
+                  { name: "Upload Data for Electives", path: "/hod-upload" },
+                  { name: "View Correction Requests", path: "/" },
+                  { name: "View Department Details", path: "/" }
+                ]}
+              />
+
+              <Sidebar
+                className="sidebar-2"
+                title="Form Dashboard"
+                activities={[
+                  { name: "View Saved Form", path: "/" },
+                  { name: "View Filled Form", path: "/" },
+                  { name: "Delete Filled Form", path: "/" }
+                ]}
+              />
             </div>
             
 
