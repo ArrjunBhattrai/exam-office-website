@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import axios from "axios";
 import "./HODHome.css";
 import Sidebar from "../../../components/Sidebar";
 import ActivityHeader from "../../../components/ActivityHeader";
@@ -10,11 +11,25 @@ import Button from "../../../components/Button";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 const FacultyAllocation = () => {
-  const user = useSelector((state) => state.auth.user); // Get logged-in user
+  const user = useSelector((state) => state.auth.user);
 
   const [course, setCourse] = useState("");
   const [branch, setBranch] = useState("");
   const [semester, setSemester] = useState("");
+  const [branches, setBranches] = useState([]);
+
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/api/branches");
+        setBranches(response.data);
+      } catch (error) {
+        console.error("Error fetching branches:", error);
+      }
+    };
+
+    fetchBranches();
+  }, []);
 
   return (
     <div className="hod-home-container">
@@ -117,7 +132,7 @@ const FacultyAllocation = () => {
 
                     <Dropdown
                       label="Branch"
-                      options={["CSE", "IT", "ECE", "EI"]}
+                      options={branches.map((b) => b.branch_name)} // Use fetched branches
                       selectedValue={branch}
                       onChange={setBranch}
                     />

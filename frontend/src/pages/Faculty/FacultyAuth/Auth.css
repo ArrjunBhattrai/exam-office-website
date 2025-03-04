@@ -1,4 +1,4 @@
-* {
+/* * {
     font-family: "Hind Madurai", serif;
 }
 
@@ -65,7 +65,7 @@ width: 80px;
 height: 30px;
 margin-right: 10px;
 } */
-
+/*
 .refresh-btn {
 background: none;
 border: none;
@@ -140,4 +140,4 @@ padding: .5rem;
   
   .forgot-password a:hover {
     text-decoration: underline;
-  }
+  } */

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { register } from "../../../redux/authSlice";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./Auth.css";
 import BlueHeader from "../../../components/BlueHeader";
 import BlueFooter from "../../../components/BlueFooter";
@@ -13,6 +13,7 @@ const generateCaptcha = () => {
 
   const HODRegister = () => {
     const dispatch = useDispatch(); 
+    const navigate = useNavigate();
     const [captcha, setCaptcha] = useState(generateCaptcha());
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -43,13 +44,34 @@ const generateCaptcha = () => {
       setErrors((prev) => ({ ...prev, captcha: error }));
     };
   
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
       e.preventDefault();
       if (!errors.username && !errors.password && !errors.captcha) {
-        dispatch(register({ username })); // Dispatch Redux action
-        alert("Registration Successful!");
+        try {
+          const response = await fetch("http://localhost:5000/api/hod/register", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: username, // <-- TO BE CONFIRMED
+              password,
+            }),
+          });
+    
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.message || "Registration failed");
+          }
+    
+          dispatch(register({ username }));
+          alert("Registration Successful!");
+        } catch (error) {
+          alert(error.message);
+        }
       }
     };
+    
   
     const refreshCaptcha = () => {
       setCaptcha(generateCaptcha());

@@ -196,7 +196,7 @@
 .dropdown {
   position: relative;
   display: flex;
-  width: 200px;
+  width: 250px;
   margin: 10px;
   align-items: center;
 }
@@ -206,10 +206,11 @@
   display: flex;
   align-items: center;
   margin-left: 10px;
+  width: 150px;
 }
 
-.dropdown select {
-  width: 120px;
+.dropdown-wrapper select {
+  width: 90px;
   padding: 8px;
   font-size: 15px;
   font-weight: 600;
@@ -226,8 +227,8 @@
 
 .dropdown-arrow {
   position: absolute;
-  right: 10px;
-  font-size: 16px;
+  right: 75px;
+  font-size: 20px;
   pointer-events: none;
 }
 

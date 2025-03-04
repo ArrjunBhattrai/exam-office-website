@@ -86,12 +86,10 @@ body {
   }
   
  /* dropdown */
- .dropdown-container {
+ /* .dropdown-container {
   display: flex;
 
- }
-
- 
+ } */
 
  .fac-alloc h3{
   color: #8b0000;
@@ -119,7 +117,7 @@ body {
  }
 
  .faculty-box {
-  border: 1px solid black;
+  border: 1px solid #8b0000;
   padding: 2rem;
   margin-top: -1rem;
   height: 400px;

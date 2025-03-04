@@ -24,6 +24,7 @@ const Dropdown = ({ label, options, selectedValue, onChange }) => {
           ))}
         </select>
         <span className="dropdown-arrow">{isOpen ? "▴" : "▾"}</span>
+        
         </div>
         
     </div>
