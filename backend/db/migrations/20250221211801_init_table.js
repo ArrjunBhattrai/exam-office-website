@@ -44,7 +44,6 @@ exports.up = function (knex) {
       table.increments("subject_id").primary();
       table.string("subject_name").notNullable();
       table.string("year_semester").notNullable();
-      table.enu("subject_type", ["Theory", "Practical"]).notNullable();
       table
         .integer("branch_id")
         .unsigned()
@@ -114,17 +113,6 @@ exports.up = function (knex) {
         .inTable("subject")
         .onDelete("CASCADE");
     })
-    .createTable("assessment_component", (table) => {
-      table.increments("component_id").primary();
-      table.enu("component_name", ["CW", "SW", "TH", "PR"]).notNullable();
-      table
-        .integer("subject_id")
-        .unsigned()
-        .notNullable()
-        .references("subject_id")
-        .inTable("subject")
-        .onDelete("CASCADE");
-    })
     .createTable("course_outcome", (table) => {
       table.increments("co_id").primary();
       table.string("co_name").notNullable();
@@ -136,34 +124,11 @@ exports.up = function (knex) {
         .inTable("subject")
         .onDelete("CASCADE");
     })
-    .createTable("cw_components", (table) => {
-      table.increments("cw_component_id").primary();
-      table.enu("component_name", ["MST1", "MST2", "Assignment1", "Assignment2", "Quiz1", "Quiz2", "Attendance"]).notNullable();
-      table.boolean("is_co_wise").defaultTo(true);
-      table
-        .integer("component_id")
-        .unsigned()
-        .notNullable()
-        .references("component_id")
-        .inTable("assessment_component")
-        .onDelete("CASCADE");
-    })
-    .createTable("sw_components", (table) => {
-      table.increments("sw_component_id").primary();
-      table.enu("component_name", ["Internal Submissions", "Internal Viva 1", "Internal Viva 2", "Attendance"]).notNullable();
-      table.boolean("is_co_wise").defaultTo(true);
-      
-      table.boolean("is_co_wise").defaultTo(true);
-      table
-        .integer("component_id")
-        .unsigned()
-        .notNullable()
-        .references("component_id")
-        .inTable("assessment_component")
-        .onDelete("CASCADE");
-      })
-    .createTable("co_marks_temp", (table) => {
-      table.increments("temp_marks_id").primary();
+    .createTable("marks_temp", (table) => {
+      table.increments("marks_id").primary();
+      table.enu("component_name", ["CW", "SW", "TH", "PR"]).notNullable();
+      //sub_component_name should be mst1 mst2..etc for cw and for th it can be th only as there is no other division in that
+      table.string("sub_component_name").notNullable(); 
       table
         .integer("student_id")
         .unsigned()
@@ -179,29 +144,12 @@ exports.up = function (knex) {
         .inTable("course_outcome")
         .onDelete("CASCADE");
       table
-        .integer("component_id")
+        .integer("subject_id")
         .unsigned()
         .notNullable()
-        .references("component_id")
-        .inTable("assessment_component")
+        .references("subject_id")
+        .inTable("subject")
         .onDelete("CASCADE");
-      table
-        .integer("sub_component_id")
-        .unsigned()
-        .nullable();
-      table
-        .enu("sub_component_type", ["CW", "SW"])
-        .notNullable();
-      table.integer("obtained_marks").notNullable();
-      table.integer("total_marks").notNullable();
-      table
-        .integer("faculty_id")
-        .unsigned()
-        .notNullable()
-        .references("faculty_id")
-        .inTable("faculty")
-        .onDelete("CASCADE");
-      table.enu("status", ["Pending", "Verified"]).defaultTo("Pending");
     })
     .createTable("user", (table) => {
       table.increments("officer_id").primary();
@@ -233,7 +181,9 @@ exports.up = function (knex) {
         .references("faculty_id")
         .inTable("faculty")
         .onDelete("CASCADE");
-      table.enu("status", ["Pending", "Approved", "Rejected"]).defaultTo("Pending");
+      table
+        .enu("status", ["Pending", "Approved", "Rejected"])
+        .defaultTo("Pending");
     })
     .createTable("update_logs", (table) => {
       table.increments("log_id").primary();
@@ -249,10 +199,7 @@ exports.down = function (knex) {
     .dropTableIfExists("update_logs")
     .dropTableIfExists("marks_update_request")
     .dropTableIfExists("user")
-    .dropTableIfExists("co_marks_temp")
-    .dropTableIfExists("sw_components")
-    .dropTableIfExists("cw_components")
-    .dropTableIfExists("assessment_component")
+    .dropTableIfExists("marks_temp")
     .dropTableIfExists("student_subject")
     .dropTableIfExists("student")
     .dropTableIfExists("faculty_subject")
