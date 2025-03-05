@@ -13,6 +13,11 @@ import { FaHome, FaSignOutAlt } from "react-icons/fa";
 const AdminDeleteSub = () => {
   const user = useSelector((state) => state.auth.user);
 
+  const [course, setCourse] = useState("");
+  const [branch, setBranch] = useState("");
+  const [semester, setSemester] = useState("");
+  const [branches, setBranches] = useState([]);
+
   return (
     <div className="hod-home-container">
       <div className="hod-bg">
@@ -22,14 +27,20 @@ const AdminDeleteSub = () => {
 
           <div className="hod-main">
             <div className="sidebars">
-            <Sidebar
+              <Sidebar
                 className="sidebar-1"
                 title="Faculty Activity"
                 activities={[
                   { name: "Upload Marking Scheme", path: "/admin-upload" },
                   { name: "Create New Subject", path: "/admin-new-sub" },
-                  { name: "Update Existing Subject", path: "/admin-update-sub" },
-                  { name: "Delete Existing Subject", path: "/admin-delete-sub" },
+                  {
+                    name: "Update Existing Subject",
+                    path: "/admin-update-sub",
+                  },
+                  {
+                    name: "Delete Existing Subject",
+                    path: "/admin-delete-sub",
+                  },
                   { name: "Address Requests", path: "/admin-req" },
                 ]}
               />
@@ -85,23 +96,59 @@ const AdminDeleteSub = () => {
               </div>
 
               <div>
-                 {/* here */}
-                 <div className="fac-alloc">
-                <h3>Delete Existing Subject</h3>
-                <p className="session-text">Current Session: June 2025</p>
+                {/* here */}
+                <div className="fac-alloc">
+                  <h3>Delete Existing Subject</h3>
+                  <p className="session-text">Current Session: June 2025</p>
 
-                <span className="box-overlay-text">Delete a subject</span>
+                  <span className="box-overlay-text">Delete a subject</span>
 
-                <div className="faculty-box">
-                  <p className="institute-text">
-                    <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
-                    TECHNOLOGY & SCIENCE
-                  </p>
+                  <div className="faculty-box">
+                    <p className="institute-text">
+                      <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
+                      TECHNOLOGY & SCIENCE
+                    </p>
 
+                    <div className="dropdown-container">
+                    <Dropdown
+                      label="Course"
+                      options={["BE", "ME", "B.Pharma"]}
+                      selectedValue={course}
+                      onChange={setCourse}
+                    />
+
+                    <Dropdown
+                      label="Branch"
+                      options={branches.map((b) => b.branch_name)} // Use fetched branches
+                      selectedValue={branch}
+                      onChange={setBranch}
+                    />
+
+                    <Dropdown
+                      label="Semester"
+                      options={[
+                        "I",
+                        "II",
+                        "III",
+                        "IV",
+                        "V",
+                        "VI",
+                        "VII",
+                        "VIII",
+                      ]}
+                      selectedValue={semester}
+                      onChange={setSemester}
+                    />
+                  </div>
+                  <Button
+                    className="btn"
+                    text="Show"
+                    navigateTo="/"
+                  />
+                  
+                  </div>
                 </div>
               </div>
-              </div>
-              
             </div>
           </div>
 

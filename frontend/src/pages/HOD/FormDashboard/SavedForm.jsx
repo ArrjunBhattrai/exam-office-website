@@ -141,7 +141,7 @@ const SavedForm = () => {
                   <Button
                     className="btn"
                     text="Show"
-                    navigateTo="/hod-fac-alloc-table"
+                    navigateTo="/" //--> to set path
                   />
                 </div>
               </div>

@@ -13,6 +13,10 @@ import { FaHome, FaSignOutAlt } from "react-icons/fa";
 const FacCorrectionReq = () => {
   const user = useSelector((state) => state.auth.user);
 
+  const [course, setCourse] = useState("");
+  const [branch, setBranch] = useState("");
+  const [semester, setSemester] = useState("");
+
   return (
     <div className="hod-home-container">
       <div className="hod-bg">
@@ -84,23 +88,59 @@ const FacCorrectionReq = () => {
               </div>
 
               <div>
-                 {/* here */}
-                 <div className="fac-alloc">
-                <h3>Correction Request</h3>
-                <p className="session-text">Current Session: June 2025</p>
+                {/* here */}
+                <div className="fac-alloc">
+                  <h3>Correction Request</h3>
+                  <p className="session-text">Current Session: June 2025</p>
 
-                <span className="box-overlay-text">Draft a request</span>
+                  <span className="box-overlay-text">Draft a request</span>
 
-                <div className="faculty-box">
-                  <p className="institute-text">
-                    <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
-                    TECHNOLOGY & SCIENCE
-                  </p>
+                  <div className="faculty-box">
+                    <p className="institute-text">
+                      <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
+                      TECHNOLOGY & SCIENCE
+                    </p>
 
+                    <div className="dropdown-container">
+                      <Dropdown
+                        label="Course"
+                        options={["BE", "ME", "B.Pharma"]}
+                        selectedValue={course}
+                        onChange={setCourse}
+                      />
+
+                      <Dropdown
+                        label="Branch"
+                        options={["CSE", "IT", "ECE", "EI"]}
+                        selectedValue={branch}
+                        onChange={setBranch}
+                      />
+
+                      <Dropdown
+                        label="Semester"
+                        options={[
+                          "I",
+                          "II",
+                          "III",
+                          "IV",
+                          "V",
+                          "VI",
+                          "VII",
+                          "VIII",
+                        ]}
+                        selectedValue={semester}
+                        onChange={setSemester}
+                      />
+                    </div>
+                    <Button
+                      className="btn"
+                      text="Show"
+                      navigateTo="/" //--> to set path
+                    />
+                    
+                  </div>
                 </div>
               </div>
-              </div>
-              
             </div>
           </div>
 

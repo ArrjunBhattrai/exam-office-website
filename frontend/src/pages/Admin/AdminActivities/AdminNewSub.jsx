@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
-// import "./HODHome.css";
+import "./admin.css";
 import Sidebar from "../../../components/Sidebar";
 import ActivityHeader from "../../../components/ActivityHeader";
 import RedFooter from "../../../components/RedFooter";
@@ -12,6 +12,21 @@ import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 const AdminNewSub = () => {
   const user = useSelector((state) => state.auth.user);
+
+  const [formData, setFormData] = useState({
+      department: "",
+      name: "",
+      facultyCode: "",
+    });
+  
+    const handleChange = (e) => {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+  
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      console.log("Form Submitted:", formData);
+    };
 
   return (
     <div className="hod-home-container">
@@ -97,6 +112,56 @@ const AdminNewSub = () => {
                     <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
                     TECHNOLOGY & SCIENCE
                   </p>
+
+                  <form onSubmit={handleSubmit}>
+                    <div className="input-group">
+                      <label>Department:</label>
+                      <input
+                        type="text"
+                        name="department"
+                        value={formData.department}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="input-group">
+                      <label>Subject Name:</label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="input-group">
+                      <label>Subject Code:</label>
+                      <input
+                        type="text"
+                        name="facultyCode"
+                        value={formData.facultyCode}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="input-group">
+                      <label>Semester:</label>
+                      <input
+                        type="text"
+                        name="facultyCode"
+                        value={formData.facultyCode}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <button type="submit" className="submit-btn btn">
+                      Submit
+                    </button>
+                  </form>
 
                 </div>
               </div>

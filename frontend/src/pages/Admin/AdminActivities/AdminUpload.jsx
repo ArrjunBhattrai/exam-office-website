@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
-// import "./HODHome.css";
+import "./admin.css";
 import Sidebar from "../../../components/Sidebar";
 import ActivityHeader from "../../../components/ActivityHeader";
 import RedFooter from "../../../components/RedFooter";
@@ -13,6 +13,28 @@ import { FaHome, FaSignOutAlt } from "react-icons/fa";
 const AdminUpload = () => {
   const user = useSelector((state) => state.auth.user);
 
+  const [file, setFile] = useState(null);
+
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files[0];
+    if (selectedFile && selectedFile.type === "text/csv") {
+      setFile(selectedFile);
+    } else {
+      alert("Please upload a valid CSV file.");
+      setFile(null);
+    }
+  };
+
+  const handleUpload = () => {
+    if (!file) {
+      alert("No file selected!");
+      return;
+    }
+    console.log("Uploading:", file.name);
+
+    /* further processing logic here */
+  };
+
   return (
     <div className="hod-home-container">
       <div className="hod-bg">
@@ -22,14 +44,20 @@ const AdminUpload = () => {
 
           <div className="hod-main">
             <div className="sidebars">
-            <Sidebar
+              <Sidebar
                 className="sidebar-1"
                 title="Faculty Activity"
                 activities={[
                   { name: "Upload Marking Scheme", path: "/admin-upload" },
                   { name: "Create New Subject", path: "/admin-new-sub" },
-                  { name: "Update Existing Subject", path: "/admin-update-sub" },
-                  { name: "Delete Existing Subject", path: "/admin-delete-sub" },
+                  {
+                    name: "Update Existing Subject",
+                    path: "/admin-update-sub",
+                  },
+                  {
+                    name: "Delete Existing Subject",
+                    path: "/admin-delete-sub",
+                  },
                   { name: "Address Requests", path: "/admin-req" },
                 ]}
               />
@@ -85,23 +113,33 @@ const AdminUpload = () => {
               </div>
 
               <div>
-                 {/* here */}
-                 <div className="fac-alloc">
-                <h3>Upload Marking Scheme</h3>
-                <p className="session-text">Current Session: June 2025</p>
+                {/* here */}
+                <div className="fac-alloc">
+                  <h3>Upload Marking Scheme</h3>
+                  <p className="session-text">Current Session: June 2025</p>
 
-                <span className="box-overlay-text">Upload</span>
+                  <span className="box-overlay-text">Upload</span>
 
-                <div className="faculty-box">
-                  <p className="institute-text">
-                    <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
-                    TECHNOLOGY & SCIENCE
-                  </p>
-
+                  <div className="faculty-box">
+                    <p className="institute-text">
+                      <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
+                      TECHNOLOGY & SCIENCE
+                    </p>
+                    <div className="upload-container">
+                      <input
+                        type="file"
+                        accept=".csv"
+                        onChange={handleFileChange}
+                        className="file-input"
+                      />
+                      <button onClick={handleUpload} className="upload-button">
+                        Upload CSV
+                      </button>
+                      {file && <p>Selected File: {file.name}</p>}
+                    </div>
+                  </div>
                 </div>
               </div>
-              </div>
-              
             </div>
           </div>
 

@@ -151,8 +151,9 @@ th, td {
 .upload-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   margin-top: 20px;
+  justify-content: flex-start;
 }
 
 .file-input {

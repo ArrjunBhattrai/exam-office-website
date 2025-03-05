@@ -13,6 +13,10 @@ import { FaHome, FaSignOutAlt } from "react-icons/fa";
 const ViewSubjects = () => {
   const user = useSelector((state) => state.auth.user);
 
+  const [course, setCourse] = useState("");
+  const [branch, setBranch] = useState("");
+  const [semester, setSemester] = useState("");
+
   return (
     <div className="hod-home-container">
       <div className="hod-bg">
@@ -51,15 +55,13 @@ const ViewSubjects = () => {
                   className="icon-btn"
                   onClick={() => (window.location.href = "/fac-home")}
                 >
-                  <FaHome className="icon" />
-                  Home
+                  <FaHome className="icon" /> Home
                 </button>
                 <button
                   className="icon-btn"
                   onClick={() => (window.location.href = "/")}
                 >
-                  <FaSignOutAlt className="icon" />
-                  Logout
+                  <FaSignOutAlt className="icon" /> Logout
                 </button>
               </div>
               <div className="hod-sec">
@@ -86,21 +88,56 @@ const ViewSubjects = () => {
               <div>
                 {/* here */}
                 <div className="fac-alloc">
-                <h3>View Assigned Subjects</h3>
-                <p className="session-text">Current Session: June 2025</p>
+                  <h3>View Assigned Subjects</h3>
+                  <p className="session-text">Current Session: June 2025</p>
 
-                <span className="box-overlay-text">Select to view</span>
+                  <span className="box-overlay-text">Select to view</span>
 
-                <div className="faculty-box">
-                  <p className="institute-text">
-                    <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
-                    TECHNOLOGY & SCIENCE
-                  </p>
+                  <div className="faculty-box">
+                    <p className="institute-text">
+                      <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
+                      TECHNOLOGY & SCIENCE
+                    </p>
 
+                    <div className="dropdown-container">
+                      <Dropdown
+                        label="Course"
+                        options={["BE", "ME", "B.Pharma"]}
+                        selectedValue={course}
+                        onChange={setCourse}
+                      />
+
+                      <Dropdown
+                        label="Branch"
+                        options={["CSE", "IT", "ECE", "EI"]}
+                        selectedValue={branch}
+                        onChange={setBranch}
+                      />
+
+                      <Dropdown
+                        label="Semester"
+                        options={[
+                          "I",
+                          "II",
+                          "III",
+                          "IV",
+                          "V",
+                          "VI",
+                          "VII",
+                          "VIII",
+                        ]}
+                        selectedValue={semester}
+                        onChange={setSemester}
+                      />
+                    </div>
+                    <Button
+                      className="btn"
+                      text="Show"
+                      navigateTo="/" //--> to set path
+                    />
+                  </div>
                 </div>
               </div>
-              </div>
-
             </div>
           </div>
 

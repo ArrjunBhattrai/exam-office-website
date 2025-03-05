@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
+// import axios from "axios";
 // import "./HODHome.css";
 import Sidebar from "../../../components/Sidebar";
 import ActivityHeader from "../../../components/ActivityHeader";
@@ -13,6 +13,10 @@ import { FaHome, FaSignOutAlt } from "react-icons/fa";
 const AdminDeleteForm = () => {
   const user = useSelector((state) => state.auth.user);
 
+  const [course, setCourse] = useState("");
+  const [branch, setBranch] = useState("");
+  const [semester, setSemester] = useState("");
+
   return (
     <div className="hod-home-container">
       <div className="hod-bg">
@@ -22,14 +26,20 @@ const AdminDeleteForm = () => {
 
           <div className="hod-main">
             <div className="sidebars">
-            <Sidebar
+              <Sidebar
                 className="sidebar-1"
                 title="Faculty Activity"
                 activities={[
                   { name: "Upload Marking Scheme", path: "/admin-upload" },
                   { name: "Create New Subject", path: "/admin-new-sub" },
-                  { name: "Update Existing Subject", path: "/admin-update-sub" },
-                  { name: "Delete Existing Subject", path: "/admin-delete-sub" },
+                  {
+                    name: "Update Existing Subject",
+                    path: "/admin-update-sub",
+                  },
+                  {
+                    name: "Delete Existing Subject",
+                    path: "/admin-delete-sub",
+                  },
                   { name: "Address Requests", path: "/admin-req" },
                 ]}
               />
@@ -85,23 +95,58 @@ const AdminDeleteForm = () => {
               </div>
 
               <div>
-                 {/* here */}
-                 <div className="fac-alloc">
-                <h3>Delete Form</h3>
-                <p className="session-text">Current Session: June 2025</p>
+                {/* here */}
+                <div className="fac-alloc">
+                  <h3>Delete Form</h3>
+                  <p className="session-text">Current Session: June 2025</p>
 
-                <span className="box-overlay-text">Select a View</span>
+                  <span className="box-overlay-text">Select a View</span>
 
-                <div className="faculty-box">
-                  <p className="institute-text">
-                    <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
-                    TECHNOLOGY & SCIENCE
-                  </p>
+                  <div className="faculty-box">
+                    <p className="institute-text">
+                      <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
+                      TECHNOLOGY & SCIENCE
+                    </p>
 
+                    <div className="dropdown-container">
+                      <Dropdown
+                        label="Course"
+                        options={["BE", "ME", "B.Pharma"]}
+                        selectedValue={course}
+                        onChange={setCourse}
+                      />
+
+                      <Dropdown
+                        label="Branch"
+                        options={["CSE", "IT", "ECE", "EI"]}
+                        selectedValue={branch}
+                        onChange={setBranch}
+                      />
+
+                      <Dropdown
+                        label="Semester"
+                        options={[
+                          "I",
+                          "II",
+                          "III",
+                          "IV",
+                          "V",
+                          "VI",
+                          "VII",
+                          "VIII",
+                        ]}
+                        selectedValue={semester}
+                        onChange={setSemester}
+                      />
+                    </div>
+                    <Button
+                      className="btn"
+                      text="Show"
+                      navigateTo="/" //--> to set path
+                    />
+                  </div>
                 </div>
               </div>
-              </div>
-              
             </div>
           </div>
 

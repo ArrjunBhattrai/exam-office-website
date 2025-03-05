@@ -13,6 +13,11 @@ import { FaHome, FaSignOutAlt } from "react-icons/fa";
 const AdminUpdateSub = () => {
   const user = useSelector((state) => state.auth.user);
 
+  const [course, setCourse] = useState("");
+    const [branch, setBranch] = useState("");
+    const [semester, setSemester] = useState("");
+    const [branches, setBranches] = useState([]);
+
   return (
     <div className="hod-home-container">
       <div className="hod-bg">
@@ -98,6 +103,42 @@ const AdminUpdateSub = () => {
                     TECHNOLOGY & SCIENCE
                   </p>
 
+                  <div className="dropdown-container">
+                    <Dropdown
+                      label="Course"
+                      options={["BE", "ME", "B.Pharma"]}
+                      selectedValue={course}
+                      onChange={setCourse}
+                    />
+
+                    <Dropdown
+                      label="Branch"
+                      options={branches.map((b) => b.branch_name)} // Use fetched branches
+                      selectedValue={branch}
+                      onChange={setBranch}
+                    />
+
+                    <Dropdown
+                      label="Semester"
+                      options={[
+                        "I",
+                        "II",
+                        "III",
+                        "IV",
+                        "V",
+                        "VI",
+                        "VII",
+                        "VIII",
+                      ]}
+                      selectedValue={semester}
+                      onChange={setSemester}
+                    />
+                  </div>
+                  <Button
+                    className="btn"
+                    text="Show"
+                    navigateTo="/"
+                  />
                 </div>
               </div>
               </div>
