@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { authenticateHOD, verifyHODPassword } = require("../middleware/auth");
+const { authenticateHOD, authenticate } = require("../util/middleware");
 const {
   hodLogin,
   getDepartmentDetails,
@@ -15,29 +15,24 @@ const {
   getFacultyBySubject,
   assignSubjectToFaculty,
   removeFacultyFromSubject,
-} = require("../controllers/hod");
+} = require("../controller/hod");
 
 // HOD Login
 router.post("/login", hodLogin);
 
-// Department Details
-router.get("/department", authenticateHOD, getDepartmentDetails);
-
-// Semester Management
-router.get("/semesters", authenticateHOD, getSemesters);
-router.post("/semesters", authenticateHOD, verifyHODPassword, addSemester);
-router.put("/semesters/:id", authenticateHOD, verifyHODPassword, updateSemester);
-router.delete("/semesters/:id", authenticateHOD, verifyHODPassword, deleteSemester);
-
-// Subject Management
-router.get("/semesters/:semester_id/subjects", authenticateHOD, getSubjectsBySemester);
-router.post("/semesters/:semester_id/subjects", authenticateHOD, verifyHODPassword, addSubject);
-router.put("/subjects/:id", authenticateHOD, verifyHODPassword, updateSubject);
-router.delete("/subjects/:id", authenticateHOD, verifyHODPassword, deleteSubject);
+// Department & Semester Management
+router.get("/", getDepartment);
+router.post("/semester", authenticate, addSemester);
+router.post("/semester/subject/", authenticate, addSubject);
+router.get("/semester/:id/subjects", getSubjectsBySemester);
+router.put("/semester/:id", authenticate, updateSemester);
+router.delete("/semester/:id", authenticate, deleteSemester);
+router.put("/subject/", authenticate, updateSubject);
+router.delete("/subject/:id", authenticate, deleteSubject);
 
 // Faculty Assignment
-router.get("/subjects/:subject_id/faculty", authenticateHOD, getFacultyBySubject);
-router.post("/assign-faculty", authenticateHOD, verifyHODPassword, assignSubjectToFaculty);
-router.delete("/remove-faculty", authenticateHOD, verifyHODPassword, removeFacultyFromSubject);
+router.get("/subject/:id/faculty", getFacultyBySubject);
+router.post("/assign-subject", authenticate, assignSubjectToFaculty);
+router.delete("/remove-faculty", authenticate, removeFacultyFromSubject);
 
 module.exports = router;
