@@ -12,7 +12,7 @@ const {
 // Register Course
 router.post("/create", authenticate, createCourse);
 
-router.get("/", authenticate, getAllCourses);
+router.get("/", getAllCourses);
 
 // Update Course
 router.put("/update/:id", authenticate, updateCourse);
