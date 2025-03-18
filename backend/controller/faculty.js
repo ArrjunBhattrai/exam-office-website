@@ -2,16 +2,19 @@ const db = require("../db/db");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
-//Login for faculty
+// Login for faculty
 const facultyLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const hod = await db("faculty").where({ email }).first();
+    const faculty = await db("faculty").where({ email }).first();
 
-    if (!hod || !bcrypt.compareSync(password, hod.password)) {
-      return res
-        .status(401)
-        .json({ message: "Email and password doesn't match" });
+    if (!faculty) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, faculty.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
     const token = jwt.sign(
@@ -26,14 +29,20 @@ const facultyLogin = async (req, res) => {
 
     res.status(200).json({ token, faculty });
   } catch (error) {
-    res.status(500).json({ message: "Login error", error });
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
-//Get Subjects assigned to the faculty
+// Get Subjects assigned to the faculty
 const subjectByFaculty = async (req, res) => {
   try {
     const { faculty_id } = req.params;
+
+    if (!faculty_id) {
+      return res.status(400).json({ error: "Faculty ID is required" });
+    }
+
     const subjects = await db("faculty_subject")
       .join("subject", "faculty_subject.subject_id", "subject.subject_id")
       .where("faculty_subject.faculty_id", faculty_id)
@@ -42,13 +51,15 @@ const subjectByFaculty = async (req, res) => {
         "subject.subject_name",
         "subject.year_semester"
       );
+
     res.json(subjects);
   } catch (error) {
-    res.status(500).json({ error: "Error fetching subjects" });
+    console.error("Error fetching subjects:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-//Assign COs for a subject
+// Assign COs for a subject
 const assignCO = async (req, res) => {
   try {
     const { subject_id, co_names } = req.body;
@@ -57,23 +68,31 @@ const assignCO = async (req, res) => {
       return res.status(400).json({ error: "Invalid input" });
     }
 
-    const insertedCOs = await db("course_outcome").insert(
-      co_names.map((name) => ({
-        co_name: name,
-        subject_id,
-      }))
-    );
+    const insertedCOs = await db("course_outcome")
+      .insert(
+        co_names.map((name) => ({
+          co_name: name,
+          subject_id,
+        }))
+      )
+      .returning(["co_id", "co_name", "subject_id"]); // Fetch inserted rows
 
     res.json({ message: "COs added successfully", insertedCOs });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error assigning COs:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-//Get students enrolled in a subject
+// Get students enrolled in a subject
 const studentBySubject = async (req, res) => {
   try {
     const { subject_id } = req.params;
+
+    if (!subject_id) {
+      return res.status(400).json({ error: "Subject ID is required" });
+    }
+
     const students = await db("student_subject")
       .join("student", "student_subject.student_id", "student.student_id")
       .where("student_subject.subject_id", subject_id)
@@ -82,126 +101,89 @@ const studentBySubject = async (req, res) => {
         "student.student_name",
         "student.enrollment_number"
       );
+
     res.json(students);
   } catch (error) {
-    res.status(500).json({ error: "Error fetching students" });
+    console.error("Error fetching students:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-//Upload marks 
-//For Theoreticals
-const saveMarksTheoretical = async (req, res) => {
+// Submit the marks of students
+const submitMarks = async (req, res) => {
   try {
-    const { marks_Theoretical } = req.body;
+    const { subject_id, component_name, sub_component_name, marks } = req.body;
 
-    if (!Array.isArray(marks_Theoretical) || marks_Theoretical.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "Invalid request. Expected an array of marks." });
+    if (!subject_id || !component_name || !sub_component_name || !Array.isArray(marks) || marks.length === 0) {
+      return res.status(400).json({ error: "Invalid input" });
     }
 
-    const validComponents = ["CW", "SW", "TH", "PR"];
-    const validMarksTheoretical = marks_Theoretical.map((entry) => {
-      const {
-        student_id,
-        subject_id,
-        co_id,
-        component_name,
-        sub_component_name,
-      } = entry;
+    const marksData = marks.map(({ student_id, co_id, marks }) => ({
+      student_id,
+      subject_id,
+      co_id,
+      component_name,
+      sub_component_name,
+      marks
+    }));
 
-      if (
-        !student_id ||
-        !subject_id ||
-        !co_id ||
-        !component_name ||
-        !sub_component_name
-      ) {
-        throw new Error("Missing required fields in some entries.");
-      }
-
-      if (!validComponents.includes(component_name)) {
-        throw new Error(
-          `Invalid component_name '${component_name}'. Allowed: CW, SW, TH, PR`
-        );
-      }
-
-      return {
-        student_id,
-        subject_id,
-        co_id,
-        component_name,
-        sub_component_name,
-      };
+    // Use a transaction to ensure atomicity
+    await db.transaction(async (trx) => {
+      await trx("marks_temp").insert(marksData);
     });
 
-    const insertedMarksTheoretical = await db("marks_temp")
-      .insert(validMarksTheoretical)
-      .returning("marks_id");
-
-    res.status(201).json({ message: "Marks added successfully", insertedMarksTheoretical });
+    res.status(201).json({ message: "Marks submitted successfully" });
   } catch (error) {
-    console.error("Error inserting marks:", error);
-    res.status(500).json({ message: error.message || "Internal Server Error" });
+    console.error("Error submitting marks:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-//For Practicals
-const saveMarksPractical = async (req, res) => {
+// Get the marks of a particular sub-component
+const getStudentMarks = async (req, res) => {
   try {
-    const { marks_Practicals } = req.body;
+    const { subject_id, component_name, sub_component_name } = req.params;
 
-    if (!Array.isArray(marks_Practicals) || marks_Practicals.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "Invalid request. Expected an array of marks." });
+    if (!subject_id || !component_name || !sub_component_name) {
+      return res.status(400).json({ error: "Missing required parameters" });
     }
 
-    const validComponents = ["CW", "SW", "TH", "PR"];
-    const validMarksPracticals = marks_Practicals.map((entry) => {
-      const {
-        student_id,
-        subject_id,
-        co_id,
-        component_name,
-        sub_component_name,
-      } = entry;
+    const marksData = await db("marks_temp")
+      .join("student", "marks_temp.student_id", "student.student_id")
+      .select(
+        "student.student_id",
+        "student.student_name",
+        "student.enrollment_number",
+        "marks_temp.co_id",
+        "marks_temp.marks"
+      )
+      .where({
+        "marks_temp.subject_id": subject_id,
+        "marks_temp.component_name": component_name,
+        "marks_temp.sub_component_name": sub_component_name
+      });
 
-      if (
-        !student_id ||
-        !subject_id ||
-        !co_id ||
-        !component_name ||
-        !sub_component_name
-      ) {
-        throw new Error("Missing required fields in some entries.");
-      }
+    if (marksData.length === 0) {
+      return res.status(404).json({ message: "No marks found for given criteria" });
+    }
 
-      if (!validComponents.includes(component_name)) {
-        throw new Error(
-          `Invalid component_name '${component_name}'. Allowed: CW, SW, TH, PR`
-        );
-      }
-
-      return {
-        student_id,
-        subject_id,
-        co_id,
-        component_name,
-        sub_component_name,
-      };
+    res.status(200).json({
+      subject_id,
+      component_name,
+      sub_component_name,
+      marks: marksData
     });
-
-    const insertedMarksPracticals = await db("marks_temp")
-      .insert(validMarksPracticals)
-      .returning("marks_id");
-
-    res.status(201).json({ message: "Marks added successfully", insertedMarksPracticals });
   } catch (error) {
-    console.error("Error inserting marks:", error);
-    res.status(500).json({ message: error.message || "Internal Server Error" });
+    console.error("Error fetching student marks:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-//SubmitMarks
-
+module.exports = {
+  facultyLogin,
+  subjectByFaculty,
+  assignCO,
+  studentBySubject,
+  submitMarks,
+  getStudentMarks
+};
