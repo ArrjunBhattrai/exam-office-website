@@ -63,7 +63,9 @@ const addSemester = async (req, res) => {
       .returning("*");
     res.status(201).json({ semester });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching department details.", error });
+    res
+      .status(500)
+      .json({ message: "Error fetching department details.", error });
   }
 };
 
@@ -230,9 +232,10 @@ const removeFacultyFromSubject = async (req, res) => {
 
 module.exports = {
   hodLogin,
-  getDepartment,
+  getDepartmentDetails,
+  getSemesters,
   addSemester,
-  updateSemester,
+  // updateSemester,
   deleteSemester,
   getSubjectsBySemester,
   addSubject,
