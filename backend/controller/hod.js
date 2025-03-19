@@ -2,7 +2,7 @@ const db = require("../db/db");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
-// HOD Login
+// HOD login
 const hodLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -18,14 +18,23 @@ const hodLogin = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res.status(200).json({ token, hod });
+    // Return response
+    res.status(200).json({
+      token,
+      hod: {
+        id: hod.id,
+        name: hod.hod_name,
+        email: hod.email,
+        department_name: hod.department_name,
+        course_name: hod.course_name,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: "Login error", error });
   }
 };
 
-// Get Department and Semesters
-const getDepartment = async (req, res) => {
+const getDepartmentDetails = async (req, res) => {
   try {
     const { department_id } = req.body;
     const { user_type } = req.user;
@@ -54,12 +63,11 @@ const addSemester = async (req, res) => {
       .returning("*");
     res.status(201).json({ semester });
   } catch (error) {
-    res.status(500).json({ message: "Error adding semester", error });
+    res.status(500).json({ message: "Error fetching department details.", error });
   }
 };
 
-// Update a Semester
-const updateSemester = async (req, res) => {
+const getSemesters = async (req, res) => {
   try {
     const { id } = req.params;
     const { semester_name, year_semester, branch_id } = req.body;
@@ -94,11 +102,10 @@ const deleteSemester = async (req, res) => {
     await db("semesters").where({ id }).del();
     res.status(200).json({ message: "Semester deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Error deleting semester", error });
+    res.status(500).json({ message: "Error fetching semesters.", error });
   }
 };
 
-// Get Subjects of a Semester
 const getSubjectsBySemester = async (req, res) => {
   try {
     const { id } = req.params;
@@ -111,7 +118,7 @@ const getSubjectsBySemester = async (req, res) => {
       .select("*");
     res.status(200).json({ subjects });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching subjects", error });
+    res.status(500).json({ message: "Error fetching subjects.", error });
   }
 };
 

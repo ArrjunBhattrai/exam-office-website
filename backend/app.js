@@ -16,7 +16,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 require("./loaders/routes")(app);
 
-app.listen({ port: process.env.PORT || 8000 }, () => {
+app.listen({ port: process.env.PORT || 8080 }, () => {
   console.log(`Listening On ${process.env.PORT}`);
 });
 

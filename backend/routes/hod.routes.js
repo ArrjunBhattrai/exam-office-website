@@ -3,11 +3,12 @@ const router = express.Router();
 const { authenticateHOD, authenticate } = require("../util/middleware");
 const {
   hodLogin,
-  getDepartment,
+  getDepartmentDetails,
+  getSemesters,
+  getSubjectsBySemester,
   addSemester,
   updateSemester,
   deleteSemester,
-  getSubjectsBySemester,
   addSubject,
   updateSubject,
   deleteSubject,
