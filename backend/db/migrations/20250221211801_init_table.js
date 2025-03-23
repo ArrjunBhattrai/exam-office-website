@@ -150,6 +150,7 @@ exports.up = function (knex) {
         .references("subject_id")
         .inTable("subject")
         .onDelete("CASCADE");
+      table.integer("marks").notNullable();  
     })
     .createTable("user", (table) => {
       table.increments("officer_id").primary();
