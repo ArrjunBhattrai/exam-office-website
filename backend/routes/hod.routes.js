@@ -1,36 +1,37 @@
 const express = require("express");
 const router = express.Router();
-const { authenticateHOD, authenticate } = require("../util/middleware");
-const {
-  hodLogin,
-  getDepartmentDetails,
-  getSubjectsBySemester,
-  addSemester,
-  deleteSemester,
-  addSubject,
-  updateSubject,
-  deleteSubject,
-  getFacultyBySubject,
-  assignSubjectToFaculty,
-  removeFacultyFromSubject,
-} = require("../controller/hod");
+const { authenticateHOD } = require("../util/middleware");
+const hodController = require("../controller/hod");
 
 // HOD Login
-router.post("/login", hodLogin);
+router.post("/login", hodController.hodLogin);
 
-// Department & Semester Management
-router.get("/", getDepartmentDetails);
-router.post("/semester", authenticate, addSemester);
-router.post("/semester/subject/", authenticate, addSubject);
-router.get("/semester/:id/subjects", getSubjectsBySemester);
-// router.put("/semester/:id", authenticate, updateSemester);
-router.delete("/semester/:id", authenticate, deleteSemester);
-router.put("/subject/", authenticate, updateSubject);
-router.delete("/subject/:id", authenticate, deleteSubject);
+// Department Management
+router.get("/", authenticateHOD, hodController.getDepartmentDetails);
 
-// Faculty Assignment
-router.get("/subject/:id/faculty", getFacultyBySubject);
-router.post("/assign-subject", authenticate, assignSubjectToFaculty);
-router.delete("/remove-faculty", authenticate, removeFacultyFromSubject);
+// Faculty Management
+router.post("/faculty", authenticateHOD, hodController.createFaculty);
+router.delete(
+  "/faculty/:faculty_id",
+  authenticateHOD,
+  hodController.deleteFaculty
+);
+
+// Faculty Allocation
+router.get(
+  "/subject/:id/faculty",
+  authenticateHOD,
+  hodController.getFacultyBySubject
+);
+router.post(
+  "/faculty/assign",
+  authenticateHOD,
+  hodController.assignSubjectToFaculty
+);
+router.delete(
+  "/faculty/remove",
+  authenticateHOD,
+  hodController.removeFacultyFromSubject
+);
 
 module.exports = router;

@@ -77,7 +77,7 @@ const AdminRegister = () => {
         console.log(data);
         dispatch(register({ officer_name }));
         alert("Registration Successful!");
-        navigate("/hod-login");
+        navigate("/admin-login");
       } catch (error) {
         alert(error.message);
       }
