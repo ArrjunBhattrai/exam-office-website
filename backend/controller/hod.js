@@ -41,7 +41,9 @@ const getDepartmentDetails = async (req, res) => {
     if (role !== "HOD") {
       return res.status(403).json({ message: "Access denied" });
     }
-    const semesters = await db("semesters").where({ department_id }).select("*");
+    const semesters = await db("semesters")
+      .where({ department_id })
+      .select("*");
     res.status(200).json({ department_id, semesters });
   } catch (error) {
     res.status(500).json({ message: "Error fetching department data", error });
@@ -106,12 +108,22 @@ const deleteFaculty = async (req, res) => {
 const assignSubjectToFaculty = async (req, res) => {
   try {
     const { subject_id, faculty_id } = req.body;
-    const { role } = req.user;
-    if (role !== "HOD") {
+    const { user_type } = req.user;
+
+    if (user_type !== "HOD") {
       return res.status(403).json({ message: "Access denied" });
     }
-    await db("subject_faculty").insert({ subject_id, faculty_id });
-    res.status(201).json({ message: "Faculty assigned successfully" });
+
+    const inserted = await db("subject_faculty").insert({
+      subject_id,
+      faculty_id,
+    });
+
+    if (inserted) {
+      res.status(201).json({ message: "Faculty assigned successfully" });
+    } else {
+      return res.status(500).json({ message: "Failed to assign faculty" });
+    }
   } catch (error) {
     res.status(500).json({ message: "Error assigning faculty", error });
   }

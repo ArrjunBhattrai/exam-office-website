@@ -81,3 +81,129 @@
     font-size: 16px;
   }
   
+  .faculty-box {
+    .faculty-box {
+      border: 1px solid #8b0000;
+      padding: 2rem;
+      margin-top: -1rem;
+      height: 400px;
+     }
+  }
+  
+  .faculty-input {
+    width: 80%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .fetch-btn,
+  .submit-btn {
+    padding: 10px 20px;
+    background-color: #ffefc4;
+    color: black;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .subject-list {
+    width: 100%;
+    margin-top: 10px;
+  }
+  
+  .subject-item {
+    display: flex;
+    justify-content: space-between;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 5px 0;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    width: 100%;
+  }
+  
+  .co-input {
+    width: 100px;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    text-align: center;
+  }
+  
+  .marks-feeding-dropdown-container {
+    display: flex;
+    gap: 10px; 
+    justify-content: flex-start;
+    align-items: center; 
+  }
+
+  .marks-feeding-dropdown-container select {
+    width: 150px;
+  }
+
+  .marks-entry-container {
+    display: flex;
+    flex-direction: column;
+    /* min-height: 100vh; */
+    text-align: center;
+    width: 100vw;
+    padding: 2rem;
+  }
+  
+  .info-box {
+    text-align: left;
+    width: 70%;
+    margin-bottom: 20px;
+    /* background: #f8f9fa; */
+    padding: 15px;
+    border-radius: 8px;
+    /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); */
+  }
+  
+  .marks-table {
+    display: flex;
+    /* justify-content: center; */
+    width: 100%;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  th, td {
+    padding: 10px;
+    border: 1px solid #ccc;
+  }
+  
+  th {
+    background: maroon;
+    color: white;
+  }
+  
+ 
+  .container {
+    display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100vw; 
+  margin: 0;
+  padding: 0;
+  background-color: white;
+  }
+
+  .max-marks-container label{
+    color: #333;
+    margin-right: 20px;
+  }
+
+  .co-max-marks {
+    font-size: 14px;
+  }
+
+  .co-max-marks input {
+    font-size: 14px;
+    margin: 2px;
+    width: 30px;
+  }
