@@ -50,7 +50,7 @@ const AdminLogin = () => {
       enteredCaptcha
     ) {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/user/HOD`, {
+        const response = await fetch(`${BACKEND_URL}/api/user/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -76,10 +76,13 @@ const AdminLogin = () => {
         });
 
         const data2 = await response2.json();
-
+        console.log(data2);
         dispatch(
           login({
-            ...data2.officer,
+            officer_name: data2.data.officer.officer_name,
+            officer_id: data2.data.officer.officer_id,
+            email: data2.data.officer.email,
+            user_type: data2.data.officer.user_type,
             token: data.token,
           })
         );

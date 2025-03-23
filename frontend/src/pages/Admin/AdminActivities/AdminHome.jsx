@@ -11,8 +11,9 @@ import Button from "../../../components/Button";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 const AdminHome = () => {
-  const user = useSelector((state) => state.auth.user);
-
+  const { officer_id, officer_name, user_type, email, department_id, token } =
+    useSelector((state) => state.auth);
+  // console.log("============", user);
   return (
     <div className="hod-home-container">
       <div className="hod-bg">
@@ -28,8 +29,14 @@ const AdminHome = () => {
                 activities={[
                   { name: "Upload Marking Scheme", path: "/admin-upload" },
                   { name: "Create New Subject", path: "/admin-new-sub" },
-                  { name: "Update Existing Subject", path: "/admin-update-sub" },
-                  { name: "Delete Existing Subject", path: "/admin-delete-sub" },
+                  {
+                    name: "Update Existing Subject",
+                    path: "/admin-update-sub",
+                  },
+                  {
+                    name: "Delete Existing Subject",
+                    path: "/admin-delete-sub",
+                  },
                   { name: "Address Requests", path: "/admin-req" },
                 ]}
               />
@@ -67,19 +74,19 @@ const AdminHome = () => {
                 <p>
                   <span>Welcome: </span>
                   <span className="hod-name">
-                    [{user?.name || "Please Login"}]
+                    {officer_name && `[${officer_name}]`}
                   </span>
                 </p>
                 <p>
                   <span className="hod-role">Role: </span>
                   <span className="hod-name">
-                    [{user?.role || "Please Login"}]
+                    [{(user_type && `${user_type}`) || "Please Login"}]
                   </span>
                 </p>
                 <p>
                   <span className="hod-role">Department: </span>
                   <span className="hod-name">
-                    [{user?.department || "Please Login"}]
+                    [{department_id || "Please Login"}]
                   </span>
                 </p>
               </div>
