@@ -6,13 +6,36 @@ const bcrypt = require("bcryptjs");
 const facultyLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    console.log("Received login request for:", email); // Debug log
     const faculty = await db("faculty").where({ email }).first();
+    console.log("Faculty found:", faculty); // Debug log
+
 
     if (!faculty) {
+      console.log("Invalid email!");
       return res.status(401).json({ message: "Invalid email or password" });
     }
+    
+    let storedPassword = faculty.password;
+     /*
+    // **Check if password is already hashed**
+    if (!storedPassword.startsWith("$2a$") && !storedPassword.startsWith("$2b$")) {
+      console.log(`Hashing password for faculty ID ${faculty.faculty_id}...`);
 
-    const isPasswordValid = await bcrypt.compare(password, faculty.password);
+      // **Hash the plain text password and update the database**
+      const hashedPassword = await bcrypt.hash(storedPassword, 10);
+      await db("faculty")
+        .where({ faculty_id: faculty.faculty_id })
+        .update({ password: hashedPassword });
+
+      storedPassword = hashedPassword; // Update stored password for comparison
+    }
+    */
+    console.log("Stored password:", faculty.password);
+    const isPasswordValid = await bcrypt.compare(password, storedPassword);
+    console.log("Password match:", isPasswordValid);    
+
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
@@ -75,7 +98,9 @@ const assignCO = async (req, res) => {
           subject_id,
         }))
       )
-      .returning(["co_id", "co_name", "subject_id"]); // Fetch inserted rows
+
+      .returning("*"); // Fetch inserted rows
+
 
     res.json({ message: "COs added successfully", insertedCOs });
   } catch (error) {
@@ -127,10 +152,10 @@ const submitMarks = async (req, res) => {
       marks
     }));
 
-    // Use a transaction to ensure atomicity
-    await db.transaction(async (trx) => {
-      await trx("marks_temp").insert(marksData);
-    });
+
+    await db("marks_temp").insert(marksData);
+
+
 
     res.status(201).json({ message: "Marks submitted successfully" });
   } catch (error) {
