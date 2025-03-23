@@ -4,10 +4,8 @@ const { authenticateHOD, authenticate } = require("../util/middleware");
 const {
   hodLogin,
   getDepartmentDetails,
-  getSemesters,
   getSubjectsBySemester,
   addSemester,
-  updateSemester,
   deleteSemester,
   addSubject,
   updateSubject,

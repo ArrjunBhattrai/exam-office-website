@@ -36,48 +36,50 @@ import AdminFilledForm from "./pages/Admin/AdminActivities/AdminFilledForm";
 import AdminProgressReport from "./pages/Admin/AdminActivities/AdminProgressReport";
 
 function App() {
-
   return (
     <Router>
       <div className="App">
         <Routes>
-        <Route path="/" element={<Home />} />
+          <Route path="/" element={<Home />} />
           <Route path="/hod-login" element={<HODLogin />} />
           <Route path="/hod-register" element={<HODRegister />} />
           <Route path="/faculty-login" element={<FacultyLogin />} />
           <Route path="/faculty-register" element={<FacultyRegister />} />
           <Route path="/admin-login" element={<AdminLogin />} />
-          <Route path="/admin-register" element={<AdminRegister />} />   
+          <Route path="/admin-register" element={<AdminRegister />} />
 
-          <Route path="/hod-home" element={<HODHome />} />          
-          <Route path="/hod-fac-alloc" element={<FacultyAllocation />} />          
-          <Route path="/hod-fac-alloc-table" element={<FacultyAllocationTable />} />          
-          <Route path="/hod-upload" element={<UploadCSV />} />          
-          <Route path="/hod-correction-req" element={<HODCorrectionReq />} />          
-          <Route path="/hod-deptt-details" element={<HODViewDeptt />} />          
-          <Route path="/hod-new-fac" element={<CreateNewFaculty/>} />          
-          <Route path="/delete-form" element={<DeleteForm/>} /> 
-          <Route path="/filled-form" element={<FilledForm/>} />          
-          <Route path="/saved-form" element={<SavedForm/>} />        
-          <Route path="/progress-report" element={<ProgressReport/>} />  
+          <Route path="/hod-home" element={<HODHome />} />
+          <Route path="/hod-fac-alloc" element={<FacultyAllocation />} />
+          <Route
+            path="/hod-fac-alloc-table"
+            element={<FacultyAllocationTable />}
+          />
+          <Route path="/hod-upload" element={<UploadCSV />} />
+          <Route path="/hod-correction-req" element={<HODCorrectionReq />} />
+          <Route path="/hod-deptt-details" element={<HODViewDeptt />} />
+          <Route path="/hod-new-fac" element={<CreateNewFaculty />} />
+          <Route path="/delete-form" element={<DeleteForm />} />
+          <Route path="/filled-form" element={<FilledForm />} />
+          <Route path="/saved-form" element={<SavedForm />} />
+          <Route path="/progress-report" element={<ProgressReport />} />
 
-          <Route path="/fac-home" element={<FacultyHome/>} />  
-          <Route path="/fac-view-sub" element={<ViewSubjects/>} />  
-          <Route path="/fac-correction-req" element={<FacCorrectionReq/>} />  
-          <Route path="/fac-saved-form" element={<FacSavedForm/>} />  
-          <Route path="/fac-filled-form" element={<FacFilledForm/>} />  
-          <Route path="/fac-delete-form" element={<FacDeleteForm/>} />  
-          
-          <Route path="/admin-home" element={<AdminHome/>} />  
-          <Route path="/admin-upload" element={<AdminUpload/>} />  
-          <Route path="/admin-new-sub" element={<AdminNewSub/>} />  
-          <Route path="/admin-update-sub" element={<AdminUpdateSub/>} />  
-          <Route path="/admin-delete-sub" element={<AdminDeleteSub/>} />  
-          <Route path="/admin-req" element={<AdminRequest/>} />  
-          <Route path="/admin-delete-form" element={<AdminDeleteForm/>} />  
-          <Route path="/admin-saved-form" element={<AdminSavedForm/>} />  
-          <Route path="/admin-filled-form" element={<AdminFilledForm/>} />  
-          <Route path="/admin-prog-report" element={<AdminProgressReport/>} />  
+          <Route path="/fac-home" element={<FacultyHome />} />
+          <Route path="/fac-view-sub" element={<ViewSubjects />} />
+          <Route path="/fac-correction-req" element={<FacCorrectionReq />} />
+          <Route path="/fac-saved-form" element={<FacSavedForm />} />
+          <Route path="/fac-filled-form" element={<FacFilledForm />} />
+          <Route path="/fac-delete-form" element={<FacDeleteForm />} />
+
+          <Route path="/admin-home" element={<AdminHome />} />
+          <Route path="/admin-upload" element={<AdminUpload />} />
+          <Route path="/admin-new-sub" element={<AdminNewSub />} />
+          <Route path="/admin-update-sub" element={<AdminUpdateSub />} />
+          <Route path="/admin-delete-sub" element={<AdminDeleteSub />} />
+          <Route path="/admin-req" element={<AdminRequest />} />
+          <Route path="/admin-delete-form" element={<AdminDeleteForm />} />
+          <Route path="/admin-saved-form" element={<AdminSavedForm />} />
+          <Route path="/admin-filled-form" element={<AdminFilledForm />} />
+          <Route path="/admin-prog-report" element={<AdminProgressReport />} />
         </Routes>
       </div>
     </Router>
