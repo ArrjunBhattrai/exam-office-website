@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { login } from "../../../redux/authSlice";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import BlueHeader from "../../../components/BlueHeader";
 import BlueFooter from "../../../components/BlueFooter";
 import "./Auth.css";
+import { BACKEND_URL } from "../../../../config";
 
 const generateCaptcha = () => {
   const chars =
@@ -17,16 +18,20 @@ const generateCaptcha = () => {
 
 const FacultyLogin = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [captcha, setCaptcha] = useState(generateCaptcha());
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [enteredCaptcha, setEnteredCaptcha] = useState("");
+  const [userType, setUserType] = useState("HOD"); // Default to HOD
   const [errors, setErrors] = useState({});
 
-  const validateUsername = (value) => {
+  const validateEmail = (value) => {
     let error = "";
-    if (/^\d/.test(value)) error = "❌ Username cannot start with a digit.";
-    setErrors((prev) => ({ ...prev, username: error }));
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      error = "❌ Invalid email format.";
+    }
+    setErrors((prev) => ({ ...prev, email: error }));
   };
 
   const validateCaptcha = (value) => {
@@ -34,11 +39,56 @@ const FacultyLogin = () => {
     setErrors((prev) => ({ ...prev, captcha: error }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!errors.username && !errors.captcha) {
-      dispatch(login({ username }));
-      alert("Login Successful!");
+
+    if (
+      !errors.email &&
+      !errors.captcha &&
+      email &&
+      password &&
+      enteredCaptcha
+    ) {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/user/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+            user_type: userType, // Send selected user type
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || "Login failed");
+        }
+
+        const response2 = await fetch(`${BACKEND_URL}/api/user/profile`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: data.token,
+          },
+        });
+
+        const data2 = await response2.json();
+
+        dispatch(
+          login({
+            ...data2.officer,
+            token: data.token,
+          })
+        );
+
+        alert("Login Successful!");
+        navigate(`/${userType.toLowerCase()}-home`); // Navigate based on user type
+      } catch (error) {
+        alert(error.message);
+      }
     }
   };
 
@@ -52,24 +102,35 @@ const FacultyLogin = () => {
       <BlueHeader />
       <div className="auth-container">
         <div className="auth-box">
-          <h3>FACULTY Login</h3>
+          <h3>Login</h3>
           <form onSubmit={handleSubmit}>
-            {/* Username Field */}
+            {/* User Type Dropdown */}
             <div className="input-group">
-              <label>Username:</label>
+              <label>User Type:</label>
+              <select
+                value={userType}
+                onChange={(e) => setUserType(e.target.value)}
+              >
+                {/* <option value="HOD">HOD</option> */}
+                {/* <option value="ADMIN">Admin</option> */}
+                <option value="FACULTY">Faculty</option>
+              </select>
+            </div>
+
+            {/* Email Field */}
+            <div className="input-group">
+              <label>Email:</label>
               <input
                 type="text"
-                placeholder="Enter Username"
-                value={username}
+                placeholder="Enter Email"
+                value={email}
                 onChange={(e) => {
-                  setUsername(e.target.value);
-                  validateUsername(e.target.value);
+                  setEmail(e.target.value);
+                  validateEmail(e.target.value);
                 }}
                 required
               />
-              {errors.username && (
-                <span className="error">{errors.username}</span>
-              )}
+              {errors.email && <span className="error">{errors.email}</span>}
             </div>
 
             {/* Password Field */}
@@ -106,9 +167,19 @@ const FacultyLogin = () => {
               required
             />
             {errors.captcha && <span className="error">{errors.captcha}</span>}
-            <br/>
+
             {/* Login Button */}
-            <button type="submit" className="auth-btn">
+            <button
+              type="submit"
+              className="auth-btn"
+              disabled={
+                !!errors.email ||
+                !!errors.captcha ||
+                !email ||
+                !password ||
+                !enteredCaptcha
+              }
+            >
               Login
             </button>
           </form>
@@ -117,7 +188,8 @@ const FacultyLogin = () => {
             <Link to="/forgot-password">Forgot Password?</Link>
           </p>
           <p>
-            Don't have an account? <Link to="/faculty-register">Register here</Link>
+            Don't have an account?{" "}
+            <Link to="/faculty-register">Register here</Link>
           </p>
         </div>
       </div>

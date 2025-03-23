@@ -128,7 +128,7 @@ exports.up = function (knex) {
       table.increments("marks_id").primary();
       table.enu("component_name", ["CW", "SW", "TH", "PR"]).notNullable();
       //sub_component_name should be mst1 mst2..etc for cw and for th it can be th only as there is no other division in that
-      table.string("sub_component_name").notNullable(); 
+      table.string("sub_component_name").notNullable();
       table
         .integer("student_id")
         .unsigned()
@@ -151,8 +151,7 @@ exports.up = function (knex) {
         .inTable("subject")
         .onDelete("CASCADE");
 
-      table.integer("marks").notNullable();  
-
+      table.integer("marks").notNullable();
     })
     .createTable("user", (table) => {
       table.increments("officer_id").primary();
@@ -197,12 +196,61 @@ exports.up = function (knex) {
     });
 };
 
-exports.down = function (knex) {
-  return knex.schema
+exports.down = async function (knex) {
+  await knex.schema.alterTable("marks_temp", (table) => {
+    table.dropForeign("student_id");
+    table.dropForeign("co_id");
+    table.dropForeign("subject_id");
+  });
+
+  await knex.schema.alterTable("course_outcome", (table) => {
+    table.dropForeign("subject_id");
+  });
+
+  await knex.schema.alterTable("student_subject", (table) => {
+    table.dropForeign("student_id");
+    table.dropForeign("subject_id");
+  });
+
+  await knex.schema.alterTable("student", (table) => {
+    table.dropForeign("branch_id");
+  });
+
+  await knex.schema.alterTable("faculty_subject", (table) => {
+    table.dropForeign("faculty_id");
+    table.dropForeign("subject_id");
+  });
+
+  await knex.schema.alterTable("faculty", (table) => {
+    table.dropForeign("branch_id");
+  });
+
+  await knex.schema.alterTable("subject", (table) => {
+    table.dropForeign("branch_id");
+  });
+
+  await knex.schema.alterTable("branch", (table) => {
+    table.dropForeign("course_id");
+    table.dropForeign("hod_id");
+  });
+
+  await knex.schema.alterTable("course", (table) => {
+    table.dropForeign("college_id");
+  });
+
+  await knex.schema.alterTable("marks_update_request", (table) => {
+    table.dropForeign("student_id");
+    table.dropForeign("subject_id");
+    table.dropForeign("requested_by");
+  });
+
+  // Now drop tables in reverse order
+  await knex.schema
     .dropTableIfExists("update_logs")
     .dropTableIfExists("marks_update_request")
     .dropTableIfExists("user")
     .dropTableIfExists("marks_temp")
+    .dropTableIfExists("course_outcome")
     .dropTableIfExists("student_subject")
     .dropTableIfExists("student")
     .dropTableIfExists("faculty_subject")

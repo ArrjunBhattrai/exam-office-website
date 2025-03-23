@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import BlueHeader from "../../../components/BlueHeader";
 import BlueFooter from "../../../components/BlueFooter";
 import "./Auth.css";
+import { BACKEND_URL } from "../../../../config";
 
 const generateCaptcha = () => {
   const chars =
@@ -19,13 +20,11 @@ const HODLogin = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [captcha, setCaptcha] = useState(generateCaptcha());
-  // const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [enteredCaptcha, setEnteredCaptcha] = useState("");
+  const [userType, setUserType] = useState("HOD"); // Default to HOD
   const [errors, setErrors] = useState({});
-
-  
 
   const validateEmail = (value) => {
     let error = "";
@@ -42,9 +41,16 @@ const HODLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!errors.username && !errors.captcha) {
+
+    if (
+      !errors.email &&
+      !errors.captcha &&
+      email &&
+      password &&
+      enteredCaptcha
+    ) {
       try {
-        const response = await fetch("http://localhost:5000/api/hod/login", {
+        const response = await fetch(`${BACKEND_URL}/api/user/HOD`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -52,7 +58,7 @@ const HODLogin = () => {
           body: JSON.stringify({
             email,
             password,
-            user_type: "HOD",
+            user_type: userType, // Send selected user type
           }),
         });
 
@@ -61,15 +67,25 @@ const HODLogin = () => {
           throw new Error(data.message || "Login failed");
         }
 
+        const response2 = await fetch(`${BACKEND_URL}/api/user/profile`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: data.token,
+          },
+        });
+
+        const data2 = await response2.json();
+
         dispatch(
           login({
-            hod_id: data.hod.hod_id,
-            department_id: data.hod.department_id,
+            ...data2.officer,
             token: data.token,
           })
         );
+
         alert("Login Successful!");
-        navigate("/hod-home");
+        navigate(`/${userType.toLowerCase()}-home`); // Navigate based on user type
       } catch (error) {
         alert(error.message);
       }
@@ -86,13 +102,18 @@ const HODLogin = () => {
       <BlueHeader />
       <div className="auth-container">
         <div className="auth-box">
-          <h3>HOD Login</h3>
+          <h3>Login</h3>
           <form onSubmit={handleSubmit}>
+            {/* User Type Dropdown */}
             <div className="input-group">
-
               <label>User Type:</label>
-              <select disabled>
+              <select
+                value={userType}
+                onChange={(e) => setUserType(e.target.value)}
+              >
                 <option value="HOD">HOD</option>
+                {/* <option value="ADMIN">Admin</option>
+                <option value="FACULTY">Faculty</option> */}
               </select>
             </div>
 
@@ -146,12 +167,18 @@ const HODLogin = () => {
               required
             />
             {errors.captcha && <span className="error">{errors.captcha}</span>}
-            <br />
+
             {/* Login Button */}
             <button
               type="submit"
               className="auth-btn"
-              disabled={errors.email || errors.captcha}
+              disabled={
+                !!errors.email ||
+                !!errors.captcha ||
+                !email ||
+                !password ||
+                !enteredCaptcha
+              }
             >
               Login
             </button>
@@ -161,7 +188,7 @@ const HODLogin = () => {
             <Link to="/forgot-password">Forgot Password?</Link>
           </p>
           <p>
-            Don't have an account? <Link to="/hod-register">Register here</Link>
+            Don't have an account? <Link to="/register">Register here</Link>
           </p>
         </div>
       </div>

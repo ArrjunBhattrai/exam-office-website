@@ -9,7 +9,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const register = async (req, res) => {
   try {
     const { officer_name, email, password, user_type } = req.body;
-    console.log(officer_name, email, password,user_type);
+    console.log(officer_name, email, password, user_type);
 
     if (!officer_name || !email || !password || !user_type) {
       return res.status(400).json({ message: "All fields are required" });
@@ -17,16 +17,14 @@ const register = async (req, res) => {
     console.log("================ 1");
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const [officer] = await db("user")
-      .insert({
-        officer_name,
-        email,
-        password: hashedPassword,
-        user_type,
-      })
-      .returning("*");
+    const officer = await db("user").insert({
+      officer_name,
+      email,
+      password: hashedPassword,
+      user_type,
+    });
     console.log("================ 1");
-    res.status(201).json({ datat: { officer } });
+    res.status(201).json({ data: { officer } });
   } catch (error) {
     res.status(500).json({ message: "Error registering officer", error });
   }
@@ -36,16 +34,16 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-console.log(email,password);
+    console.log(email, password);
 
-const officer = await db("user").where({ email }).first();
-console.log(email,password);
-const check = await bcrypt.compare(password, officer.password);
-console.log(check);
+    const officer = await db("user").where({ email }).first();
+    console.log(email, password);
+    const check = await bcrypt.compare(password, officer.password);
+    console.log(check);
 
-if (!officer || !(check)) {
-  return res.status(401).json({ message: "Invalid credentials" });
-}
+    if (!officer || !check) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
     const token = jwt.sign(
       { officer_id: officer.officer_id, user_type: officer.user_type },
       JWT_SECRET,
@@ -60,25 +58,45 @@ if (!officer || !(check)) {
 };
 
 // Get Exam Officer Profile
-const getUser = async (req, res) => {
+const findUser = async (req, res) => {
   try {
     console.log("=======");
+    console.log("=======");
     const { id } = req.params;
-
+    console.log("=======", id);
+    // console.log(req);
     const { user_type } = req.user;
-    console.log("=======",id);
+    console.log("=======", id);
     console.log("=======");
 
-    // only admins can access this route
+    // // only admins can access this route
     if (user_type !== "ADMIN") {
       return res.status(403).json({ message: "Access denied: Admins only" });
     }
     console.log("=======");
-    
+
     const officer = await db("user").where({ officer_id: id }).first();
     console.log("=======");
     if (!officer) return res.status(404).json({ message: "Officer not found" });
-    res.status(200).json({ data: { officer } });
+    const { password, ...responseData } = officer;
+    res.status(200).json({ data: { officer: responseData } });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching profile", error });
+  }
+};
+
+const getUser = async (req, res) => {
+  try {
+    console.log("=======");
+    // console.log(req);
+    const { officer_id } = req.user;
+    console.log("=======");
+
+    const officer = await db("user").where({ officer_id }).first();
+    console.log("=======");
+    if (!officer) return res.status(404).json({ message: "Officer not found" });
+    const { password, ...responseData } = officer;
+    res.status(200).json({ data: { officer: responseData } });
   } catch (error) {
     res.status(500).json({ message: "Error fetching profile", error });
   }
@@ -86,4 +104,4 @@ const getUser = async (req, res) => {
 
 const updateProfile = async () => {};
 
-module.exports = { register, login, getUser, updateProfile };
+module.exports = { register, login, getUser, updateProfile, findUser };
