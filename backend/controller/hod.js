@@ -18,7 +18,6 @@ const hodLogin = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    // Return response
     res.status(200).json({
       token,
       hod: {
@@ -34,169 +33,72 @@ const hodLogin = async (req, res) => {
   }
 };
 
+// Get Department Details
 const getDepartmentDetails = async (req, res) => {
   try {
     const { department_id } = req.body;
-    const { user_type } = req.user;
-    if (user_type !== "HOD") {
+    const { role } = req.user;
+    if (role !== "HOD") {
       return res.status(403).json({ message: "Access denied" });
     }
-    const semesters = await db("semesters")
-      .where({ department_id })
-      .select("*");
+    const semesters = await db("semesters").where({ department_id }).select("*");
     res.status(200).json({ department_id, semesters });
   } catch (error) {
     res.status(500).json({ message: "Error fetching department data", error });
   }
 };
 
-// Add a Semester
-const addSemester = async (req, res) => {
+// Create a new Faculty
+const createFaculty = async (req, res) => {
   try {
-    const { semester_name, department_id } = req.body;
-    const { user_type } = req.user;
-    if (user_type !== "HOD") {
-      return res.status(403).json({ message: "Access denied" });
+    const { faculty_name, email, password, branch_id } = req.body;
+
+    // Check if email already exists
+    const existingFaculty = await db("faculty").where({ email }).first();
+    if (existingFaculty) {
+      return res.status(400).json({ error: "Email already exists" });
     }
-    const [semester] = await db("semesters")
-      .insert({ department_id, semester_name })
-      .returning("*");
-    res.status(201).json({ semester });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Insert faculty
+    const [faculty_id] = await db("faculty").insert({
+      faculty_name,
+      email,
+      password: hashedPassword,
+      branch_id,
+    });
+
+    res.status(201).json({
+      message: "Faculty created successfully",
+      faculty: { faculty_id, faculty_name, email, branch_id },
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error fetching department details.", error });
+    console.error("Error creating faculty:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-const getSemesters = async (req, res) => {
+// Delete a Faculty
+const deleteFaculty = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { semester_name, year_semester, branch_id } = req.body;
-    const { user_type } = req.user;
-    if (user_type !== "HOD") {
-      return res.status(403).json({ message: "Access denied" });
-    }
-    const update = {
-      ...(semester_name && { semester_name }),
-      ...(year_semester && { year_semester }),
-      ...(branch_id && { branch_id }),
-    };
+    const faculty_id = Number(req.params.faculty_id);
 
-    await db("semesters").where({ id }).update(update);
-    res.status(200).json({ message: "Semester updated successfully" });
+    const faculty = await db("faculty").where({ id: faculty_id }).first();
+    if (!faculty) {
+      return res.status(404).json({ error: "Faculty not found" });
+    }
+
+    // Remove faculty assignments before deleting
+    await db("subject_faculty").where({ faculty_id }).del();
+
+    // Delete faculty
+    await db("faculty").where({ id: faculty_id }).del();
+
+    res.status(200).json({ message: "Faculty deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Error updating semester", error });
-  }
-};
-
-// Delete a Semester
-const deleteSemester = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { user_type } = req.user;
-    if (user_type !== "HOD") {
-      return res.status(403).json({ message: "Access denied" });
-    }
-    if (!id) {
-      return res.status(400).json({ message: "Semester ID is required" });
-    }
-    await db("semesters").where({ id }).del();
-    res.status(200).json({ message: "Semester deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching semesters.", error });
-  }
-};
-
-const getSubjectsBySemester = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { user_type } = req.user;
-    if (user_type !== "HOD") {
-      return res.status(403).json({ message: "Access denied" });
-    }
-    const subjects = await db("subjects")
-      .where({ semester_id: id })
-      .select("*");
-    res.status(200).json({ subjects });
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching subjects.", error });
-  }
-};
-
-// Add Subject to Semester
-const addSubject = async (req, res) => {
-  try {
-    const { subject_name, year_semester, branch_id } = req.body;
-    const { user_type } = req.user;
-    if (user_type !== "HOD") {
-      return res.status(403).json({ message: "Access denied" });
-    }
-    const [subject] = await db("subjects")
-      .insert({ subject_name, year_semester, branch_id })
-      .returning("*");
-    res.status(201).json({ subject });
-  } catch (error) {
-    res.status(500).json({ message: "Error adding subject", error });
-  }
-};
-
-// Update Subject
-const updateSubject = async (req, res) => {
-  try {
-    const { user_type } = req.user;
-    if (user_type !== "HOD") {
-      return res.status(403).json({ message: "Access denied" });
-    }
-    const { subject_id, subject_name, year_semester, branch_id } = req.body;
-    const update = {
-      subject_id,
-      ...(subject_name && { subject_name }),
-      ...(year_semester && { year_semester }),
-      ...(branch_id && { branch_id }),
-    };
-    await db("subjects").where({ id }).update(update);
-    res.status(200).json({ message: "Subject updated successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Error updating subject", error });
-  }
-};
-
-// Delete Subject
-const deleteSubject = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const subject_id = id;
-    const { user_type } = req.user;
-    if (user_type !== "HOD") {
-      return res.status(403).json({ message: "Access denied" });
-    }
-    if (!subject_id) {
-      return res.status(400).json({ message: "Subject ID is required" });
-    }
-    await db("subjects").where({ subject_id }).del();
-    res.status(200).json({ message: "Subject deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Error deleting subject", error });
-  }
-};
-
-// Get Faculty Assigned to a Subject
-const getFacultyBySubject = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { user_type } = req.user;
-    if (user_type !== "HOD") {
-      return res.status(403).json({ message: "Access denied" });
-    }
-    const faculty = await db("subject_faculty")
-      .join("faculty", "subject_faculty.faculty_id", "faculty.id")
-      .where("subject_faculty.subject_id", id)
-      .select("faculty.id", "faculty.name", "faculty.email");
-
-    res.status(200).json({ faculty });
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching faculty", error });
+    console.error("Error deleting faculty:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -204,8 +106,8 @@ const getFacultyBySubject = async (req, res) => {
 const assignSubjectToFaculty = async (req, res) => {
   try {
     const { subject_id, faculty_id } = req.body;
-    const { user_type } = req.user;
-    if (user_type !== "HOD") {
+    const { role } = req.user;
+    if (role !== "HOD") {
       return res.status(403).json({ message: "Access denied" });
     }
     await db("subject_faculty").insert({ subject_id, faculty_id });
@@ -219,8 +121,8 @@ const assignSubjectToFaculty = async (req, res) => {
 const removeFacultyFromSubject = async (req, res) => {
   try {
     const { subject_id, faculty_id } = req.body;
-    const { user_type } = req.user;
-    if (user_type !== "HOD") {
+    const { role } = req.user;
+    if (role !== "HOD") {
       return res.status(403).json({ message: "Access denied" });
     }
     await db("subject_faculty").where({ subject_id, faculty_id }).del();
@@ -230,18 +132,32 @@ const removeFacultyFromSubject = async (req, res) => {
   }
 };
 
+// Get Faculty Assigned to a Subject
+const getFacultyBySubject = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.user;
+    if (role !== "HOD") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+    const faculty = await db("subject_faculty")
+      .join("faculty", "subject_faculty.faculty_id", "faculty.id")
+      .where("subject_faculty.subject_id", id)
+      .select("faculty.id", "faculty.faculty_name", "faculty.email");
+
+    res.status(200).json({ faculty });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching faculty", error });
+  }
+};
+
+// Exporting functions
 module.exports = {
   hodLogin,
   getDepartmentDetails,
-  getSemesters,
-  addSemester,
-  // updateSemester,
-  deleteSemester,
-  getSubjectsBySemester,
-  addSubject,
-  updateSubject,
-  deleteSubject,
-  getFacultyBySubject,
+  createFaculty,
+  deleteFaculty,
   assignSubjectToFaculty,
   removeFacultyFromSubject,
+  getFacultyBySubject,
 };
