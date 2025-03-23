@@ -23,6 +23,7 @@ import ViewSubjects from "./pages/Faculty/FacultyActivities/ViewSubjects";
 import FacCorrectionReq from "./pages/Faculty/FacultyActivities/FacCorrectionReq";
 import FacSavedForm from "./pages/Faculty/FacultyActivities/FacSavedForm";
 import FacFilledForm from "./pages/Faculty/FacultyActivities/FacFilledForm";
+import MarksFeed from "./pages/Faculty/FacultyActivities/MarksFeed";
 import FacDeleteForm from "./pages/Faculty/FacultyActivities/FacDeleteForm";
 import AdminHome from "./pages/Admin/AdminActivities/AdminHome";
 import AdminUpload from "./pages/Admin/AdminActivities/AdminUpload";
@@ -34,6 +35,7 @@ import AdminDeleteForm from "./pages/Admin/AdminActivities/AdminDeleteForm";
 import AdminSavedForm from "./pages/Admin/AdminActivities/AdminSavedForm";
 import AdminFilledForm from "./pages/Admin/AdminActivities/AdminFilledForm";
 import AdminProgressReport from "./pages/Admin/AdminActivities/AdminProgressReport";
+import MarksEntry from "./pages/Faculty/FacultyActivities/MarksEntry";
 
 function App() {
 
@@ -67,6 +69,8 @@ function App() {
           <Route path="/fac-saved-form" element={<FacSavedForm/>} />  
           <Route path="/fac-filled-form" element={<FacFilledForm/>} />  
           <Route path="/fac-delete-form" element={<FacDeleteForm/>} />  
+          <Route path="/fac-marks-feed" element={<MarksFeed/>} />  
+          <Route path="/fac-marks-entry" element={<MarksEntry/>} />  
           
           <Route path="/admin-home" element={<AdminHome/>} />  
           <Route path="/admin-upload" element={<AdminUpload/>} />  

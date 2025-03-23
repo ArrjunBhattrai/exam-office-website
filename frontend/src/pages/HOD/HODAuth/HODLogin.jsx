@@ -44,15 +44,14 @@ const HODLogin = () => {
     e.preventDefault();
     if (!errors.username && !errors.captcha) {
       try {
-        const response = await fetch("http://localhost:5000/api/hod/login", {
+        const response = await fetch("http://localhost:8080/api/department/login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
             email,
-            password,
-            user_type: "HOD",
+            password
           }),
         });
 
@@ -63,7 +62,7 @@ const HODLogin = () => {
 
         dispatch(
           login({
-            hod_id: data.hod.hod_id,
+            hod_id: data.hod_id,
             department_id: data.hod.department_id,
             token: data.token,
           })
@@ -160,9 +159,9 @@ const HODLogin = () => {
           <p className="forgot-password">
             <Link to="/forgot-password">Forgot Password?</Link>
           </p>
-          <p>
+          {/* <p>
             Don't have an account? <Link to="/hod-register">Register here</Link>
-          </p>
+          </p> */}
         </div>
       </div>
       <BlueFooter />
