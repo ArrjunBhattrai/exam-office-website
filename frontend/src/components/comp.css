@@ -5,6 +5,7 @@
   justify-content: center;
   align-items: center;
   padding: 1rem;
+  width: 100vw;
 }
 
 .b-header-content {
@@ -33,6 +34,10 @@
   color: #BBBBBB;
   padding: 1rem;
   text-align: center;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
 }
 
 
@@ -210,13 +215,13 @@
 }
 
 .dropdown-wrapper select {
-  width: 90px;
-  padding: 8px;
-  font-size: 15px;
+  width: 85px;
+  padding: 5px;
+  font-size: 12px;
   font-weight: 600;
   border: 1px solid black;
   border-radius: 5px;
-  background: white;
+  background: rgb(235, 235, 235);
   cursor: pointer;
   appearance: none;  
   -webkit-appearance: none;
@@ -227,17 +232,17 @@
 
 .dropdown-arrow {
   position: absolute;
-  right: 75px;
-  font-size: 20px;
+  right: 70px;
+  font-size: 15px;
   pointer-events: none;
 }
 
 .dropdown label {
-  font-size: 15px;
+  font-size: 12px;
     font-weight: 600;
     margin-bottom: 5px;
     color: black; 
-  align-items: center;
+  align-items: left;
 }
 
 /* button component */
