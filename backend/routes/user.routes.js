@@ -15,7 +15,7 @@ router.post("/register", register);
 router.post("/login", login);
 
 // Get Exam Officer Profile
-router.get("/profile/:id", authenticate, getUser);
+router.get("/profile/:id", getUser);
 
 router.put("/profile/:id", authenticate, updateProfile);
 

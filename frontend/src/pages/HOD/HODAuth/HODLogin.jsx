@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { login } from "../../../redux/authSlice";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import BlueHeader from "../../../components/BlueHeader";
 import BlueFooter from "../../../components/BlueFooter";
 import "./Auth.css";
@@ -17,16 +17,22 @@ const generateCaptcha = () => {
 
 const HODLogin = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [captcha, setCaptcha] = useState(generateCaptcha());
-  const [username, setUsername] = useState("");
+  // const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [enteredCaptcha, setEnteredCaptcha] = useState("");
   const [errors, setErrors] = useState({});
 
-  const validateUsername = (value) => {
+  
+
+  const validateEmail = (value) => {
     let error = "";
-    if (/^\d/.test(value)) error = "❌ Username cannot start with a digit.";
-    setErrors((prev) => ({ ...prev, username: error }));
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      error = "❌ Invalid email format.";
+    }
+    setErrors((prev) => ({ ...prev, email: error }));
   };
 
   const validateCaptcha = (value) => {
@@ -34,11 +40,39 @@ const HODLogin = () => {
     setErrors((prev) => ({ ...prev, captcha: error }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!errors.username && !errors.captcha) {
-      dispatch(login({ username }));
-      alert("Login Successful!");
+      try {
+        const response = await fetch("http://localhost:5000/api/hod/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+            user_type: "HOD",
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || "Login failed");
+        }
+
+        dispatch(
+          login({
+            hod_id: data.hod.hod_id,
+            department_id: data.hod.department_id,
+            token: data.token,
+          })
+        );
+        alert("Login Successful!");
+        navigate("/hod-home");
+      } catch (error) {
+        alert(error.message);
+      }
     }
   };
 
@@ -54,22 +88,28 @@ const HODLogin = () => {
         <div className="auth-box">
           <h3>HOD Login</h3>
           <form onSubmit={handleSubmit}>
-            {/* Username Field */}
             <div className="input-group">
-              <label>Username:</label>
+
+              <label>User Type:</label>
+              <select disabled>
+                <option value="HOD">HOD</option>
+              </select>
+            </div>
+
+            {/* Email Field */}
+            <div className="input-group">
+              <label>Email:</label>
               <input
                 type="text"
-                placeholder="Enter Username"
-                value={username}
+                placeholder="Enter Email"
+                value={email}
                 onChange={(e) => {
-                  setUsername(e.target.value);
-                  validateUsername(e.target.value);
+                  setEmail(e.target.value);
+                  validateEmail(e.target.value);
                 }}
                 required
               />
-              {errors.username && (
-                <span className="error">{errors.username}</span>
-              )}
+              {errors.email && <span className="error">{errors.email}</span>}
             </div>
 
             {/* Password Field */}
@@ -106,9 +146,13 @@ const HODLogin = () => {
               required
             />
             {errors.captcha && <span className="error">{errors.captcha}</span>}
-
+            <br />
             {/* Login Button */}
-            <button type="submit" className="auth-btn">
+            <button
+              type="submit"
+              className="auth-btn"
+              disabled={errors.email || errors.captcha}
+            >
               Login
             </button>
           </form>

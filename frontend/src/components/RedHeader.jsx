@@ -1,10 +1,9 @@
 import React from "react";
+import "./comp.css"
 
 const RedHeader = () => {
     return (
-        <div>
-
-        </div>
+        <div className="r-header"></div>
     )
 }
 

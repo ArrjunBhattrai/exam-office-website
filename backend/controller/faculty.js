@@ -6,6 +6,7 @@ const bcrypt = require("bcryptjs");
 const facultyLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
+
     console.log("Received login request for:", email); // Debug log
     const faculty = await db("faculty").where({ email }).first();
     console.log("Faculty found:", faculty); // Debug log
@@ -17,7 +18,7 @@ const facultyLogin = async (req, res) => {
     }
     
     let storedPassword = faculty.password;
-
+     /*
     // **Check if password is already hashed**
     if (!storedPassword.startsWith("$2a$") && !storedPassword.startsWith("$2b$")) {
       console.log(`Hashing password for faculty ID ${faculty.faculty_id}...`);
@@ -30,10 +31,11 @@ const facultyLogin = async (req, res) => {
 
       storedPassword = hashedPassword; // Update stored password for comparison
     }
-
+    */
     console.log("Stored password:", faculty.password);
     const isPasswordValid = await bcrypt.compare(password, storedPassword);
     console.log("Password match:", isPasswordValid);    
+
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
@@ -96,7 +98,9 @@ const assignCO = async (req, res) => {
           subject_id,
         }))
       )
+
       .returning("*"); // Fetch inserted rows
+
 
     res.json({ message: "COs added successfully", insertedCOs });
   } catch (error) {
@@ -148,7 +152,9 @@ const submitMarks = async (req, res) => {
       marks
     }));
 
+
     await db("marks_temp").insert(marksData);
+
 
 
     res.status(201).json({ message: "Marks submitted successfully" });
