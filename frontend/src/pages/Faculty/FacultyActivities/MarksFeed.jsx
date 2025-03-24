@@ -21,7 +21,8 @@ function MarksFeed() {
   const [test, setTest] = useState("");
   const [students, setStudents] = useState([]);
   const [showTable, setShowTable] = useState(false);
-  const [maxMarks, setMaxMarks] = useState("");
+  const [maxMarks, setMaxMarks] = useState({});
+  const [numCOs, setNumCOs] = useState("");
   const [marksData, setMarksData] = useState({
     CO1: "",
     CO2: "",
@@ -67,19 +68,28 @@ function MarksFeed() {
     setShowTable(true);
   };
 
-  const handleMarksChange = (studentId, value) => {
-    if (!maxMarks) return;
-
-    // Allow numbers <= maxMarks and 'A' for absent
+  const handleMarksChange = (co, value) => {
     if (
       value === "A" ||
       (value !== "" && !isNaN(value) && Number(value) <= Number(maxMarks))
     ) {
-      setMarksData((prev) => ({ ...prev, [studentId]: value }));
+      setMarksData((prev) => ({
+        ...prev,
+        [coName]: value,
+      }));
     }
   };
+  
 
-  const allCOsFilled = Object.values(maxMarks).every((value) => value !== "");
+  const totalMaxMarks = Object.values(maxMarks).reduce(
+    (sum, value) => sum + Number(value || 0),
+    0
+  );
+
+  const allCOsFilled =
+  numCOs !== "" &&
+  Object.keys(maxMarks).length === Number(numCOs) &&
+  Object.values(maxMarks).every((value) => value !== "");
 
   return (
     <div className="hod-home-container">
@@ -192,29 +202,51 @@ function MarksFeed() {
                       />
                     </div>
 
-                    {test && (
+                    <div className="co-number-container">
+                      <label>Enter Number of COs:</label>
+                      <input
+                        type="number"
+                        value={numCOs}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setNumCOs(value);
+                          setMaxMarks({});
+                        }}
+                        min="1"
+                        required
+                      />
+                    </div>
+
+                    {/* Dynamic Inputs for Max Marks */}
+                    {numCOs && (
                       <div className="max-marks-container">
-                        <label>Enter Max Marks CO-Wise:</label>
-                        
-                        {[1, 2, 3, 4, 5].map((co) => (
-                          <div key={co} className="co-max-marks">
-                            <label>CO {co}:</label>
-                            <input
-                              type="number"
-                              value={maxMarks[`CO${co}`]}
-                              onChange={(e) => handleMaxMarksChange(`CO${co}`, e.target.value)}
-                              min="0"
-                              required
-                            />
-                          </div>
-                        ))}
+                        <label>Enter Max Marks for each CO:</label>
+                        {[...Array(Number(numCOs))].map((_, index) => {
+                          const coName = `CO${index + 1}`;
+                          return (
+                            <div key={coName} className="co-max-marks">
+                              <label>{coName}:</label>
+                              <input
+                                type="number"
+                                value={maxMarks[coName] || ""}
+                                onChange={(e) =>
+                                  handleMarksChange(coName, e.target.value)
+                                }
+                                min="0"
+                                required
+                              />
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
+
+                    {console.log("Max Marks in MarksFeed:", maxMarks)}
 
                     <Button
                       text="Proceed"
                       navigateTo="/fac-marks-entry"
-                      state={{ subject, component, test, maxMarks }} // Passing state
+                      state={{ subject, component, test, maxMarks, totalMaxMarks }} // Passing state
                       disabled={!test || !allCOsFilled}
                     />
                   </div>

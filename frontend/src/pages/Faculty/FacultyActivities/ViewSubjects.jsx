@@ -15,36 +15,39 @@ const ViewSubjects = () => {
   const user = useSelector((state) => state.auth.user);
   const faculty_id = user?.faculty_id;
 
-  const [facultyId, setFacultyId] = useState("");
-  const [subjects, setSubjects] = useState([]);
+  // const [facultyId, setFacultyId] = useState("");
+  const [subjects, setSubjects] = useState([
+    //sample data
+    {
+      subject_id: "CS101",
+      subject_name: "Data Structures",
+      year_semester: "2nd Year, Semester 3",
+    },
+    {
+      subject_id: "CS102",
+      subject_name: "Database Management Systems",
+      year_semester: "2nd Year, Semester 4",
+    },
+    {
+      subject_id: "CS103",
+      subject_name: "Operating Systems",
+      year_semester: "3rd Year, Semester 5",
+    },
+  ]);
   const [coValues, setCoValues] = useState({});
 
-  const fetchSubjects = async () => {
-    if (!facultyId.trim()) {
-      // alert("Please enter Faculty ID");
-      // return;
-
-      // Sample Data when Faculty ID is empty
-      const sampleData = [
-        {
-          subject_id: "IT58302",
-          subject_name: "Data Structures",
-          year_semester: "2nd Year, Sem 3",
-        },
-        {
-          subject_id: "IT58309",
-          subject_name: "Operating Systems",
-          year_semester: "2nd Year, Sem 3",
-        },
-      ];
-      setSubjects(sampleData);
-      return;
+  useEffect(() => {
+    if (faculty_id) {
+      // fetchSubjects(); --> uncomment when actual data available
     }
+  }, [faculty_id]);
+
+  const fetchSubjects = async () => {
     try {
-      const response = await axios.get(`/api/faculty/subjects/${facultyId}`);
+      const response = await axios.get(`/api/faculty/subjects/${faculty_id}`);
       setSubjects(response.data);
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching subjects:", error);
       alert("Failed to fetch subjects");
     }
   };
@@ -63,8 +66,11 @@ const ViewSubjects = () => {
     }));
 
     try {
-      await axios.post("/api/faculty/submit-co", facultyId, coData);
-      alert("No. of COs submitted");
+      await axios.post("/api/faculty/assign-co", {
+        faculty_id,
+        coData,
+      });
+      alert("No. of COs submitted successfully!");
     } catch (error) {
       console.error("Error submitting CO:", error);
       alert("Failed to submit COs");
@@ -149,47 +155,29 @@ const ViewSubjects = () => {
                   <span className="box-overlay-text">Select to view</span>
 
                   <div className="faculty-box">
-                    <input
-                      type="text"
-                      placeholder="Enter Faculty ID"
-                      value={facultyId}
-                      onChange={(e) => setFacultyId(e.target.value)}
-                      className="fac-input"
-                    />
-                    <button className="fetch-btn" onClick={fetchSubjects}>
-                      Fetch Subjects
-                    </button>
 
-                    {subjects.length > 0 && (
-                      <div className="subject-list">
-                        {subjects.map((subject) => (
-                          <div
-                            key={subject.subject_id}
-                            className="subject-item"
-                          >
-                            <span>
-                              {subject.subject_name} ({subject.subject_id}) -{" "}
-                              {subject.year_semester}
-                            </span>
-                            <input
-                              type="number"
-                              placeholder="Enter COs"
-                              value={coValues[subject.subject_id] || ""}
-                              onChange={(e) =>
-                                handleCoChange(
-                                  subject.subject_id,
-                                  e.target.value
-                                )
-                              }
-                              className="co-input"
-                            />
-                          </div>
-                        ))}
-                        <button className="submit-btn" onClick={submitCOs}>
-                          Submit COs
-                        </button>
-                      </div>
-                    )}
+                    
+
+                    {subjects.length > 0 ? (
+                    <div className="subject-list">
+                      {subjects.map((subject) => (
+                        <div key={subject.subject_id} className="subject-item">
+                          <span>{subject.subject_name} ({subject.subject_id}) - {subject.year_semester}</span>
+                          <input
+                            type="number"
+                            placeholder="Enter COs"
+                            value={coValues[subject.subject_id] || ""}
+                            onChange={(e) => handleCoChange(subject.subject_id, e.target.value)}
+                            className="co-input"
+                          />
+                        </div>
+                      ))}
+                      <button className="submit-btn" onClick={submitCOs}>Submit COs</button>
+                    </div>
+                  ) : (
+                    <p>No subjects assigned.</p>
+                  )}
+      
                   </div>
                 </div>
               </div>

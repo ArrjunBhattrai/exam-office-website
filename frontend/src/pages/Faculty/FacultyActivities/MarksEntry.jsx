@@ -7,14 +7,18 @@ import BlueFooter from "../../../components/BlueFooter";
 
 function MarksEntry() {
   const location = useLocation();
-  const navigate = useNavigate();
+//   const navigate = useNavigate();
 
   // Get data passed from MarksFeed
   const { subject, component, test, maxMarks } = location.state || {};
+  console.log("Location State:", location.state);
+
+  console.log(maxMarks);
+  
 
   const coKeys = Object.keys(maxMarks || {}); // ["CO1", "CO2", ...]
 //   const totalMaxMarks = coKeys.reduce((sum, co) => sum + Number(maxMarks[co] || 0), 0);
-
+console.log(coKeys);
   // Sample student data
   const students = [
     { id: 1, enrollment: "0801IT221017", name: "Arjun Bhattrai" },
@@ -34,12 +38,15 @@ function MarksEntry() {
       }, {})
     );
 
-  const handleMarksChange = (studentId, value) => {
+  const handleMarksChange = (studentId, co, value) => {
     if (
       value === "A" || // Allow 'A' for absent
-      (value !== "" && !isNaN(value) && Number(value) <= Number(maxMarks))
+      (value !== "" && !isNaN(value) && Number(value) <= Number(maxMarks[co]))
     ) {
-      setMarksData((prev) => ({ ...prev, [studentId]: value }));
+        setMarksData((prev) => ({
+            ...prev,
+            [studentId]: { ...prev[studentId], [co]: value },
+          }));
     }
   };
 
@@ -57,18 +64,10 @@ function MarksEntry() {
         <h2>Marks Entry</h2>
 
         <div className="info-box">
-          <p>
-            <strong>Subject:</strong> {subject}
-          </p>
-          <p>
-            <strong>Component:</strong> {component}
-          </p>
-          <p>
-            <strong>Test:</strong> {test}
-          </p>
-          <p>
-            <strong>Max Marks:</strong> {maxMarks}
-          </p>
+          <p><strong>Subject:</strong> {subject}</p>
+          <p><strong>Component:</strong> {component}</p>
+          <p><strong>Test:</strong> {test}</p>
+          <p><strong>Max Marks:</strong> {JSON.stringify(maxMarks)}</p>
         </div>
 
         <div className="marks-table">
@@ -94,7 +93,7 @@ function MarksEntry() {
                     <td key={co}>
                       <input
                         type="text"
-                        value={marksData[student.id]?.[co] || ""}
+                        value={marksData[student.id][co]}
                         onChange={(e) => handleMarksChange(student.id, co, e.target.value)}
                         placeholder={`Max: ${maxMarks[co]}`}
                       />

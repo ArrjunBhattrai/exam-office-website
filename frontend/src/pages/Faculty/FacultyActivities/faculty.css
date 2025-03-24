@@ -196,6 +196,8 @@
   .max-marks-container label{
     color: #333;
     margin-right: 20px;
+    font-weight: 500;
+    font-size: 15px;
   }
 
   .co-max-marks {
@@ -205,5 +207,16 @@
   .co-max-marks input {
     font-size: 14px;
     margin: 2px;
-    width: 30px;
+    width: 80px;
+  }
+
+  .co-number-container label{
+    color: #333;
+    margin-right: 20px;
+    font-weight: 500;
+    font-size: 15px;
+  }
+
+  .co-number-container input{
+    width: 60px;
   }
