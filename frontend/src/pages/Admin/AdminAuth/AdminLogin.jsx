@@ -96,6 +96,8 @@ const AdminLogin = () => {
             token: data.token,
           })
         );
+        const val = useSelector((state) => state.auth);
+        console.log(val);
 
         alert("Login Successful!");
         navigate(`/${userType.toLowerCase()}-home`); // Navigate based on user type
