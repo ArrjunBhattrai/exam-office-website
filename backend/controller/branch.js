@@ -1,21 +1,31 @@
+const db = require("../db/db");
+
 const createBranch = async (req, res) => {
   try {
-    const { branch_name, course_id } = req.body;
+    const { branch_name, course_id, hod_officer_id } = req.body;
     const { user_type } = req.user;
-    if (user_type !== "HOD") {
+    if (user_type !== "ADMIN") {
       return res.status(403).json({ message: "Access denied" });
     }
-    if (!branch_name || !course_id) {
-      return res
-        .status(400)
-        .json({ message: "Branch name and course ID are required" });
+    if (!branch_name || !course_id || !hod_officer_id) {
+      return res.status(400).json({
+        message: "Branch name, course ID, and HOD officer ID are required",
+      });
     }
+    const hod_id = await db("hod")
+      .select("*")
+      .where("officer_id", hod_officer_id)
+      .first();
 
-    const [branch_id] = await db("branch").insert({ branch_name, course_id });
+    const [branch_id] = await db("branch").insert({
+      branch_name,
+      course_id,
+      hod_id,
+    });
 
     return res
       .status(201)
-      .json({ message: "Branch created successfully", branch_id });
+      .json({ message: "Branch created successfully", data: { branch_id } });
   } catch (error) {
     console.error("Error creating branch:", error);
     return res.status(500).json({ message: "Internal server error" });
@@ -80,7 +90,7 @@ const assignHod = async (req, res) => {
     const { id } = req.params;
     const { hod_id } = req.body;
     const { user_type } = req.user;
-    if (user_type !== "HOD") {
+    if (user_type !== "ADMIN") {
       return res.status(403).json({ message: "Access denied" });
     }
     if (!hod_id) {

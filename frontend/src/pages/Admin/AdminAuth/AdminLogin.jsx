@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { login } from "../../../redux/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 import BlueHeader from "../../../components/BlueHeader";
@@ -26,6 +26,16 @@ const AdminLogin = () => {
   const [userType, setUserType] = useState("ADMIN"); // Change default to ADMIN
   const [errors, setErrors] = useState({});
 
+  const { isAuthenticated, userType: userType2 } = useSelector(
+    (state) => state.auth
+  );
+
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     navigate(`/${userType2.toLowerCase()}-home`);
+  //   }
+  // }, [isAuthenticated, userType2, navigate]);
+
   const validateEmail = (value) => {
     let error = "";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
@@ -50,7 +60,7 @@ const AdminLogin = () => {
       enteredCaptcha
     ) {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/user/HOD`, {
+        const response = await fetch(`${BACKEND_URL}/api/user/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -76,13 +86,18 @@ const AdminLogin = () => {
         });
 
         const data2 = await response2.json();
-
+        console.log(data2);
         dispatch(
           login({
-            ...data2.officer,
+            officer_name: data2.data.officer.officer_name,
+            officer_id: data2.data.officer.officer_id,
+            email: data2.data.officer.email,
+            user_type: data2.data.officer.user_type,
             token: data.token,
           })
         );
+        const val = useSelector((state) => state.auth);
+        console.log(val);
 
         alert("Login Successful!");
         navigate(`/${userType.toLowerCase()}-home`); // Navigate based on user type

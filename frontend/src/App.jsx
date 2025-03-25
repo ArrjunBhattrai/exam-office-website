@@ -36,6 +36,8 @@ import AdminSavedForm from "./pages/Admin/AdminActivities/AdminSavedForm";
 import AdminFilledForm from "./pages/Admin/AdminActivities/AdminFilledForm";
 import AdminProgressReport from "./pages/Admin/AdminActivities/AdminProgressReport";
 import MarksEntry from "./pages/Faculty/FacultyActivities/MarksEntry";
+import BranchManagement from "./pages/Admin/AdminActivities/BranchManagment";
+import CourseManagement from "./components/Course/Course";
 
 function App() {
   return (
@@ -84,6 +86,9 @@ function App() {
           <Route path="/admin-saved-form" element={<AdminSavedForm />} />
           <Route path="/admin-filled-form" element={<AdminFilledForm />} />
           <Route path="/admin-prog-report" element={<AdminProgressReport />} />
+
+          <Route path="/course-management" element={<CourseManagement />} />
+          <Route path="/branch-management" element={<BranchManagement />} />
         </Routes>
       </div>
     </Router>

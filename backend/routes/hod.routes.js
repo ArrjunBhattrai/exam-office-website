@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { authenticateHOD } = require("../util/middleware");
+const { authenticateHOD } = require("../util/hodMiddleware");
 const hodController = require("../controller/hod");
 
 // HOD Login

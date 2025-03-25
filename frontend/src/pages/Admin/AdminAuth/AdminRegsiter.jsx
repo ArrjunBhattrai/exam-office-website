@@ -57,7 +57,8 @@ const AdminRegister = () => {
     e.preventDefault();
     if (!errors.officer_name && !errors.password && !errors.captcha) {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/user/HODregister`, {
+        console.log("==================");
+        const response = await fetch(`${BACKEND_URL}/api/user/register`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -70,6 +71,7 @@ const AdminRegister = () => {
           }),
         });
 
+        console.log("==================");
         const data = await response.json();
         if (!response.ok) {
           throw new Error(data.message || "Registration failed");
@@ -165,7 +167,7 @@ const AdminRegister = () => {
             </button>
           </form>
           <p>
-            Already have an account? <Link to="/hod-login">Login here</Link>
+            Already have an account? <Link to="/admin-login">Login here</Link>
           </p>
         </div>
       </div>

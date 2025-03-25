@@ -57,7 +57,7 @@ const FacultyRegister = () => {
     e.preventDefault();
     if (!errors.officer_name && !errors.password && !errors.captcha) {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/user/HODregister`, {
+        const response = await fetch(`${BACKEND_URL}/api/user/register`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
