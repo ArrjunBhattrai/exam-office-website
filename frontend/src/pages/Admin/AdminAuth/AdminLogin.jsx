@@ -106,6 +106,8 @@ const AdminLogin = () => {
       }
     }
   };
+  const val = useSelector((state) => state.auth);
+  console.log(val);
 
   const refreshCaptcha = () => {
     setCaptcha(generateCaptcha());

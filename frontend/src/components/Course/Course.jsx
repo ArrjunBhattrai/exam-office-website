@@ -14,11 +14,11 @@ const CourseManagement = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editCourseId, setEditCourseId] = useState(null);
   const { token } = useSelector((state) => state.auth);
-
+  console.log(token);
   // Fetch all courses
   const fetchCourses = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/courses`, {
+      const response = await fetch(`${BACKEND_URL}/api/course/courses`, {
         method: "GET",
         headers: {
           authorization: token,
@@ -49,8 +49,8 @@ const CourseManagement = () => {
     e.preventDefault();
     try {
       const url = isEditing
-        ? `${BACKEND_URL}/api/courses/${editCourseId}`
-        : `${BACKEND_URL}/api/courses`;
+        ? `${BACKEND_URL}/api/course/update/${editCourseId}`
+        : `${BACKEND_URL}/api/course/create`;
 
       const method = isEditing ? "PUT" : "POST";
 
