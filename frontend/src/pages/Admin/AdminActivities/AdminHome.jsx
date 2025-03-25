@@ -10,12 +10,25 @@ import Dropdown from "../../../components/Dropdown";
 import Button from "../../../components/Button";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 import { Outlet } from "react-router-dom";
+import BranchManagement from "./BranchManagment";
+import CourseManagement from "../../../components/Course/Course";
 
 const AdminHome = () => {
-  const { officer_id, officer_name, user_type, email, department_id, token } =
-    useSelector((state) => state.auth);
+  const {
+    officer_id,
+    isAuthenticated,
+    officer_name,
+    user_type,
+    email,
+    department_id,
+    token,
+  } = useSelector((state) => state.auth);
   // const []
   // console.log("============", user);
+  console.log(isAuthenticated);
+  if (!isAuthenticated) {
+    return <div>Please log in to access this page.</div>;
+  }
   return (
     <div className="hod-home-container">
       <div className="hod-bg">
@@ -109,9 +122,10 @@ const AdminHome = () => {
                   </span>
                 </p>
               </div>
+              <BranchManagement />
+              <CourseManagement />
             </div>
           </div>
-
           <RedFooter />
         </div>
       </div>
