@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { login } from "../../../redux/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 import BlueHeader from "../../../components/BlueHeader";
@@ -25,6 +25,16 @@ const AdminLogin = () => {
   const [enteredCaptcha, setEnteredCaptcha] = useState("");
   const [userType, setUserType] = useState("ADMIN"); // Change default to ADMIN
   const [errors, setErrors] = useState({});
+
+  const { isAuthenticated, userType: userType2 } = useSelector(
+    (state) => state.auth
+  );
+
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     navigate(`/${userType2.toLowerCase()}-home`);
+  //   }
+  // }, [isAuthenticated, userType2, navigate]);
 
   const validateEmail = (value) => {
     let error = "";
@@ -86,6 +96,8 @@ const AdminLogin = () => {
             token: data.token,
           })
         );
+        const val = useSelector((state) => state.auth);
+        console.log(val);
 
         alert("Login Successful!");
         navigate(`/${userType.toLowerCase()}-home`); // Navigate based on user type

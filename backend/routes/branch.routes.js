@@ -8,9 +8,10 @@ const {
   getAllBranches,
   getBranchById,
 } = require("../controller/branch");
+const { authenticate } = require("../util/middleware");
 
-router.post("/", createBranch);
-router.get("/branches", getAllBranches);
+router.post("/", authenticate, createBranch);
+router.get("/", getAllBranches);
 router.put("/:id/assign-hod", assignHod);
 router.put("/:id", updateBranch);
 router.delete("/:id", deleteBranch);

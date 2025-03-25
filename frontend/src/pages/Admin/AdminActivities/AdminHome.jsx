@@ -9,10 +9,12 @@ import RedHeader from "../../../components/RedHeader";
 import Dropdown from "../../../components/Dropdown";
 import Button from "../../../components/Button";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
+import { Outlet } from "react-router-dom";
 
 const AdminHome = () => {
   const { officer_id, officer_name, user_type, email, department_id, token } =
     useSelector((state) => state.auth);
+  // const []
   // console.log("============", user);
   return (
     <div className="hod-home-container">
@@ -23,6 +25,23 @@ const AdminHome = () => {
 
           <div className="hod-main">
             <div className="sidebars">
+              <Sidebar
+                className="sidebar-0"
+                title="Branch Manage"
+                activities={[
+                  { name: "Create Branch", path: "/branch-management" },
+                  { name: "Create Course", path: "/course-management" },
+                  {
+                    name: "Update Existing Subject",
+                    path: "/admin-update-sub",
+                  },
+                  {
+                    name: "Delete Existing Subject",
+                    path: "/admin-delete-sub",
+                  },
+                  { name: "Address Requests", path: "/admin-req" },
+                ]}
+              />
               <Sidebar
                 className="sidebar-1"
                 title="Faculty Activity"
@@ -45,10 +64,10 @@ const AdminHome = () => {
                 className="sidebar-2"
                 title="Form Dashboard"
                 activities={[
-                  { name: "View Saved Form", path: "/admin-saved-form" },
-                  { name: "View Filled Form", path: "/admin-filled-form" },
-                  { name: "Delete Filled Form", path: "/admin-delete-form" },
-                  { name: "Progress Report", path: "/admin-prog-report" },
+                  { name: "View Saved Form", path: "/admin/saved-form" },
+                  { name: "View Filled Form", path: "/admin/filled-form" },
+                  { name: "Delete Filled Form", path: "/admin/delete-form" },
+                  { name: "Progress Report", path: "/admin/prog-report" },
                 ]}
               />
             </div>

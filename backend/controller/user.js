@@ -14,18 +14,35 @@ const register = async (req, res) => {
     if (!officer_name || !email || !password || !user_type) {
       return res.status(400).json({ message: "All fields are required" });
     }
-    console.log("================ 1");
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const officer = await db("user").insert({
-      officer_name,
-      email,
-      password: hashedPassword,
-      user_type,
+
+    // Using transaction to ensure atomicity
+    const data = await db.transaction(async (trx) => {
+      // Insert into user table
+      const [officerId] = await trx("user").insert({
+        officer_name,
+        email,
+        password: hashedPassword,
+        user_type,
+      });
+      console.log(officerId);
+      // If user is HOD, insert into hod table
+      if (user_type === "HOD") {
+        await trx("hod").insert({
+          officer_id: officerId, // Reference to user table
+          hod_name: officer_name,
+          email,
+          password: hashedPassword,
+        });
+      }
     });
-    console.log("================ 1");
-    res.status(201).json({ data: { officer } });
+
+    res
+      .status(201)
+      .json({ data: { data }, message: "Officer registered successfully" });
   } catch (error) {
+    console.error("Error:", error);
     res.status(500).json({ message: "Error registering officer", error });
   }
 };

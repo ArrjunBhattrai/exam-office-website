@@ -21,6 +21,23 @@ const HODHome = () => {
           <div className="hod-main">
             <div className="sidebars">
               <Sidebar
+                className="sidebar-0"
+                title="Branch Managment "
+                activities={[
+                  { name: "Manage Branch", path: "/branch-management" },
+                  { name: "Create course", path: "/hod-new-fac" },
+                  { name: "Upload Data for Electives", path: "/hod-upload" },
+                  {
+                    name: "View Correction Requests",
+                    path: "/hod-correction-req",
+                  },
+                  {
+                    name: "View Department Details",
+                    path: "/hod-deptt-details",
+                  },
+                ]}
+              />
+              <Sidebar
                 className="sidebar-1"
                 title="HOD Activity"
                 activities={[

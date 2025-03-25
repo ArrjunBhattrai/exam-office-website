@@ -8,6 +8,7 @@ const authenticate = async (req, res, next) => {
   if (!token) return res.status(401).json({ message: "Access denied" });
 
   try {
+    console.log("============", token);
     const verified = jwt.verify(token, process.env.JWT_SECRET);
     console.log("============", verified);
     // const officer = await knex("officers") // Replace "officers" with your actual table name
