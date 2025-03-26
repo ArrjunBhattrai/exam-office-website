@@ -96,6 +96,20 @@ const AdminRegister = () => {
         <div className="auth-box">
           <h3>Register</h3>
           <form onSubmit={handleSubmit}>
+
+          <div className="input-group">
+              <label>User Type:</label>
+              <select
+                value={userType}
+                onChange={(e) => setUserType(e.target.value)}
+                required
+              >
+                {/* <option value="HOD">HOD</option> */}
+                <option value="ADMIN">ADMIN</option>
+                {/* <option value="FACULTY">FACULTY</option> */}
+              </select>
+            </div>
+            
             <div className="input-group">
               <label>Username:</label>
               <input
@@ -126,19 +140,6 @@ const AdminRegister = () => {
             </div>
 
             <div className="input-group">
-              <label>User Type:</label>
-              <select
-                value={userType}
-                onChange={(e) => setUserType(e.target.value)}
-                required
-              >
-                {/* <option value="HOD">HOD</option> */}
-                <option value="ADMIN">ADMIN</option>
-                {/* <option value="FACULTY">FACULTY</option> */}
-              </select>
-            </div>
-
-            <div className="input-group">
               <label>Password:</label>
               <input
                 type="password"
@@ -165,7 +166,7 @@ const AdminRegister = () => {
             </button>
           </form>
           <p>
-            Already have an account? <Link to="/hod-login">Login here</Link>
+            Already have an account? <Link to="/admin-login">Login here</Link>
           </p>
         </div>
       </div>
