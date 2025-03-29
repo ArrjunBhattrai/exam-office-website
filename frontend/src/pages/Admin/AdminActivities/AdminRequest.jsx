@@ -11,7 +11,8 @@ import Button from "../../../components/Button";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 const AdminRequest = () => {
-  const user = useSelector((state) => state.auth.user);
+    const { officer_name, user_type, token } = useSelector((state) => state.auth);
+  
 
   return (
     <div className="hod-home-container">
@@ -26,24 +27,20 @@ const AdminRequest = () => {
                 className="sidebar-1"
                 title="Faculty Activity"
                 activities={[
-                  { name: "Upload Marking Scheme", path: "/admin-upload" },
-                  { name: "Create New Subject", path: "/admin-new-sub" },
-                  { name: "Update Existing Subject", path: "/admin-update-sub" },
-                  { name: "Delete Existing Subject", path: "/admin-delete-sub" },
-                  { name: "Address Requests", path: "/admin-req" },
-                ]}
+                  { name: "Course Management", path: "/course-management" },
+                    { name: "Branch Management", path: "/branch-management" },
+                    { name: "Session Management", path: "/session-management" },
+                    { name: "Upload Marking Scheme", path: "/admin-upload" },
+                    { name: "Faculty Management", path: "/faculty-management" },
+                    { name: "Assign HOD", path: "/assign-hod" },
+                    { name: "Upload Student Data", path: "/admin-upload" },
+                    { name: "Address Requests", path: "/admin-req" },
+                    { name: "Progress Report", path: "/admin-prog-report" },
+                  
+              ]}
               />
 
-              <Sidebar
-                className="sidebar-2"
-                title="Form Dashboard"
-                activities={[
-                  { name: "View Saved Form", path: "/admin-saved-form" },
-                  { name: "View Filled Form", path: "/admin-filled-form" },
-                  { name: "Delete Filled Form", path: "/admin-delete-form" },
-                  { name: "Progress Report", path: "/admin-prog-report" },
-                ]}
-              />
+              
             </div>
 
             <div className="hod-info">
@@ -64,22 +61,16 @@ const AdminRequest = () => {
                 </button>
               </div>
               <div className="hod-sec">
-                <p>
+              <p>
                   <span>Welcome: </span>
                   <span className="hod-name">
-                    [{user?.name || "Please Login"}]
+                    {officer_name && `[${officer_name}]`}
                   </span>
                 </p>
                 <p>
                   <span className="hod-role">Role: </span>
                   <span className="hod-name">
-                    [{user?.role || "Please Login"}]
-                  </span>
-                </p>
-                <p>
-                  <span className="hod-role">Department: </span>
-                  <span className="hod-name">
-                    [{user?.department || "Please Login"}]
+                    [{(user_type && `${user_type}`) || "Please Login"}]
                   </span>
                 </p>
               </div>

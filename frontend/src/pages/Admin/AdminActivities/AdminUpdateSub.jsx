@@ -31,24 +31,20 @@ const AdminUpdateSub = () => {
                 className="sidebar-1"
                 title="Faculty Activity"
                 activities={[
-                  { name: "Upload Marking Scheme", path: "/admin-upload" },
-                  { name: "Create New Subject", path: "/admin-new-sub" },
-                  { name: "Update Existing Subject", path: "/admin-update-sub" },
-                  { name: "Delete Existing Subject", path: "/admin-delete-sub" },
-                  { name: "Address Requests", path: "/admin-req" },
-                ]}
+                  { name: "Course Management", path: "/course-management" },
+                    { name: "Branch Management", path: "/branch-management" },
+                    { name: "Session Management", path: "/session-management" },
+                    { name: "Upload Marking Scheme", path: "/admin-upload" },
+                    { name: "Faculty Management", path: "/faculty-management" },
+                    { name: "Assign HOD", path: "/assign-hod" },
+                    { name: "Upload Student Data", path: "/admin-upload" },
+                    { name: "Address Requests", path: "/admin-req" },
+                    { name: "Progress Report", path: "/admin-prog-report" },
+                  
+              ]}
               />
 
-              <Sidebar
-                className="sidebar-2"
-                title="Form Dashboard"
-                activities={[
-                  { name: "View Saved Form", path: "/admin-saved-form" },
-                  { name: "View Filled Form", path: "/admin-filled-form" },
-                  { name: "Delete Filled Form", path: "/admin-delete-form" },
-                  { name: "Progress Report", path: "/admin-prog-report" },
-                ]}
-              />
+  
             </div>
 
             <div className="hod-info">

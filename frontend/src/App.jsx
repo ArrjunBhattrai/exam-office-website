@@ -28,16 +28,14 @@ import FacDeleteForm from "./pages/Faculty/FacultyActivities/FacDeleteForm";
 import AdminHome from "./pages/Admin/AdminActivities/AdminHome";
 import AdminUpload from "./pages/Admin/AdminActivities/AdminUpload";
 import AdminNewSub from "./pages/Admin/AdminActivities/AdminNewSub";
-import AdminUpdateSub from "./pages/Admin/AdminActivities/AdminUpdateSub";
-import AdminDeleteSub from "./pages/Admin/AdminActivities/AdminDeleteSub";
 import AdminRequest from "./pages/Admin/AdminActivities/AdminRequest";
-import AdminDeleteForm from "./pages/Admin/AdminActivities/AdminDeleteForm";
-import AdminSavedForm from "./pages/Admin/AdminActivities/AdminSavedForm";
-import AdminFilledForm from "./pages/Admin/AdminActivities/AdminFilledForm";
 import AdminProgressReport from "./pages/Admin/AdminActivities/AdminProgressReport";
 import MarksEntry from "./pages/Faculty/FacultyActivities/MarksEntry";
 import BranchManagement from "./pages/Admin/AdminActivities/BranchManagment";
-import CourseManagement from "./components/Course/Course";
+import CourseManagement from "./pages/Admin/AdminActivities/Course";
+import SessionManagement from "./pages/Admin/AdminActivities/SessionManagament";
+import FacultyManagement from "./pages/Admin/AdminActivities/FacultyManagement";
+import AssignHOD from "./pages/Admin/AdminActivities/AssignHOD";
 
 function App() {
   return (
@@ -45,19 +43,32 @@ function App() {
       <div className="App">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/hod-login" element={<HODLogin />} />
-          <Route path="/hod-register" element={<HODRegister />} />
-          <Route path="/faculty-login" element={<FacultyLogin />} />
-          <Route path="/faculty-register" element={<FacultyRegister />} />
+
+          {/* admin routes */}
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admin-register" element={<AdminRegister />} />
+          <Route path="/admin-home" element={<AdminHome />} />
+          <Route path="/course-management" element={<CourseManagement />} />
+          <Route path="/branch-management" element={<BranchManagement />} />
+          <Route path="/session-management" element={<SessionManagement />} />
+          <Route path="/faculty-management" element={<FacultyManagement />} />
+          <Route path="/assign-hod" element={<AssignHOD />} />
+          <Route path="/admin-new-sub" element={<AdminNewSub />} />
+          <Route path="/admin-upload" element={<AdminUpload />} />
+          <Route path="/admin-req" element={<AdminRequest />} />
+          <Route path="/admin-prog-report" element={<AdminProgressReport />} />
 
+          {/* hod routes */}
+          <Route path="/hod-login" element={<HODLogin />} />
+          <Route path="/hod-register" element={<HODRegister />} />
           <Route path="/hod-home" element={<HODHome />} />
           <Route path="/hod-fac-alloc" element={<FacultyAllocation />} />
-          <Route
-            path="/hod-fac-alloc-table"
-            element={<FacultyAllocationTable />}
-          />
+          <Route path="/hod-fac-alloc-table" element={<FacultyAllocationTable />} />
+
+          <Route path="/faculty-login" element={<FacultyLogin />} />
+          <Route path="/faculty-register" element={<FacultyRegister />} />
+
+          
           <Route path="/hod-upload" element={<UploadCSV />} />
           <Route path="/hod-correction-req" element={<HODCorrectionReq />} />
           <Route path="/hod-deptt-details" element={<HODViewDeptt />} />
@@ -76,19 +87,8 @@ function App() {
           <Route path="/fac-marks-feed" element={<MarksFeed />} />
           <Route path="/fac-marks-entry" element={<MarksEntry />} />
 
-          <Route path="/admin-home" element={<AdminHome />} />
-          <Route path="/admin-upload" element={<AdminUpload />} />
-          <Route path="/admin-new-sub" element={<AdminNewSub />} />
-          <Route path="/admin-update-sub" element={<AdminUpdateSub />} />
-          <Route path="/admin-delete-sub" element={<AdminDeleteSub />} />
-          <Route path="/admin-req" element={<AdminRequest />} />
-          <Route path="/admin-delete-form" element={<AdminDeleteForm />} />
-          <Route path="/admin-saved-form" element={<AdminSavedForm />} />
-          <Route path="/admin-filled-form" element={<AdminFilledForm />} />
-          <Route path="/admin-prog-report" element={<AdminProgressReport />} />
 
-          <Route path="/course-management" element={<CourseManagement />} />
-          <Route path="/branch-management" element={<BranchManagement />} />
+
         </Routes>
       </div>
     </Router>

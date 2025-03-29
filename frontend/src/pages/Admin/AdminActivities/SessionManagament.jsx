@@ -6,10 +6,12 @@ import { useSelector } from "react-redux";
 import RedHeader from "../../../components/RedHeader";
 import ActivityHeader from "../../../components/ActivityHeader";
 import Sidebar from "../../../components/Sidebar";
+import Dropdown from "../../../components/Dropdown";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 import RedFooter from "../../../components/RedFooter";
+import "./admin.css";
 
-const BranchManagement = () => {
+const SessionManagement = () => {
   const {
     officer_id,
     isAuthenticated,
@@ -19,7 +21,7 @@ const BranchManagement = () => {
     department_id,
     token,
   } = useSelector((state) => state.auth);
-  const [branches, setBranches] = useState([]);
+  // const [branches, setBranches] = useState([]);
   const [formData, setFormData] = useState({
     branch_name: "",
     course_id: "",
@@ -27,6 +29,7 @@ const BranchManagement = () => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [editBranchId, setEditBranchId] = useState(null);
+  const [branch, setBranch] = useState("SELECT");
   // const { token } = useSelector((state) => state.auth);
 
   // Fetch all branches
@@ -213,123 +216,117 @@ const BranchManagement = () => {
                 </p>
               </div>
               <div className="fac-alloc">
-              <h3>Branch Management</h3>
-              <p className="session-text">Current Session: June 2025</p>
-              <span className="box-overlay-text">Add Details</span>
-              <div className="faculty-box">
-              <p className="institute-text">
+                <h3>Session Management</h3>
+                <p className="session-text">Current Session: June 2025</p>
+                <span className="box-overlay-text">Add Details</span>
+                <div className="faculty-box">
+                  <p className="institute-text">
                     <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
                     TECHNOLOGY & SCIENCE
                   </p>
-                <div className="space-y-6">
-                  <Toaster position="top-right" />
-                  <div className="flex justify-between items-center">
-                    
-                  </div>
 
-                  <form
-                    onSubmit={handleSubmit}
-                    className="space-y-4 p-4 bg-white rounded-lg shadow"
-                  >
-                    <input
-                      type="text"
-                      name="branch_name"
-                      value={formData.branch_name}
-                      onChange={handleChange}
-                      placeholder="Branch Name"
-                      className="w-full px-3 py-2 border rounded-lg"
-                      required
-                    />
-                    <input
-                      type="text"
-                      name="course_id"
-                      value={formData.course_id}
-                      onChange={handleChange}
-                      placeholder="Course ID"
-                      className="w-full px-3 py-2 border rounded-lg"
-                      required
-                    />
-                    <input
-                      type="text"
-                      name="hod_officer_id"
-                      value={formData.hod_officer_id}
-                      onChange={handleChange}
-                      placeholder="HOD ID"
-                      className="w-full px-3 py-2 border rounded-lg"
-                      required
-                    />
-                    <button
-                      type="submit"
-                      className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500"
+                  <div className="bg-white p-4 rounded shadow mt-4">
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        try {
+                          const response = await fetch(
+                            `${BACKEND_URL}/api/sessions`,
+                            {
+                              method: "POST",
+                              headers: {
+                                authorization: token,
+                                "Content-Type": "application/json",
+                              },
+                              body: JSON.stringify({
+                                start_date: formData.start_date,
+                                end_date: formData.end_date,
+                                branch_id: formData.branch_id,
+                                semester: formData.semester,
+                              }),
+                            }
+                          );
+
+                          if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(
+                              errorData.message || "Failed to create session"
+                            );
+                          }
+
+                          toast.success("Session created successfully");
+                          setFormData({
+                            start_date: "",
+                            end_date: "",
+                            branch_id: "",
+                            semester: "",
+                          });
+                        } catch (error) {
+                          toast.error(error.message || "Operation failed");
+                        }
+                      }}
+                      className="space-y-3"
                     >
-                      {isEditing ? "Update Branch" : "Add Branch"}
-                    </button>
-                  </form>
+                      <div className="session">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Start Date:
+                        </label>
+                        <input
+                          type="date"
+                          name="start_date"
+                          value={formData.start_date}
+                          onChange={handleChange}
+                          className="w-full px-3 py-2 border rounded"
+                          required
+                        />
+                      </div>
+                      <div className="session">
+                        <label className="block text-sm font-medium text-gray-700">
+                          End Date:
+                        </label>
+                        <input
+                          type="date"
+                          name="end_date"
+                          value={formData.end_date}
+                          onChange={handleChange}
+                          className="w-full px-3 py-2 border rounded"
+                          required
+                        />
+                      </div>
+                      <div className="session">
+                      <div className="dropdown-container">
+  <Dropdown
+    label="Branch"
+    options={["CSE", "IT", "ECE", "EI"]}
+    selectedValue={formData.branch_id}
+    onChange={(value) => setFormData({ ...formData, branch_id: value })}
+  />
+</div>
 
-                  <div className="bg-white rounded-lg shadow">
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Branch Name
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Course ID
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              HOD ID
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {branches.map((branch) => (
-                            <tr key={branch.branch_id}>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {branch.branch_name}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {branch.course_id}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {branch.hod_id}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <div className="flex space-x-3">
-                                  <button
-                                    onClick={() => handleEdit(branch)}
-                                    className="text-blue-600 hover:text-blue-800"
-                                  >
-                                    <Edit2 className="h-5 w-5" />
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleDelete(branch.branch_id)
-                                    }
-                                    className="text-red-600 hover:text-red-800"
-                                  >
-                                    <Trash2 className="h-5 w-5" />
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleAssignHod(branch.branch_id)
-                                    }
-                                    className="text-green-600 hover:text-green-800"
-                                  >
-                                    <UserPlus className="h-5 w-5" />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                      </div>
+                      <div className="session">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Semester:
+                        </label>
+                        <input
+                          type="number"
+                          name="semester"
+                          value={formData.semester}
+                          onChange={handleChange}
+                          className="w-full px-3 py-2 border rounded"
+                          min="1"
+                          max="8"
+                          required
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                      >
+                        Create Session
+                      </button>
+                    </form>
                   </div>
-                </div>
                 </div>
               </div>
             </div>
@@ -341,4 +338,4 @@ const BranchManagement = () => {
   );
 };
 
-export default BranchManagement;
+export default SessionManagement;
