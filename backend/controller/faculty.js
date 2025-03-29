@@ -2,40 +2,17 @@ const db = require("../db/db");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
-// Login for faculty
+// Faculty Login
 const facultyLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    console.log("Received login request for:", email); // Debug log
     const faculty = await db("faculty").where({ email }).first();
-    console.log("Faculty found:", faculty); // Debug log
-
 
     if (!faculty) {
-      console.log("Invalid email!");
       return res.status(401).json({ message: "Invalid email or password" });
     }
-    
-    let storedPassword = faculty.password;
-     /*
-    // **Check if password is already hashed**
-    if (!storedPassword.startsWith("$2a$") && !storedPassword.startsWith("$2b$")) {
-      console.log(`Hashing password for faculty ID ${faculty.faculty_id}...`);
 
-      // **Hash the plain text password and update the database**
-      const hashedPassword = await bcrypt.hash(storedPassword, 10);
-      await db("faculty")
-        .where({ faculty_id: faculty.faculty_id })
-        .update({ password: hashedPassword });
-
-      storedPassword = hashedPassword; // Update stored password for comparison
-    }
-    */
-    console.log("Stored password:", faculty.password);
-    const isPasswordValid = await bcrypt.compare(password, storedPassword);
-    console.log("Password match:", isPasswordValid);    
-
+    const isPasswordValid = await bcrypt.compare(password, faculty.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
@@ -43,7 +20,7 @@ const facultyLogin = async (req, res) => {
     const token = jwt.sign(
       {
         faculty_id: faculty.faculty_id,
-        department_id: faculty.branch_id,
+        branch_id: faculty.branch_id,
         role: "Faculty",
       },
       process.env.JWT_SECRET,
@@ -57,7 +34,7 @@ const facultyLogin = async (req, res) => {
   }
 };
 
-// Get Subjects assigned to the faculty
+// Get subjects assigned to the faculty
 const subjectByFaculty = async (req, res) => {
   try {
     const { faculty_id } = req.params;
@@ -69,13 +46,9 @@ const subjectByFaculty = async (req, res) => {
     const subjects = await db("faculty_subject")
       .join("subject", "faculty_subject.subject_id", "subject.subject_id")
       .where("faculty_subject.faculty_id", faculty_id)
-      .select(
-        "subject.subject_id",
-        "subject.subject_name",
-        "subject.year_semester"
-      );
+      .select("subject.subject_id", "subject.subject_name", "subject.year_semester");
 
-    res.json(subjects);
+    res.json({ faculty_id, subjects });
   } catch (error) {
     console.error("Error fetching subjects:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -92,15 +65,8 @@ const assignCO = async (req, res) => {
     }
 
     const insertedCOs = await db("course_outcome")
-      .insert(
-        co_names.map((name) => ({
-          co_name: name,
-          subject_id,
-        }))
-      )
-
-      .returning("*"); // Fetch inserted rows
-
+      .insert(co_names.map((name) => ({ co_name: name, subject_id })))
+      .returning("*");
 
     res.json({ message: "COs added successfully", insertedCOs });
   } catch (error) {
@@ -121,20 +87,16 @@ const studentBySubject = async (req, res) => {
     const students = await db("student_subject")
       .join("student", "student_subject.student_id", "student.student_id")
       .where("student_subject.subject_id", subject_id)
-      .select(
-        "student.student_id",
-        "student.student_name",
-        "student.enrollment_number"
-      );
+      .select("student.student_id", "student.student_name", "student.enrollment_number");
 
-    res.json(students);
+    res.json({ subject_id, students });
   } catch (error) {
     console.error("Error fetching students:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-// Submit the marks of students
+// Submit marks of students
 const submitMarks = async (req, res) => {
   try {
     const { subject_id, component_name, sub_component_name, marks } = req.body;
@@ -149,13 +111,10 @@ const submitMarks = async (req, res) => {
       co_id,
       component_name,
       sub_component_name,
-      marks
+      marks,
     }));
 
-
     await db("marks_temp").insert(marksData);
-
-
 
     res.status(201).json({ message: "Marks submitted successfully" });
   } catch (error) {
@@ -185,19 +144,14 @@ const getStudentMarks = async (req, res) => {
       .where({
         "marks_temp.subject_id": subject_id,
         "marks_temp.component_name": component_name,
-        "marks_temp.sub_component_name": sub_component_name
+        "marks_temp.sub_component_name": sub_component_name,
       });
 
     if (marksData.length === 0) {
       return res.status(404).json({ message: "No marks found for given criteria" });
     }
 
-    res.status(200).json({
-      subject_id,
-      component_name,
-      sub_component_name,
-      marks: marksData
-    });
+    res.status(200).json({ subject_id, component_name, sub_component_name, marks: marksData });
   } catch (error) {
     console.error("Error fetching student marks:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -210,5 +164,5 @@ module.exports = {
   assignCO,
   studentBySubject,
   submitMarks,
-  getStudentMarks
+  getStudentMarks,
 };

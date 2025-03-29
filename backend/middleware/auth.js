@@ -1,0 +1,47 @@
+const jwt = require("jsonwebtoken");
+const db = require("../db/db"); // Adjust according to your setup
+
+const authenticateUser = async (req, res, next) => {
+  const token = req.header("Authorization");
+  if (!token) return res.status(401).json({ error: "Access denied. No token provided." });
+
+  try {
+    const decoded = jwt.verify(token.replace("Bearer ", ""), process.env.JWT_SECRET);
+    req.user = decoded;
+
+    // Validate if user exists in the respective table
+    let user;
+    if (decoded.role === "admin") {
+      user = await db("admin").where({ admin_id: decoded.userId }).first();
+    } else if (decoded.role === "faculty") {
+      user = await db("faculty").where({ faculty_id: decoded.userId }).first();
+    } else if (decoded.role === "hod") {
+      user = await db("faculty")
+        .where({ faculty_id: decoded.userId })
+        .first();
+      const isHod = await db("hod").where({ hod_id: decoded.userId }).first();
+
+      if (!user || !isHod) {
+        return res.status(403).json({ error: "Invalid HOD access" });
+      }
+    }
+
+    if (!user) return res.status(403).json({ error: "Invalid token or user does not exist" });
+
+    next();
+  } catch (error) {
+    console.error("Authentication Error:", error);
+    res.status(403).json({ error: "Invalid token" });
+  }
+};
+
+const authorizeRole = (allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.user || !allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ error: "Access denied" });
+    }
+    next();
+  };
+};
+
+module.exports = { authenticateUser, authorizeRole };

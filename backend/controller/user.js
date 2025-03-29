@@ -1,124 +1,129 @@
 const express = require("express");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const db = require("../db/db");
+const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET;
+// Register API(post)
+const registerUser = async(req, res) => {
+  const { id, name, email, password, role, branch_id } = req.body;
 
-// Register Exam Officer
-const register = async (req, res) => {
   try {
-    const { officer_name, email, password, user_type } = req.body;
-    console.log(officer_name, email, password, user_type);
-
-    if (!officer_name || !email || !password || !user_type) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Using transaction to ensure atomicity
-    const data = await db.transaction(async (trx) => {
-      // Insert into user table
-      const [officerId] = await trx("user").insert({
-        officer_name,
-        email,
+    
+    if (role === "admin") {
+      // Register Admin (No branch_id required)
+      await db("admin").insert({
+        admin_id: id,
+        admin_name: name,
+        admin_email: email,
         password: hashedPassword,
-        user_type,
       });
-      console.log(officerId);
-      // If user is HOD, insert into hod table
-      if (user_type === "HOD") {
-        await trx("hod").insert({
-          officer_id: officerId, // Reference to user table
-          hod_name: officer_name,
-          email,
-          password: hashedPassword,
-        });
+      return res.status(201).json({ message: "Admin registered successfully!" });
+    }
+    
+    else if (role === "faculty") {
+      // Validate branch_id presence
+      if (!branch_id) {
+        return res.status(400).json({ error: "Faculty registration requires a branch_id." });
       }
-    });
+      //check if branch exists
+      const branchExists = await db("branch").where({ branch_id }).first();
+      if (!branchExists) {
+        return res.status(400).json({ error: "Branch ID does not exist." });
+      }
 
-    res
-      .status(201)
-      .json({ data: { data }, message: "Officer registered successfully" });
+      // Register Faculty
+      await db("faculty").insert({
+        faculty_id: id,
+        faculty_name: name,
+        faculty_email: email,
+        password: hashedPassword,
+        branch_id,
+      });
+
+      return res.status(201).json({ message: "Faculty registered successfully!" });
+    }
+    
+    else if (role === "hod") {
+      // Validate branch_id presence
+      if (!branch_id) {
+        return res.status(400).json({ error: "HOD registration requires a branch_id." });
+      }
+
+      // Check if the given HOD ID exists in the Faculty table
+      const facultyExists = await db("faculty").where({ faculty_id: id }).first();
+
+      if (!facultyExists) {
+        return res.status(400).json({ error: "Faculty ID not found. HOD must be a faculty first." });
+      }
+
+      // Register HOD
+      await db("hod").insert({
+        hod_id: id,
+        branch_id,
+      });
+      return res.status(201).json({ message: "HOD registered successfully!" });
+    } 
+    
+    else {
+      return res.status(400).json({ error: "Invalid role" });
+    }
+   
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ message: "Error registering officer", error });
+    res.status(500).json({ error: "Error registering user" });
   }
 };
 
-// Login Exam Officer
-const login = async (req, res) => {
+const loginUser = async (req, res) => {
+  const { email, password, role } = req.body;
+
   try {
-    const { email, password } = req.body;
-    console.log(email, password);
+    let user;
 
-    const officer = await db("user").where({ email }).first();
-    console.log(email, password);
-    const check = await bcrypt.compare(password, officer.password);
-    console.log(check);
+    if (role === "admin") {
+      user = await db("admin").where({ admin_email: email }).first();
+      if (!user) return res.status(400).json({ error: "Invalid email" });
 
-    if (!officer || !check) {
-      return res.status(401).json({ message: "Invalid credentials" });
+    } else if (role === "faculty") {
+      user = await db("faculty").where({ faculty_email: email }).first();
+      if (!user) return res.status(400).json({ error: "Invalid email" });
+
+    } else if (role === "hod") {
+      // First, check if the email exists in the faculty table
+      user = await db("faculty").where({ faculty_email: email }).first();
+      if (!user) return res.status(400).json({ error: "Invalid email" });
+
+      // Now, check if this faculty ID exists in the HOD table
+      const isHod = await db("hod").where({ hod_id: user.faculty_id }).first();
+      if (!isHod) return res.status(400).json({ error: "User is not an HOD" });
+
+    } else {
+      return res.status(400).json({ error: "Invalid role" });
     }
+
+    // Validate password
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) return res.status(400).json({ error: "Invalid credentials" });
+
+    // Generate JWT token with correct ID based on role
+    const userId = role === "admin" ? user.admin_id : user.faculty_id;
     const token = jwt.sign(
-      { officer_id: officer.officer_id, user_type: officer.user_type },
-      JWT_SECRET,
-      {
-        expiresIn: "3h",
-      }
+      { userId, role },
+      process.env.JWT_SECRET,
+      { expiresIn: "5h" }
     );
-    res.json({ token });
+
+    res.json({ token, role });
+
   } catch (error) {
-    res.status(500).json({ message: "Error logging in", error });
+    console.error("Login error:", error);
+    res.status(500).json({ error: "Login failed" });
   }
 };
 
-// Get Exam Officer Profile
-const findUser = async (req, res) => {
-  try {
-    console.log("=======");
-    console.log("=======");
-    const { id } = req.params;
-    console.log("=======", id);
-    // console.log(req);
-    const { user_type } = req.user;
-    console.log("=======", id);
-    console.log("=======");
 
-    // // only admins can access this route
-    if (user_type !== "ADMIN") {
-      return res.status(403).json({ message: "Access denied: Admins only" });
-    }
-    console.log("=======");
-
-    const officer = await db("user").where({ officer_id: id }).first();
-    console.log("=======");
-    if (!officer) return res.status(404).json({ message: "Officer not found" });
-    const { password, ...responseData } = officer;
-    res.status(200).json({ data: { officer: responseData } });
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching profile", error });
-  }
+module.exports = {
+  registerUser,
+  loginUser,
 };
-
-const getUser = async (req, res) => {
-  try {
-    console.log("=======");
-    // console.log(req);
-    const { officer_id } = req.user;
-    console.log("=======");
-
-    const officer = await db("user").where({ officer_id }).first();
-    console.log("=======");
-    if (!officer) return res.status(404).json({ message: "Officer not found" });
-    const { password, ...responseData } = officer;
-    res.status(200).json({ data: { officer: responseData } });
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching profile", error });
-  }
-};
-
-const updateProfile = async () => {};
-
-module.exports = { register, login, getUser, updateProfile, findUser };
