@@ -11,7 +11,7 @@ import Button from "../../../components/Button";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 import { Outlet } from "react-router-dom";
 import BranchManagement from "./BranchManagment";
-import CourseManagement from "../../../components/Course/Course";
+import CourseManagement from "./Course";
 
 const AdminHome = () => {
   const {
@@ -39,6 +39,7 @@ const AdminHome = () => {
           <div className="hod-main">
             <div className="sidebars">
               <Sidebar
+<<<<<<< HEAD
                 className="sidebar-1"
                 title="Admin Activity"
                 activities={[
@@ -48,7 +49,24 @@ const AdminHome = () => {
                   { name: "Progress Report", path: "/admin/prog-report" },
                   { name: "Address Requests", path: "/admin-req" },
                 ]}
+=======
+                className="sidebar-0"
+                title="Admin Activities"
+                activities={[
+                  { name: "Course Management", path: "/course-management" },
+                    { name: "Branch Management", path: "/branch-management" },
+                    { name: "Session Management", path: "/session-management" },
+                    { name: "Upload Marking Scheme", path: "/admin-upload" },
+                    { name: "Faculty Management", path: "/faculty-management" },
+                    { name: "Assign HOD", path: "/assign-hod" },
+                    { name: "Upload Student Data", path: "/admin-upload" },
+                    { name: "Address Requests", path: "/admin-req" },
+                    { name: "Progress Report", path: "/admin-prog-report" },
+                  
+              ]}
+>>>>>>> feat-ui-updates
               />
+            
             </div>
 
             <div className="hod-info">
@@ -81,15 +99,9 @@ const AdminHome = () => {
                     [{(user_type && `${user_type}`) || "Please Login"}]
                   </span>
                 </p>
-                <p>
-                  <span className="hod-role">Department: </span>
-                  <span className="hod-name">
-                    [{department_id || "Please Login"}]
-                  </span>
-                </p>
               </div>
-              <BranchManagement />
-              <CourseManagement />
+              {/* <BranchManagement /> */}
+              {/* <CourseManagement /> */}
             </div>
           </div>
           <RedFooter />

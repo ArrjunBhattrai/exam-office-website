@@ -25,6 +25,7 @@ const AdminLogin = () => {
   const [enteredCaptcha, setEnteredCaptcha] = useState("");
   const [userType, setUserType] = useState("ADMIN"); // Change default to ADMIN
   const [errors, setErrors] = useState({});
+  const authState = useSelector((state) => state.auth);
 
   const { isAuthenticated, userType: userType2 } = useSelector(
     (state) => state.auth
@@ -89,6 +90,7 @@ const AdminLogin = () => {
 
         const data2 = await response2.json();
         console.log(data2);
+
         dispatch(
           login({
             officer_name: data2.data.officer.officer_name,
@@ -98,6 +100,11 @@ const AdminLogin = () => {
             token: data.token,
           })
         );
+<<<<<<< HEAD
+=======
+        // const val = useSelector((state) => state.auth);
+        console.log(val);
+>>>>>>> feat-ui-updates
 
         alert("Login Successful!");
         navigate(`/${userType.toLowerCase()}-home`); // Navigate based on user type
@@ -106,6 +113,12 @@ const AdminLogin = () => {
       }
     }
   };
+<<<<<<< HEAD
+=======
+  
+  const val = useSelector((state) => state.auth);
+  console.log(val);
+>>>>>>> feat-ui-updates
 
   const refreshCaptcha = () => {
     setCaptcha(generateCaptcha());

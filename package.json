@@ -21,5 +21,7 @@
   "devDependencies": {
     "concurrently": "^9.1.2"
   },
-  "dependencies": {}
+  "dependencies": {
+    "knex": "^3.1.0"
+  }
 }

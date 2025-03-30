@@ -9,7 +9,6 @@ import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 const HODHome = () => {
   const user = useSelector((state) => state.auth.user); // Get logged-in user
-  //   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   return (
     <div className="hod-home-container">
@@ -21,23 +20,17 @@ const HODHome = () => {
           <div className="hod-main">
             <div className="sidebars">
               <Sidebar
-                className="sidebar-1"
-                title="HOD Activity"
+                className="sidebar-0"
+                title="HOD Activities"
                 activities={[
-                  {
-                    name: "View Department Details",
-                    path: "/hod-deptt-details",
-                  },
-                  { name: "Create New Faculty", path: "/hod-new-fac" },
+                  { name: "View Department Details", path: "/hod-deptt-details" },
                   { name: "Faculty Allocation", path: "/hod-fac-alloc" },
-                  { name: "Upload Data for Electives", path: "/hod-upload" },
-                  { name: "Progress Report", path: "/progress-report" },
-                  {
-                    name: "View Correction Requests",
-                    path: "/hod-correction-req",
-                  },
+                  { name: "Progress Report", path: "/" },
+                  {name: "View Correction Requests", path: "/hod-correction-req" },
+                  
                 ]}
               />
+          
             </div>
 
             <div className="hod-info">
