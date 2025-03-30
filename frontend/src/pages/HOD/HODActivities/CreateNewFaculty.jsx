@@ -38,30 +38,21 @@ const CreateNewFaculty = () => {
                 className="sidebar-1"
                 title="HOD Activity"
                 activities={[
-                  { name: "Faculty Allocation", path: "/hod-fac-alloc" },
-                  { name: "Create New Faculty", path: "/hod-new-fac" },
-                  { name: "Upload Data for Electives", path: "/hod-upload" },
-                  {
-                    name: "View Correction Requests",
-                    path: "/hod-correction-req",
-                  },
                   {
                     name: "View Department Details",
                     path: "/hod-deptt-details",
                   },
-                ]}
+                  { name: "Create New Faculty", path: "/hod-new-fac" },
+                  { name: "Faculty Allocation", path: "/hod-fac-alloc" },
+                  { name: "Upload Data for Electives", path: "/hod-upload" },
+                  { name: "Progress Report", path: "/progress-report" },
+                  {
+                    name: "View Correction Requests",
+                    path: "/hod-correction-req",
+                  },
+                     ]}
               />
 
-              <Sidebar
-                className="sidebar-2"
-                title="Form Dashboard"
-                activities={[
-                  { name: "View Saved Form", path: "/saved-form" },
-                  { name: "View Filled Form", path: "/filled-form" },
-                  { name: "Delete Filled Form", path: "/delete-form" },
-                  { name: "Progress Report", path: "/progress-report" },
-                ]}
-              />
             </div>
 
             <div className="hod-info">

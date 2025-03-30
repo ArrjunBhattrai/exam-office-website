@@ -24,26 +24,16 @@ const AdminRequest = () => {
             <div className="sidebars">
             <Sidebar
                 className="sidebar-1"
-                title="Faculty Activity"
+                title="Admin Activity"
                 activities={[
-                  { name: "Upload Marking Scheme", path: "/admin-upload" },
-                  { name: "Create New Subject", path: "/admin-new-sub" },
-                  { name: "Update Existing Subject", path: "/admin-update-sub" },
-                  { name: "Delete Existing Subject", path: "/admin-delete-sub" },
+                  { name: "Upload Academic Scheme", path: "/admin-upload" },
+                  { name: "Course Related Activities", path: "/course-management" },
+                  { name: "Branch Related Activities", path: "/branch-management" },
+                  { name: "Progress Report", path: "/admin/prog-report" },
                   { name: "Address Requests", path: "/admin-req" },
                 ]}
               />
 
-              <Sidebar
-                className="sidebar-2"
-                title="Form Dashboard"
-                activities={[
-                  { name: "View Saved Form", path: "/admin-saved-form" },
-                  { name: "View Filled Form", path: "/admin-filled-form" },
-                  { name: "Delete Filled Form", path: "/admin-delete-form" },
-                  { name: "Progress Report", path: "/admin-prog-report" },
-                ]}
-              />
             </div>
 
             <div className="hod-info">
