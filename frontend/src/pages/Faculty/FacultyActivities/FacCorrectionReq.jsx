@@ -31,21 +31,11 @@ const FacCorrectionReq = () => {
                 title="Faculty Activity"
                 activities={[
                   { name: "View Assigned Subjects", path: "/fac-view-sub" },
-                  { name: "Marks Feeding", path: "/fac-marks-feed" },
+                  { name: "Marks Feeding Activities", path: "/fac-marks-feed" },
                   {
                     name: "Make Correction Request",
                     path: "/fac-correction-req",
                   },
-                ]}
-              />
-
-              <Sidebar
-                className="sidebar-2"
-                title="Form Dashboard"
-                activities={[
-                  { name: "View Saved Form", path: "/fac-saved-form" },
-                  { name: "View Filled Form", path: "/fac-filled-form" },
-                  { name: "Delete Filled Form", path: "/fac-delete-form" },
                 ]}
               />
             </div>

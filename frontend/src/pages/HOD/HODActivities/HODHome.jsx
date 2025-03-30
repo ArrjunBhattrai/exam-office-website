@@ -21,48 +21,21 @@ const HODHome = () => {
           <div className="hod-main">
             <div className="sidebars">
               <Sidebar
-                className="sidebar-0"
-                title="Branch Managment "
-                activities={[
-                  { name: "Manage Branch", path: "/branch-management" },
-                  { name: "Create course", path: "/hod-new-fac" },
-                  { name: "Upload Data for Electives", path: "/hod-upload" },
-                  {
-                    name: "View Correction Requests",
-                    path: "/hod-correction-req",
-                  },
-                  {
-                    name: "View Department Details",
-                    path: "/hod-deptt-details",
-                  },
-                ]}
-              />
-              <Sidebar
                 className="sidebar-1"
                 title="HOD Activity"
                 activities={[
-                  { name: "Faculty Allocation", path: "/hod-fac-alloc" },
-                  { name: "Create New Faculty", path: "/hod-new-fac" },
-                  { name: "Upload Data for Electives", path: "/hod-upload" },
-                  {
-                    name: "View Correction Requests",
-                    path: "/hod-correction-req",
-                  },
                   {
                     name: "View Department Details",
                     path: "/hod-deptt-details",
                   },
-                ]}
-              />
-
-              <Sidebar
-                className="sidebar-2"
-                title="Form Dashboard"
-                activities={[
-                  { name: "View Saved Form", path: "/saved-form" },
-                  { name: "View Filled Form", path: "/filled-form" },
-                  { name: "Delete Filled Form", path: "/delete-form" },
+                  { name: "Create New Faculty", path: "/hod-new-fac" },
+                  { name: "Faculty Allocation", path: "/hod-fac-alloc" },
+                  { name: "Upload Data for Electives", path: "/hod-upload" },
                   { name: "Progress Report", path: "/progress-report" },
+                  {
+                    name: "View Correction Requests",
+                    path: "/hod-correction-req",
+                  },
                 ]}
               />
             </div>

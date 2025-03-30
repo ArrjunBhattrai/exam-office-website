@@ -3,9 +3,6 @@ const router = express.Router();
 
 const facultyController = require("../controller/faculty");
 
-// Faculty Authentication
-router.post("/login", facultyController.facultyLogin);
-
 // Faculty-related routes
 router.get("/subjects/:faculty_id", facultyController.subjectByFaculty);
 router.get("/students/:subject_id", facultyController.studentBySubject);

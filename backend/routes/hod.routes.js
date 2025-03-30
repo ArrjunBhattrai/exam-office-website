@@ -1,37 +1,16 @@
 const express = require("express");
 const router = express.Router();
-const { authenticateHOD } = require("../util/hodMiddleware");
+const { authenticateUser, authorizeRole } = require("../middleware/auth");
 const hodController = require("../controller/hod");
 
-// HOD Login
-router.post("/login", hodController.hodLogin);
+//Get Details
+router.get("/branch-details", authenticateUser, authorizeRole(["hod"]),hodController.getBranchDetails);
+router.get("/branch-faculties", authenticateUser, authorizeRole(["hod"]),hodController.getFaculties);
+router.get("/branch-subjects", authenticateUser, authorizeRole(["hod"]),hodController.getSubjects);
 
-// Department Management
-router.get("/", authenticateHOD, hodController.getDepartmentDetails);
-
-// Faculty Management
-router.post("/faculty", authenticateHOD, hodController.createFaculty);
-router.delete(
-  "/faculty/:faculty_id",
-  authenticateHOD,
-  hodController.deleteFaculty
-);
-
-// Faculty Allocation
-router.get(
-  "/subject/:id/faculty",
-  authenticateHOD,
-  hodController.getFacultyBySubject
-);
-router.post(
-  "/faculty/assign",
-  authenticateHOD,
-  hodController.assignSubjectToFaculty
-);
-router.delete(
-  "/faculty/remove",
-  authenticateHOD,
-  hodController.removeFacultyFromSubject
-);
+//Faculty Assignment
+router.post("/assign-faculty", authenticateUser, authorizeRole(["hod"]),hodController.assignFaculty);
+router.put("/update-faculty", authenticateUser, authorizeRole(["hod"]),hodController.updateAssignedFaculty);
+router.delete("/remove-assignedfaculty", authenticateUser, authorizeRole(["hod"]),hodController.removeAssignedFaculty);
 
 module.exports = router;
