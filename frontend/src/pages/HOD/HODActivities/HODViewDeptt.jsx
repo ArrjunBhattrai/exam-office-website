@@ -15,6 +15,31 @@ const HODViewDeptt = () => {
   const [branch, setBranch] = useState("");
   const [semester, setSemester] = useState("");
 
+  const courseBranches = {
+    BE: ["CSE", "IT", "ECE", "EI"],
+    ME: ["Thermal", "Design", "Production"],
+    "B.Pharma": ["Pharmaceutical Chemistry", "Pharmacology"],
+  };
+
+  const facultyData = {
+    CSE: ["Dr. Sharma", "Prof. Verma", "Ms. Patel"],
+    IT: ["Dr. Mehta", "Prof. Rao"],
+    ECE: ["Dr. Singh", "Prof. Ahuja"],
+    EI: ["Dr. Malhotra", "Prof. Bansal"],
+  };
+
+  const subjectData = {
+    CSE: {
+      I: ["Mathematics I", "Physics", "Programming"],
+      II: ["Mathematics II", "Digital Electronics"],
+      III: ["Data Structures", "OOPs", "DBMS"],
+    },
+    IT: {
+      I: ["Computer Fundamentals", "Programming Basics"],
+      II: ["Web Technologies", "Networking"],
+    },
+  };
+
   return (
     <div className="hod-home-container">
       <div className="hod-bg">
@@ -28,28 +53,11 @@ const HODViewDeptt = () => {
                 className="sidebar-1"
                 title="HOD Activity"
                 activities={[
+                  { name: "View Department Details", path: "/hod-deptt-details" },
                   { name: "Faculty Allocation", path: "/hod-fac-alloc" },
-                  { name: "Create New Faculty", path: "/hod-new-fac" },
-                  { name: "Upload Data for Electives", path: "/hod-upload" },
-                  {
-                    name: "View Correction Requests",
-                    path: "/hod-correction-req",
-                  },
-                  {
-                    name: "View Department Details",
-                    path: "/hod-deptt-details",
-                  },
-                ]}
-              />
-
-              <Sidebar
-                className="sidebar-2"
-                title="Form Dashboard"
-                activities={[
-                  { name: "View Saved Form", path: "/saved-form" },
-                  { name: "View Filled Form", path: "/filled-form" },
-                  { name: "Delete Filled Form", path: "/delete-form" },
-                  { name: "Progress Report", path: "/progress-report" },
+                  { name: "Progress Report", path: "/" },
+                  {name: "View Correction Requests", path: "/hod-correction-req" },
+                  
                 ]}
               />
             </div>
@@ -107,16 +115,20 @@ const HODViewDeptt = () => {
                   </p>
 
                   <div className="dropdown-container">
-                    <Dropdown
+                  <Dropdown
                       label="Course"
-                      options={["BE", "ME", "B.Pharma"]}
+                      options={Object.keys(courseBranches)}
                       selectedValue={course}
-                      onChange={setCourse}
+                      onChange={(value) => {
+                        setCourse(value);
+                        setBranch("");
+                        setSemester("");
+                      }}
                     />
 
                     <Dropdown
                       label="Branch"
-                      options={["CSE", "IT", "ECE", "EI"]}
+                      options={course ? courseBranches[course] : []}
                       selectedValue={branch}
                       onChange={setBranch}
                     />
@@ -137,11 +149,33 @@ const HODViewDeptt = () => {
                       onChange={setSemester}
                     />
                   </div>
-                  <Button
-                    className="btn"
-                    text="Show"
-                    navigateTo="/hod-fac-alloc-table"
-                  />
+                  <Button className="btn" text="Show" />
+
+                  {/* Faculty Details Section */}
+                  {branch && (
+                    <div className="faculty-details">
+                      <h4>Faculty Details</h4>
+                      <ul>
+                        {facultyData[branch]?.map((faculty) => (
+                          <li key={faculty}>{faculty}</li>
+                        )) || <p>No Faculty Data</p>}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Subject Details Section */}
+                  {branch && semester && (
+                    <div className="subject-details">
+                      <h4>Subject Details</h4>
+                      <ul>
+                        {subjectData[branch]?.[semester]?.map((subject) => (
+                          <li key={subject}>{subject}</li>
+                        )) || <p>No Subjects Available</p>}
+                      </ul>
+                    </div>
+                  )}
+                  </div>
+                  
                 </div>
               </div>
             </div>
@@ -150,7 +184,6 @@ const HODViewDeptt = () => {
           <RedFooter />
         </div>
       </div>
-    </div>
   );
 };
 

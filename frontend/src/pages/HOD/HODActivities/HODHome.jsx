@@ -9,7 +9,6 @@ import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 const HODHome = () => {
   const user = useSelector((state) => state.auth.user); // Get logged-in user
-  //   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   return (
     <div className="hod-home-container">
@@ -22,49 +21,16 @@ const HODHome = () => {
             <div className="sidebars">
               <Sidebar
                 className="sidebar-0"
-                title="Branch Managment "
+                title="HOD Activities"
                 activities={[
-                  { name: "Manage Branch", path: "/branch-management" },
-                  { name: "Create course", path: "/hod-new-fac" },
-                  { name: "Upload Data for Electives", path: "/hod-upload" },
-                  {
-                    name: "View Correction Requests",
-                    path: "/hod-correction-req",
-                  },
-                  {
-                    name: "View Department Details",
-                    path: "/hod-deptt-details",
-                  },
-                ]}
-              />
-              <Sidebar
-                className="sidebar-1"
-                title="HOD Activity"
-                activities={[
+                  { name: "View Department Details", path: "/hod-deptt-details" },
                   { name: "Faculty Allocation", path: "/hod-fac-alloc" },
-                  { name: "Create New Faculty", path: "/hod-new-fac" },
-                  { name: "Upload Data for Electives", path: "/hod-upload" },
-                  {
-                    name: "View Correction Requests",
-                    path: "/hod-correction-req",
-                  },
-                  {
-                    name: "View Department Details",
-                    path: "/hod-deptt-details",
-                  },
+                  { name: "Progress Report", path: "/" },
+                  {name: "View Correction Requests", path: "/hod-correction-req" },
+                  
                 ]}
               />
-
-              <Sidebar
-                className="sidebar-2"
-                title="Form Dashboard"
-                activities={[
-                  { name: "View Saved Form", path: "/saved-form" },
-                  { name: "View Filled Form", path: "/filled-form" },
-                  { name: "Delete Filled Form", path: "/delete-form" },
-                  { name: "Progress Report", path: "/progress-report" },
-                ]}
-              />
+          
             </div>
 
             <div className="hod-info">
