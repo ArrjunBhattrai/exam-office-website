@@ -1,22 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
-// import "./HODHome.css";
-import Sidebar from "../../../components/Sidebar";
-import ActivityHeader from "../../../components/ActivityHeader";
-import RedFooter from "../../../components/RedFooter";
-import RedHeader from "../../../components/RedHeader";
-import Dropdown from "../../../components/Dropdown";
-import Button from "../../../components/Button";
+import "./HODHome.css";
+import Sidebar from "../../components/Sidebar";
+import ActivityHeader from "../../components/ActivityHeader";
+import RedFooter from "../../components/RedFooter";
+import RedHeader from "../../components/RedHeader";
+import Button from "../../components/Button";
+import Dropdown from "../../components/Dropdown";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
-const AdminUpdateSub = () => {
-  const user = useSelector((state) => state.auth.user);
+const HODCorrectionReq = () => {
+  const user = useSelector((state) => state.auth.user); // Get logged-in user
 
   const [course, setCourse] = useState("");
-    const [branch, setBranch] = useState("");
-    const [semester, setSemester] = useState("");
-    const [branches, setBranches] = useState([]);
+  const [branch, setBranch] = useState("");
+  const [semester, setSemester] = useState("");
 
   return (
     <div className="hod-home-container">
@@ -27,31 +25,24 @@ const AdminUpdateSub = () => {
 
           <div className="hod-main">
             <div className="sidebars">
-            <Sidebar
+              <Sidebar
                 className="sidebar-1"
-                title="Faculty Activity"
+                title="HOD Activity"
                 activities={[
-                  { name: "Course Management", path: "/course-management" },
-                    { name: "Branch Management", path: "/branch-management" },
-                    { name: "Session Management", path: "/session-management" },
-                    { name: "Upload Marking Scheme", path: "/admin-upload" },
-                    { name: "Faculty Management", path: "/faculty-management" },
-                    { name: "Assign HOD", path: "/assign-hod" },
-                    { name: "Upload Student Data", path: "/admin-upload" },
-                    { name: "Address Requests", path: "/admin-req" },
-                    { name: "Progress Report", path: "/admin-prog-report" },
+                  { name: "View Department Details", path: "/hod-deptt-details" },
+                  { name: "Faculty Allocation", path: "/hod-fac-alloc" },
+                  { name: "Progress Report", path: "/" },
+                  {name: "View Correction Requests", path: "/hod-correction-req" },
                   
-              ]}
+                ]}
               />
-
-  
             </div>
 
             <div className="hod-info">
               <div className="hod-icons">
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/fac-home")}
+                  onClick={() => (window.location.href = "/hod-home")}
                 >
                   <FaHome className="icon" />
                   Home
@@ -85,13 +76,13 @@ const AdminUpdateSub = () => {
                 </p>
               </div>
 
-              <div>
-                 {/* here */}
-                 <div className="fac-alloc">
-                <h3>Update Existing Subject</h3>
+              <div className="fac-alloc">
+                <h3>Correction Requests</h3>
                 <p className="session-text">Current Session: June 2025</p>
 
-                <span className="box-overlay-text">Update</span>
+                <span className="box-overlay-text">
+                  Select Option To View Details
+                </span>
 
                 <div className="faculty-box">
                   <p className="institute-text">
@@ -109,7 +100,7 @@ const AdminUpdateSub = () => {
 
                     <Dropdown
                       label="Branch"
-                      options={branches.map((b) => b.branch_name)} // Use fetched branches
+                      options={["CSE", "IT", "ECE", "EI"]}
                       selectedValue={branch}
                       onChange={setBranch}
                     />
@@ -130,15 +121,9 @@ const AdminUpdateSub = () => {
                       onChange={setSemester}
                     />
                   </div>
-                  <Button
-                    className="btn"
-                    text="Show"
-                    navigateTo="/"
-                  />
+                  <Button className="btn" text="Show" navigateTo="/" />
                 </div>
               </div>
-              </div>
-              
             </div>
           </div>
 
@@ -149,4 +134,4 @@ const AdminUpdateSub = () => {
   );
 };
 
-export default AdminUpdateSub;
+export default HODCorrectionReq;

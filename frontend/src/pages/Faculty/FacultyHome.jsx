@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
-// import "./HODHome.css";
-import Sidebar from "../../../components/Sidebar";
-import ActivityHeader from "../../../components/ActivityHeader";
-import RedFooter from "../../../components/RedFooter";
-import RedHeader from "../../../components/RedHeader";
-import Dropdown from "../../../components/Dropdown";
-import Button from "../../../components/Button";
+import "./faculty.css";
+import Sidebar from "../../components/Sidebar";
+import ActivityHeader from "../../components/ActivityHeader";
+import RedFooter from "../../components/RedFooter";
+import RedHeader from "../../components/RedHeader";
+import Dropdown from "../../components/Dropdown";
+import Button from "../../components/Button";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 const FacultyHome = () => {
   const user = useSelector((state) => state.auth.user);
 
   return (
-    <div className="hod-home-container">
+    <div className="home-container">
       <div className="hod-bg">
         <RedHeader />
         <div className="hod-content">
@@ -28,10 +28,7 @@ const FacultyHome = () => {
                 activities={[
                   { name: "View Assigned Subjects", path: "/fac-view-sub" },
                   { name: "Marks Feeding Activities", path: "/fac-marks-feed" },
-                  {
-                    name: "Make Correction Request",
-                    path: "/fac-correction-req",
-                  },
+                  { name: "Make Correction Request", path: "/fac-correction-req" },
                 ]}
               />
             </div>

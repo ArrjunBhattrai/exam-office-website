@@ -116,7 +116,7 @@ const loginUser = async (req, res) => {
       { expiresIn: "5h" }
     );
 
-    res.json({ token, role });
+    res.json({ token, role, userId });
 
   } catch (error) {
     console.error("Login error:", error);
@@ -124,8 +124,25 @@ const loginUser = async (req, res) => {
   }
 };
 
+//Verify Token of the user
+const verifyToken = (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return res.status(200).json({ message: "Token valid", user: decoded });
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid token" });
+  }
+};
+
 
 module.exports = {
   registerUser,
   loginUser,
+  verifyToken
 };

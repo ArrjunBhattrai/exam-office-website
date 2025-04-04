@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from "react";
-import RedHeader from "../../../components/RedHeader";
-import ActivityHeader from "../../../components/ActivityHeader";
-import Sidebar from "../../../components/Sidebar";
+import RedHeader from "../../components/RedHeader";
+import RedFooter from "../../components/RedFooter";
+import ActivityHeader from "../../components/ActivityHeader";
+import Sidebar from "../../components/Sidebar";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 import { useSelector } from "react-redux";
-import Dropdown from "../../../components/Dropdown"; // Ensure correct import
-import { toast } from "react-toastify"; // Add toast for error messages
+import Dropdown from "../../components/Dropdown"; // Ensure correct import
+// import { toast } from "react-toastify"; // Add toast for error messages
 
 const AssignHOD = () => {
-  const { officer_name, user_type, token } = useSelector((state) => state.auth);
+  const { userId, isAuthenticated, role, token } = useSelector(
+          (state) => state.auth
+        );
+    
+        if (!isAuthenticated) {
+          return <div>Please log in to access this page.</div>;
+        } 
 
   const [courses, setCourses] = useState([]);
   const [branches, setBranches] = useState([]);
@@ -127,19 +134,19 @@ const AssignHOD = () => {
   };
 
   return (
-    <div className="hod-home-container">
-      <div className="hod-bg">
+    <div className="home-container">
+      <div className="user-bg">
         <RedHeader />
-        <div className="hod-content">
+        <div className="user-content">
           <ActivityHeader />
-          <div className="hod-main">
+          <div className="user-main">
             <Sidebar
               title="Admin Activities"
               activities={[
                 { name: "Course Management", path: "/course-management" },
                 { name: "Branch Management", path: "/branch-management" },
                 { name: "Session Management", path: "/session-management" },
-                { name: "Upload Marking Scheme", path: "/admin-upload" },
+                { name: "Upload Academic Scheme", path: "/admin-upload" },
                 { name: "Faculty Management", path: "/faculty-management" },
                 { name: "Assign HOD", path: "/assign-hod" },
                 { name: "Upload Student Data", path: "/admin-upload" },
@@ -148,8 +155,8 @@ const AssignHOD = () => {
               ]}
             />
 
-            <div className="hod-info">
-              <div className="hod-icons">
+            <div className="user-info">
+              <div className="user-icons">
                 <button className="icon-btn" onClick={() => (window.location.href = "/admin-home")}>
                   <FaHome className="icon" />
                   Home
@@ -160,17 +167,17 @@ const AssignHOD = () => {
                 </button>
               </div>
 
-              <div className="hod-sec">
+              <div className="user-sec">
                 <p>
                   <span>Welcome: </span>
-                  <span className="hod-name">
-                    {officer_name && `[${officer_name}]`}
+                  <span className="user-name">
+                    {userId && `[${userId}]`}
                   </span>
                 </p>
                 <p>
-                  <span className="hod-role">Role: </span>
-                  <span className="hod-name">
-                    [{(user_type && `${user_type}`) || "Please Login"}]
+                  <span className="user-role">Role: </span>
+                  <span className="user-name">
+                    [{(role && `${role}`) || "Please Login"}]
                   </span>
                 </p>
               </div>
@@ -207,8 +214,6 @@ const AssignHOD = () => {
                       <tr>
                         <th>Faculty ID</th>
                         <th>Faculty Name</th>
-                        <th>Course</th>
-                        <th>Branch</th>
                         <th>Email</th>
                         <th>Assign</th>
                       </tr>
@@ -245,6 +250,7 @@ const AssignHOD = () => {
             </div>
           </div>
         </div>
+        <RedFooter />
       </div>
     </div>
   );

@@ -65,6 +65,7 @@ const getCourses = async (req, res) => {
 };
 
 //Branch related activities
+
 //Create a new branch
 const createBranch = async (req, res) => {
   const { branch_id, branch_name, course_id } = req.body;
@@ -129,111 +130,21 @@ const getBranches = async (req, res) => {
   }
 };
 
-//Assign HOD to Subject
-const assignHodToBranch = async (req, res) => {
-  const { hod_id, branch_id } = req.body;
-  
-  try {
-    //Check if the faculty exists (HOD must be a faculty member)
-    const facultyExists = await db("faculty")
-      .where({ faculty_id: hod_id })
-      .first();
-    if (!facultyExists) {
-      return res
-        .status(400)
-        .json({ error: "Faculty not found. HOD must be a faculty member." });
-    }
-
-    //Check if the branch exists
-    const branchExists = await db("branch").where({ branch_id }).first();
-    if (!branchExists) {
-      return res.status(400).json({ error: "Branch not found." });
-    }
-
-    //Check if an HOD is already assigned to this branch
-    const existingHod = await db("hod").where({ branch_id }).first();
-    if (existingHod) {
-      return res.status(400).json({
-        error:
-          "This branch already has an assigned HOD. Please remove the existing HOD first.",
-      });
-    }
-
-    //Assign the new HOD
-    await db("hod").insert({ hod_id, branch_id });
-
-    res.status(201).json({ message: "HOD assigned successfully." });
-  } catch (error) {
-    console.error("Error assigning HOD:", error);
-    res.status(500).json({ error: "Failed to assign HOD." });
-  }
-};
-
-//Update a existing Hod
-const updateHodForBranch = async (req, res) => {
-  const { hod_id, branch_id } = req.body;
+//Get branch of a particular course
+const getBranchesByCourseId = async (req, res) => {
+  const { course } = req.query;
+  if (!course) return res.status(400).json({ error: "Course is required" });
 
   try {
-    //Check if the faculty exists (HOD must be a faculty member)
-    const facultyExists = await db("faculty")
-      .where({ faculty_id: hod_id })
-      .first();
-    if (!facultyExists) {
-      return res
-        .status(400)
-        .json({ error: "Faculty not found. HOD must be a faculty member." });
-    }
+    
+    const branches = await db("branch")
+      .select("branch_id", "branch_name")
+      .where("course_id", course);
 
-    //Check if the branch exists
-    const branchExists = await db("branch").where({ branch_id }).first();
-    if (!branchExists) {
-      return res.status(400).json({ error: "Branch not found." });
-    }
-
-    //Check if an HOD is already assigned
-    const existingHod = await db("hod").where({ branch_id }).first();
-    if (existingHod) {
-      console.warn(
-        "Warning: This branch already has an assigned HOD. Updating the HOD."
-      );
-    }
-
-    //Update HOD (Replace the existing one)
-    await db("hod").where({ branch_id }).update({ hod_id });
-
-    res.status(200).json({ message: "HOD updated successfully." });
+    return res.json({ branches });
   } catch (error) {
-    console.error("Error updating HOD:", error);
-    res.status(500).json({ error: "Failed to update HOD." });
-  }
-};
-
-//Remove a Hod
-const removeHodFromBranch = async (req, res) => {
-  const { branch_id } = req.body;
-
-  try {
-    //Check if the branch exists
-    const branchExists = await db("branch").where({ branch_id }).first();
-    if (!branchExists) {
-      return res.status(400).json({ error: "Branch not found." });
-    }
-
-    //Check if an HOD is assigned
-    const existingHod = await db("hod").where({ branch_id }).first();
-    if (!existingHod) {
-      return res
-        .status(400)
-        .json({ error: "No HOD is assigned to this branch." });
-    }
-
-    //Remove the HOD
-    await db("hod").where({ branch_id }).del();
-
-    res.status(200).json({ message: "HOD removed successfully." });
-  } catch (error) {
-    console.error("Error removing HOD:", error);
-    res.status(500).json({ error: "Failed to remove HOD." });
+    console.error(error);
+    res.status(500).json({ error: "Error fetching branches" });
   }
 };
 
@@ -241,10 +152,8 @@ module.exports = {
   createCourse,
   deleteCourse,
   getCourses,
+  getBranchesByCourseId,
   createBranch,
   deleteBranch,
   getBranches,
-  assignHodToBranch,
-  updateHodForBranch,
-  removeHodFromBranch,
 };

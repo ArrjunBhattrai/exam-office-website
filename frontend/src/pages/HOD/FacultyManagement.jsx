@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { Toaster, toast } from "react-hot-toast";
-import { BACKEND_URL } from "../../../../config";
+import { BACKEND_URL } from "../../../config";
 import { useSelector } from "react-redux";
-import RedHeader from "../../../components/RedHeader";
-import ActivityHeader from "../../../components/ActivityHeader";
-import Sidebar from "../../../components/Sidebar";
-import Dropdown from "../../../components/Dropdown";
+import RedHeader from "../../components/RedHeader";
+import ActivityHeader from "../../components/ActivityHeader";
+import Sidebar from "../../components/Sidebar";
+import Dropdown from "../../components/Dropdown";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
-import RedFooter from "../../../components/RedFooter";
+import RedFooter from "../../components/RedFooter";
 
 const FacultyManagement = () => {
-  const { officer_name, user_type, token } = useSelector((state) => state.auth);
-
+  const { userId, isAuthenticated, role, token } = useSelector(
+        (state) => state.auth
+      );
+  
+      if (!isAuthenticated) {
+        return <div>Please log in to access this page.</div>;
+      } 
   const [faculty, setFaculty] = useState([]);
   const [courses, setCourses] = useState([]);
   const [branches, setBranches] = useState([]);
@@ -140,12 +145,12 @@ const FacultyManagement = () => {
   };
 
   return (
-    <div className="hod-home-container">
-      <div className="hod-bg">
+    <div className="home-container">
+      <div className="user-bg">
         <RedHeader />
-        <div className="hod-content">
+        <div className="user-content">
           <ActivityHeader />
-          <div className="hod-main">
+          <div className="user-main">
             <div className="sidebars">
             <Sidebar
               title="Admin Activities"
@@ -154,7 +159,7 @@ const FacultyManagement = () => {
                     { name: "Course Management", path: "/course-management" },
                     { name: "Branch Management", path: "/branch-management" },
                     { name: "Session Management", path: "/session-management" },
-                    { name: "Upload Marking Scheme", path: "/admin-upload" },
+                    { name: "Upload Academic Scheme", path: "/admin-upload" },
                     { name: "Faculty Management", path: "/faculty-management" },
                     { name: "Assign HOD", path: "/assign-hod" },
                     { name: "Upload Student Data", path: "/admin-upload" },
@@ -165,8 +170,8 @@ const FacultyManagement = () => {
             />
             </div>
             
-            <div className="hod-info">
-              <div className="hod-icons">
+            <div className="user-info">
+              <div className="user-icons">
                 <button className="icon-btn" onClick={() => (window.location.href = "/admin-home")}>
                   <FaHome className="icon" />
                   Home
@@ -177,17 +182,17 @@ const FacultyManagement = () => {
                 </button>
               </div>
 
-              <div className="hod-sec">
+              <div className="user-sec">
                 <p>
                   <span>Welcome: </span>
-                  <span className="hod-name">
-                    {officer_name && `[${officer_name}]`}
+                  <span className="user-name">
+                    {userId && `[${userId}]`}
                   </span>
                 </p>
                 <p>
-                  <span className="hod-role">Role: </span>
-                  <span className="hod-name">
-                    [{(user_type && `${user_type}`) || "Please Login"}]
+                  <span className="user-role">Role: </span>
+                  <span className="user-name">
+                    [{(role && `${role}`) || "Please Login"}]
                   </span>
                 </p>
               </div>

@@ -1,26 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, UserPlus } from "lucide-react";
 import { Toaster, toast } from "react-hot-toast";
-import { BACKEND_URL } from "../../../../config";
+import { BACKEND_URL } from "../../../config";
 import { useSelector } from "react-redux";
-import RedHeader from "../../../components/RedHeader";
-import ActivityHeader from "../../../components/ActivityHeader";
-import Sidebar from "../../../components/Sidebar";
-import Dropdown from "../../../components/Dropdown";
+import RedHeader from "../../components/RedHeader";
+import ActivityHeader from "../../components/ActivityHeader";
+import Sidebar from "../../components/Sidebar";
+import Dropdown from "../../components/Dropdown";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
-import RedFooter from "../../../components/RedFooter";
+import RedFooter from "../../components/RedFooter";
 import "./admin.css";
 
 const SessionManagement = () => {
-  const {
-    officer_id,
-    isAuthenticated,
-    officer_name,
-    user_type,
-    email,
-    department_id,
-    token,
-  } = useSelector((state) => state.auth);
+  const { userId, isAuthenticated, role, token } = useSelector(
+        (state) => state.auth
+      );
+    
+      if (!isAuthenticated) {
+        return <div>Please log in to access this page.</div>;
+      }
+
   // const [branches, setBranches] = useState([]);
   const [formData, setFormData] = useState({
     branch_name: "",
@@ -159,12 +158,12 @@ const SessionManagement = () => {
   };
 
   return (
-    <div className="hod-home-container">
-      <div className="hod-bg">
+    <div className="home-container">
+      <div className="user-bg">
         <RedHeader />
-        <div className="hod-content">
+        <div className="user-content">
           <ActivityHeader />
-          <div className="hod-main">
+          <div className="user-main">
             <div className="sidebars">
               <Sidebar
                 className="sidebar-0"
@@ -173,9 +172,7 @@ const SessionManagement = () => {
                   { name: "Course Management", path: "/course-management" },
                     { name: "Branch Management", path: "/branch-management" },
                     { name: "Session Management", path: "/session-management" },
-                    { name: "Upload Marking Scheme", path: "/admin-upload" },
-                    { name: "Faculty Management", path: "/faculty-management" },
-                    { name: "Assign HOD", path: "/assign-hod" },
+                    { name: "Upload Academic Scheme", path: "/admin-upload" },
                     { name: "Upload Student Data", path: "/admin-upload" },
                     { name: "Address Requests", path: "/admin-req" },
                     { name: "Progress Report", path: "/admin-prog-report" },
@@ -183,8 +180,8 @@ const SessionManagement = () => {
               ]}
               />
             </div>
-            <div className="hod-info">
-              <div className="hod-icons">
+            <div className="user-info">
+              <div className="user-icons">
                 <button
                   className="icon-btn"
                   onClick={() => (window.location.href = "/admin-home")}
@@ -201,17 +198,17 @@ const SessionManagement = () => {
                 </button>
               </div>
 
-              <div className="hod-sec">
+              <div className="user-sec">
                 <p>
                   <span>Welcome: </span>
-                  <span className="hod-name">
-                    {officer_name && `[${officer_name}]`}
+                  <span className="user-name">
+                    {userId && `[${userId}]`}
                   </span>
                 </p>
                 <p>
-                  <span className="hod-role">Role: </span>
-                  <span className="hod-name">
-                    [{(user_type && `${user_type}`) || "Please Login"}]
+                  <span className="user-role">Role: </span>
+                  <span className="user-name">
+                    [{(role && `${role}`) || "Please Login"}]
                   </span>
                 </p>
               </div>
@@ -296,8 +293,8 @@ const SessionManagement = () => {
                       <div className="session">
                       <div className="dropdown-container">
   <Dropdown
-    label="Branch"
-    options={["CSE", "IT", "ECE", "EI"]}
+    label="Course"
+    options={["B.Tech.", "B.Pharma", "M.tech", "MCA"]}
     selectedValue={formData.branch_id}
     onChange={(value) => setFormData({ ...formData, branch_id: value })}
   />

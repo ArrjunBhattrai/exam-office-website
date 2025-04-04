@@ -1,5 +1,6 @@
 * {
   font-family: "Hind Madurai", serif;
+  
 }
 
 .container {
@@ -40,12 +41,13 @@
     text-align: center;
 }
 
-.input-group {
-  display: flex;
+.input-group-auth {
+    display: flex;
     align-items: center; 
-    justify-content: space-between;
+    justify-content: space-around;
     width: 50%;
     margin-bottom: 10px;
+    margin-top: 10px;
     max-width: 350px;
 }
 
@@ -53,6 +55,7 @@ label {
   font-weight: bold;
     color: #fff;
     text-align: left;
+    min-width: 150px;
 }
 
 input,
@@ -61,7 +64,7 @@ select {
     border: 1px solid #ccc;
     border-radius: 4px;
     padding: 5px;
-    max-width: 70%;
+    max-width: 100%;
 }
 
 .captcha-box {
@@ -154,3 +157,8 @@ p a {
 .forgot-password a:hover {
   text-decoration: underline;
 } 
+
+.sidebar {
+  max-width: 270px;
+}
+

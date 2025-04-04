@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
 // import "./HODHome.css";
-import Sidebar from "../../../components/Sidebar";
-import ActivityHeader from "../../../components/ActivityHeader";
-import RedFooter from "../../../components/RedFooter";
-import RedHeader from "../../../components/RedHeader";
-import Dropdown from "../../../components/Dropdown";
-import Button from "../../../components/Button";
+import Sidebar from "../../components/Sidebar";
+import ActivityHeader from "../../components/ActivityHeader";
+import RedFooter from "../../components/RedFooter";
+import RedHeader from "../../components/RedHeader";
+import Dropdown from "../../components/Dropdown";
+import Button from "../../components/Button";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 const AdminProgressReport = () => {
@@ -15,24 +14,22 @@ const AdminProgressReport = () => {
   
 
   return (
-    <div className="hod-home-container">
-      <div className="hod-bg">
+    <div className="home-container">
+      <div className="user-bg">
         <RedHeader />
-        <div className="hod-content">
+        <div className="user-content">
           <ActivityHeader />
 
-          <div className="hod-main">
+          <div className="user-main">
             <div className="sidebars">
               <Sidebar
-                className="sidebar-1"
-                title="Form Dashboard"
+                className="sidebar"
+                title="Admin Activities"
                 activities={[
                   { name: "Course Management", path: "/course-management" },
                     { name: "Branch Management", path: "/branch-management" },
                     { name: "Session Management", path: "/session-management" },
-                    { name: "Upload Marking Scheme", path: "/admin-upload" },
-                    { name: "Faculty Management", path: "/faculty-management" },
-                    { name: "Assign HOD", path: "/assign-hod" },
+                    { name: "Upload Academic Scheme", path: "/admin-upload" },
                     { name: "Upload Student Data", path: "/admin-upload" },
                     { name: "Address Requests", path: "/admin-req" },
                     { name: "Progress Report", path: "/admin-prog-report" },
@@ -41,11 +38,11 @@ const AdminProgressReport = () => {
               />
             </div>
 
-            <div className="hod-info">
-              <div className="hod-icons">
+            <div className="user-info">
+              <div className="user-icons">
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/fac-home")}
+                  onClick={() => (window.location.href = "/admin-home")}
                 >
                   <FaHome className="icon" />
                   Home
@@ -58,16 +55,16 @@ const AdminProgressReport = () => {
                   Logout
                 </button>
               </div>
-              <div className="hod-sec">
+              <div className="user-sec">
               <p>
                   <span>Welcome: </span>
-                  <span className="hod-name">
+                  <span className="user-name">
                     {officer_name && `[${officer_name}]`}
                   </span>
                 </p>
                 <p>
-                  <span className="hod-role">Role: </span>
-                  <span className="hod-name">
+                  <span className="user-role">Role: </span>
+                  <span className="user-name">
                     [{(user_type && `${user_type}`) || "Please Login"}]
                   </span>
                 </p>

@@ -8,21 +8,21 @@ import BlueFooter from "../../components/BlueFooter";
 
 const Home = () => {
   return (
-    <div className="home-container">
+    <div className="home-container-landing">
       <BlueHeader />
       <div className="background">
         <div className="overlay"></div> 
         
         <div className="login-card">
-          <Link to="/admin-login" className="login-btn-home">
+          <Link to="/login" className="login-btn-home">
             <FontAwesomeIcon icon={faUser} className="icon" /> 
             <span>Admin Login</span>
           </Link>
-          <Link to="/hod-login" className="login-btn-home">
+          <Link to="/login" className="login-btn-home">
             <FontAwesomeIcon icon={faUser} className="icon" /> 
             <span>HOD Login</span>
           </Link>
-          <Link to="/faculty-login" className="login-btn-home">
+          <Link to="/login" className="login-btn-home">
             <FontAwesomeIcon icon={faUser} className="icon" />
             <span>Faculty Login</span>
           </Link>

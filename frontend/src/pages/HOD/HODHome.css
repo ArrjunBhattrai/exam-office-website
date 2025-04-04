@@ -13,7 +13,7 @@ body {
     justify-content: center;
 }
 
-.hod-home-container {
+.user-home-container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -21,14 +21,14 @@ body {
     position: relative;
 }
 
-  .hod-bg {
+  .user-bg {
     width: 100vw;
     display: flex;
     justify-content: center;
     align-items: center;
   }
 
-  .hod-content {
+  .user-content {
     width: 100%;
     max-width: 1200px;
     min-width: 1000px;
@@ -45,7 +45,7 @@ body {
     padding-top: 0;
 }
 
-  .hod-main {
+  .user-main {
     display: flex;
     margin-top: 2rem;
   }
@@ -54,14 +54,14 @@ body {
   
   /* HOD Info Section */
 
-  .hod-info {
+  .user-info {
     display: flex;  
     flex-direction: column;
     width: 100%;
     margin: 0;
 }
 
-  .hod-sec {
+  .user-sec {
     display: flex;
     padding: 5px;
     background: white;
@@ -75,12 +75,12 @@ body {
     margin-bottom: -1px;
   }
   
-  .hod-name {
+  .user-name {
     color: #8b0000;
     font-weight: bold;
   }
   
-  .hod-role {
+  .user-role {
     color: green;
     font-weight: bold;
   }

@@ -146,7 +146,7 @@
   height: 125px;
   margin-left: 30px;
   margin-right: 30px;
-  margin-top: 10px;
+  margin-top: 40px;
   position: relative;
   z-index: 100;
 }
@@ -232,7 +232,7 @@
 
 .dropdown-arrow {
   position: absolute;
-  right: 70px;
+  right: 10px;
   font-size: 15px;
   pointer-events: none;
 }

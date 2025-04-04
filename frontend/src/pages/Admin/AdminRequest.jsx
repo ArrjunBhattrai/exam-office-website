@@ -1,48 +1,44 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
-// import "./HODHome.css";
-import Sidebar from "../../../components/Sidebar";
-import ActivityHeader from "../../../components/ActivityHeader";
-import RedFooter from "../../../components/RedFooter";
-import RedHeader from "../../../components/RedHeader";
-import Dropdown from "../../../components/Dropdown";
-import Button from "../../../components/Button";
+import "./admin.css";
+import Sidebar from "../../components/Sidebar";
+import ActivityHeader from "../../components/ActivityHeader";
+import RedFooter from "../../components/RedFooter";
+import RedHeader from "../../components/RedHeader";
+import Dropdown from "../../components/Dropdown";
+import Button from "../../components/Button";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 const AdminRequest = () => {
-    const { officer_name, user_type, token } = useSelector((state) => state.auth);
-  
+    const { userId, isAuthenticated, role, token } = useSelector(
+            (state) => state.auth
+          );
+      
+          if (!isAuthenticated) {
+            return <div>Please log in to access this page.</div>;
+          } 
+
+          const [courses, setCourses] = useState([]);
+            const [branches, setBranches] = useState([]);
 
   return (
-    <div className="hod-home-container">
-      <div className="hod-bg">
+    <div className="home-container">
+      <div className="user-bg">
         <RedHeader />
-        <div className="hod-content">
+        <div className="user-content">
           <ActivityHeader />
 
-          <div className="hod-main">
+          <div className="user-main">
             <div className="sidebars">
             <Sidebar
-                className="sidebar-1"
-                title="Admin Activity"
+                className="sidebar"
+                title="Admin Activities"
                 activities={[
-<<<<<<< HEAD
-                  { name: "Upload Academic Scheme", path: "/admin-upload" },
-                  { name: "Course Related Activities", path: "/course-management" },
-                  { name: "Branch Related Activities", path: "/branch-management" },
-                  { name: "Progress Report", path: "/admin/prog-report" },
-                  { name: "Address Requests", path: "/admin-req" },
-                ]}
-              />
-
-=======
                   { name: "Course Management", path: "/course-management" },
                     { name: "Branch Management", path: "/branch-management" },
                     { name: "Session Management", path: "/session-management" },
-                    { name: "Upload Marking Scheme", path: "/admin-upload" },
-                    { name: "Faculty Management", path: "/faculty-management" },
-                    { name: "Assign HOD", path: "/assign-hod" },
+                    { name: "Upload Academic Scheme", path: "/admin-upload" },
                     { name: "Upload Student Data", path: "/admin-upload" },
                     { name: "Address Requests", path: "/admin-req" },
                     { name: "Progress Report", path: "/admin-prog-report" },
@@ -51,14 +47,13 @@ const AdminRequest = () => {
               />
 
               
->>>>>>> feat-ui-updates
             </div>
 
-            <div className="hod-info">
-              <div className="hod-icons">
+            <div className="user-info">
+              <div className="user-icons">
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/fac-home")}
+                  onClick={() => (window.location.href = "/admin-home")}
                 >
                   <FaHome className="icon" />
                   Home
@@ -71,17 +66,17 @@ const AdminRequest = () => {
                   Logout
                 </button>
               </div>
-              <div className="hod-sec">
+              <div className="user-sec">
               <p>
                   <span>Welcome: </span>
-                  <span className="hod-name">
-                    {officer_name && `[${officer_name}]`}
+                  <span className="user-name">
+                    {userId && `[${userId}]`}
                   </span>
                 </p>
                 <p>
-                  <span className="hod-role">Role: </span>
-                  <span className="hod-name">
-                    [{(user_type && `${user_type}`) || "Please Login"}]
+                  <span className="user-role">Role: </span>
+                  <span className="user-name">
+                    [{(role && `${role}`) || "Please Login"}]
                   </span>
                 </p>
               </div>
@@ -99,7 +94,22 @@ const AdminRequest = () => {
                     <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
                     TECHNOLOGY & SCIENCE
                   </p>
-
+                <div className="dropdown">
+                {/* <Dropdown
+                      label="Course"
+                      options={courses.map((c) => c.course_name)}
+                      selectedValue={selectedCourse}
+                      onChange={setSelectedCourse}
+                    />
+                    <Dropdown
+                      label="Branch"
+                      options={branches.map((b) => b.branch_name)}
+                      selectedValue={selectedBranch}
+                      onChange={setSelectedBranch}
+                      disabled={!selectedCourse}
+                    /> */}
+                  </div>
+                </div>
                 </div>
               </div>
               </div>
@@ -110,7 +120,7 @@ const AdminRequest = () => {
           <RedFooter />
         </div>
       </div>
-    </div>
+    
   );
 };
 
