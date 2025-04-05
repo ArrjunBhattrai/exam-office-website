@@ -87,26 +87,11 @@ exports.up = function (knex) {
         .onDelete("CASCADE");
     
       table
-<<<<<<< HEAD
-        .string("subject_id")
-        .notNullable();
-      
-      table
-        .enu("subject_type", ["T", "P"])
-        .notNullable();
-    
-      table
-=======
->>>>>>> 01cde6d922822bae675ff7ecde5dad3264d20250
         .foreign(["subject_id", "subject_type"])
         .references(["subject_id", "subject_type"])
         .inTable("subject")
         .onDelete("CASCADE");
-<<<<<<< HEAD
-    
-=======
 
->>>>>>> 01cde6d922822bae675ff7ecde5dad3264d20250
       table.primary(["faculty_id", "subject_id", "subject_type"]);
     })    
     .createTable("student", (table) => {
