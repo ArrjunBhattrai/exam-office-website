@@ -13,7 +13,7 @@ body {
     justify-content: center;
 }
 
-.hod-home-container {
+.home-container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -21,19 +21,19 @@ body {
     position: relative;
 }
 
-  .hod-bg {
+  .user-bg {
     width: 100vw;
     display: flex;
     justify-content: center;
     align-items: center;
   }
 
-  .hod-content {
+  .user-content {
     width: 100%;
     max-width: 1200px;
     min-width: 1000px;
     height: auto;
-    min-height: 600px;
+    min-height: 700px;
     background: white;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
     padding: 20px;
@@ -45,7 +45,7 @@ body {
     padding-top: 0;
 }
 
-  .hod-main {
+  .user-main {
     display: flex;
     margin-top: 2rem;
   }
@@ -54,14 +54,14 @@ body {
   
   /* HOD Info Section */
 
-  .hod-info {
+  .user-info {
     display: flex;  
     flex-direction: column;
     width: 100%;
     margin: 0;
 }
 
-  .hod-sec {
+  .user-sec {
     display: flex;
     padding: 5px;
     background: white;
@@ -71,16 +71,16 @@ body {
     width: 100%;
   }
 
-  .hod-sec p {
+  .user-sec p {
     margin-bottom: -1px;
   }
   
-  .hod-name {
+  .user-name {
     color: #8b0000;
     font-weight: bold;
   }
   
-  .hod-role {
+  .user-role {
     color: green;
     font-weight: bold;
   }
@@ -223,4 +223,128 @@ th, td {
 
 .dropdown-container {
   display: flex;
+}
+
+/* view deptt details */
+
+.subject-table-container {
+  margin-top: 20px;
+}
+
+.subject-table,
+.student-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.subject-table th,
+.subject-table td,
+.student-table th,
+.student-table td {
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.custom-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 50%;
+  max-width: 600px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
+  outline: none;
+  z-index: 1000;
+}
+
+.custom-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Dim background */
+  z-index: 999;
+}
+
+/* FAC ALLOC  */
+.fac-alloc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.fac-alloc-table th,
+.fac-alloc-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.fac-alloc-table th {
+  background-color: #f44336;
+  color: white;
+}
+
+.view-btn,
+.submit-btn {
+  padding: 6px 12px;
+  margin: 10px 0;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.view-btn:hover,
+.submit-btn:hover {
+  background-color: #d32f2f;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  width: 350px;
+  border-radius: 8px;
+}
+
+.modal-buttons {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* reg req */
+.request-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+.request-table th, .request-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+.request-table th {
+  background-color: #8b0000;
+  color: white;
 }

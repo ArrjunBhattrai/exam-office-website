@@ -8,7 +8,7 @@ const Dropdown = ({ label, options, selectedValue, onChange }) => {
     <div className="dropdown">
         <label>{label}:</label>
         <div className="dropdown-wrapper">
-        <select
+        <select 
           value={selectedValue}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setIsOpen(true)}

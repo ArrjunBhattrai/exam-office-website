@@ -6,7 +6,7 @@ const RedFooter = () => {
     <div className="r-footer">
       <p>
         Copyright © Shri Govindram Seksaria Institute of Technology and
-        Science,Indore, Madhya Pradesh, India
+        Science, Indore, Madhya Pradesh, India
       </p>
     </div>
   );

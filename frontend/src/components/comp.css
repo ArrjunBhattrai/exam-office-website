@@ -6,6 +6,7 @@
   align-items: center;
   padding: 1rem;
   width: 100vw;
+  top: 0;
 }
 
 .b-header-content {
@@ -232,7 +233,7 @@
 
 .dropdown-arrow {
   position: absolute;
-  right: 70px;
+  right: 10px;
   font-size: 15px;
   pointer-events: none;
 }

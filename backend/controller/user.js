@@ -116,7 +116,7 @@ const loginUser = async (req, res) => {
       { expiresIn: "5h" }
     );
 
-    res.json({ token, role });
+    res.json({ token, role, userId });
 
   } catch (error) {
     console.error("Login error:", error);
