@@ -31,6 +31,14 @@ import MarksFeed from "./pages/Faculty/MarksFeed";
 import MarksEntry from "./pages/Faculty/MarksEntry";
 */
 
+//Faculty imports
+// import FacultyHome from "./pages/Faculty/FacultyHome";
+// import ViewSubjects from "./pages/Faculty/ViewSubjects";
+// import FacCorrectionReq from "./pages/Faculty/FacCorrectionReq";
+// import FacFilledForm from "./pages/Faculty/FacFilledForm";
+// import MarksFeed from "./pages/Faculty/MarksFeed";
+// import MarksEntry from "./pages/Faculty/MarksEntry";
+
 function App() {
   return (
     <Router>

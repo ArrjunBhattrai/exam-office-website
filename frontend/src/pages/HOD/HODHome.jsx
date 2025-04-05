@@ -32,7 +32,10 @@ const HODHome = () => {
                 className="sidebar-0"
                 title="HOD Activities"
                 activities={[
-                  { name: "View Department Details", path: "/hod-deptt-details" },
+                  {
+                    name: "View Department Details",
+                    path: "/hod-dept-details",
+                  },
                   { name: "Faculty Allocation", path: "/hod-fac-alloc" },
                   { name: "Registration Requests", path: "/hod-reg-req" },
                   {name: "View Correction Requests", path: "/hod-correction-req" },
@@ -40,7 +43,6 @@ const HODHome = () => {
                   
                 ]}
               />
-          
             </div>
 
             <div className="user-info">
@@ -65,6 +67,7 @@ const HODHome = () => {
                   <span>Welcome: </span>
                   <span className="user-name">{user?.name || "Not logged in"}</span>
                 </p>
+
                 <p>
                   <span className="user-role">Role: </span>
 Not logged in                </p>
@@ -76,6 +79,7 @@ Not logged in                </p>
                     ]
                   </span>
                 </p>
+                
               </div>
             </div>
           </div>

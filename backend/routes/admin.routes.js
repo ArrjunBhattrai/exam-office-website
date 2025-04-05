@@ -12,10 +12,7 @@ router.get("/courses", authenticateUser, authorizeRole(["admin"]), adminControll
 router.post("/branch/create", authenticateUser, authorizeRole(["admin"]), adminController.createBranch);
 router.delete("/branch/:branch_id", authenticateUser, authorizeRole(["admin"]), adminController.deleteBranch);
 router.get("/branches", authenticateUser, authorizeRole(["admin"]), adminController.getBranches);
+router.get("/branches/byCourse", authenticateUser, authorizeRole(["admin"]),adminController.getBranchesByCourseId);
 
-//Routes for Hod Assignment
-router.post("/assignHod", authenticateUser, authorizeRole(["admin"]), adminController.assignHodToBranch);
-router.put("/updateHod", authenticateUser, authorizeRole(["admin"]), adminController.updateHodForBranch);
-router.delete("/delete-hod", authenticateUser, authorizeRole(["admin"]), adminController.removeHodFromBranch);
 
 module.exports = router;

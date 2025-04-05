@@ -11,8 +11,8 @@ const registerUser = async(req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     
+    //Register the admin
     if (role === "admin") {
-      // Register Admin (No branch_id required)
       await db("admin").insert({
         admin_id: id,
         admin_name: name,
@@ -22,19 +22,40 @@ const registerUser = async(req, res) => {
       return res.status(201).json({ message: "Admin registered successfully!" });
     }
     
-    else if (role === "faculty") {
-      // Validate branch_id presence
+    //Register the HOD
+    else if (role === "hod") {
       if (!branch_id) {
-        return res.status(400).json({ error: "Faculty registration requires a branch_id." });
+        return res.status(400).json({ error: "HOD registration requires a branch_id." });
       }
-      //check if branch exists
+
       const branchExists = await db("branch").where({ branch_id }).first();
       if (!branchExists) {
         return res.status(400).json({ error: "Branch ID does not exist." });
       }
 
-      // Register Faculty
-      await db("faculty").insert({
+      await db("hod").insert({
+        branch_id,
+        hod_id: id,
+        hod_email: email,
+        password: hashedPassword,
+      });
+
+      return res.status(201).json({ message: "HOD registered successfully!" });
+    }
+ 
+    //Register the faculty
+    else if (role === "faculty") {
+
+      if (!branch_id) {
+        return res.status(400).json({ error: "Faculty registration requires a branch_id." });
+      }
+
+      const branchExists = await db("branch").where({ branch_id }).first();
+      if (!branchExists) {
+        return res.status(400).json({ error: "Branch ID does not exist." });
+      }
+
+      await db("faculty_registration_request").insert({
         faculty_id: id,
         faculty_name: name,
         faculty_email: email,
@@ -42,29 +63,8 @@ const registerUser = async(req, res) => {
         branch_id,
       });
 
-      return res.status(201).json({ message: "Faculty registered successfully!" });
+      return res.status(201).json({ message: "Registration request sent successfully!" });
     }
-    
-    else if (role === "hod") {
-      // Validate branch_id presence
-      if (!branch_id) {
-        return res.status(400).json({ error: "HOD registration requires a branch_id." });
-      }
-
-      // Check if the given HOD ID exists in the Faculty table
-      const facultyExists = await db("faculty").where({ faculty_id: id }).first();
-
-      if (!facultyExists) {
-        return res.status(400).json({ error: "Faculty ID not found. HOD must be a faculty first." });
-      }
-
-      // Register HOD
-      await db("hod").insert({
-        hod_id: id,
-        branch_id,
-      });
-      return res.status(201).json({ message: "HOD registered successfully!" });
-    } 
     
     else {
       return res.status(400).json({ error: "Invalid role" });
@@ -76,7 +76,7 @@ const registerUser = async(req, res) => {
 };
 
 
-//login a user
+//Login a user
 const loginUser = async (req, res) => {
   const { email, password, role } = req.body;
 
@@ -87,18 +87,14 @@ const loginUser = async (req, res) => {
       user = await db("admin").where({ admin_email: email }).first();
       if (!user) return res.status(400).json({ error: "Invalid email" });
 
-    } else if (role === "faculty") {
+    } 
+    else if (role === "hod") {
+      user = await db("hod").where({ hod_email: email }).first();
+      if (!user) return res.status(400).json({ error: "Invalid email" });
+    }
+    else if (role === "faculty") {
       user = await db("faculty").where({ faculty_email: email }).first();
       if (!user) return res.status(400).json({ error: "Invalid email" });
-
-    } else if (role === "hod") {
-      // First, check if the email exists in the faculty table
-      user = await db("faculty").where({ faculty_email: email }).first();
-      if (!user) return res.status(400).json({ error: "Invalid email" });
-
-      // Now, check if this faculty ID exists in the HOD table
-      const isHod = await db("hod").where({ hod_id: user.faculty_id }).first();
-      if (!isHod) return res.status(400).json({ error: "User is not an HOD" });
 
     } else {
       return res.status(400).json({ error: "Invalid role" });
@@ -109,7 +105,11 @@ const loginUser = async (req, res) => {
     if (!validPassword) return res.status(400).json({ error: "Invalid credentials" });
 
     // Generate JWT token with correct ID based on role
-    const userId = role === "admin" ? user.admin_id : user.faculty_id;
+    const userId =
+    role === "admin" ? user.admin_id :
+    role === "faculty" ? user.faculty_id :
+    user.hod_id;
+    
     const token = jwt.sign(
       { userId, role },
       process.env.JWT_SECRET,
@@ -124,8 +124,25 @@ const loginUser = async (req, res) => {
   }
 };
 
+//Verify Token of the user
+const verifyToken = (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return res.status(200).json({ message: "Token valid", user: decoded });
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid token" });
+  }
+};
+
 
 module.exports = {
   registerUser,
   loginUser,
+  verifyToken
 };

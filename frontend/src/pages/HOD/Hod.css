@@ -1,0 +1,371 @@
+* {
+    font-family: "Hind Madurai", sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    background-color: #d3d3d3; /* Light grey */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  
+  .home-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    position: relative;
+  }
+  
+  .user-bg {
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .user-content {
+    width: 80%;
+    max-width: 1200px;
+    min-width: 1000px;
+    height: calc(100vh - 80px);
+    background: white;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    position: relative; 
+    z-index: 2;
+    margin-bottom: 4rem;
+    overflow: hidden;
+    margin-top: 0;
+    padding-top: 0;
+    overflow: hidden;
+  }
+  
+  .user-main{
+    display: flex;
+    margin-top: 2rem;
+  }
+  
+  .user-info{
+    display: flex;  
+    flex-direction: column;
+    width: 100%;
+    margin: 0;
+  }
+  
+  
+  .user-sec{
+    display: flex;
+    padding: 5px;
+    background: white;
+    border-bottom: 1px solid black;
+    gap: 2rem;
+    font-size: 1rem;
+    width: 100%;
+  }
+  
+  .user-sec p{
+    margin-bottom: -1px;
+  }
+  
+  .user-name {
+    color: #8b0000;
+    font-weight: bold;
+  }
+  
+  .user-role {
+    color: green;
+    font-weight: bold;
+  }
+  
+  .user-icons {
+    position: absolute;
+    right: 20px;
+    top: 40px;
+    display: flex;
+    z-index: 5;
+    margin-top: 6.5rem;
+    gap: 10px;
+    font-size: 12px;
+    align-items: center;
+  }
+  
+  .icon-btn{
+    display: flex;
+    color: #8b0000;
+    border: none;
+    background-color: white;
+    font-size: 12px;
+  }
+  
+  .icon {
+    font-size: 12px;
+  }
+  
+  .icon-btn:hover{
+    text-decoration: underline;
+  }
+  
+  .upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 20px;
+    justify-content: flex-start;
+  }
+  
+  .file-input {
+    margin-bottom: 10px;
+  }
+  
+  .upload-button {
+    background-color: #ffefc4;
+    color: black;
+    border: 1.2px solid black;
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-size: 16px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+  }
+  
+  .upload-button:hover {
+    background-color: #e7d290;
+    text-decoration: underline;
+  }
+  
+  
+  .input-group {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    width: 800px;
+  }
+  
+  .input-group label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #333;
+    margin-left: 0.7rem;
+    width: 200px;
+  }
+  
+  .input-group input {
+    width: 70%;
+    padding: 8px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .faculty-box {
+    border: 1px solid #8b0000;
+    padding: 2rem;
+    margin-top: -1rem;
+    height: 400px;
+  }
+  
+  
+  .session {
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    max-width: 300px;
+    margin-left: 9px;
+    margin-bottom: 4px;
+  }
+  
+  .session label {
+    color: black;
+    font-weight: 400;
+    font-size: 14px;
+  }
+  
+  .dropdown-container {
+    flex-grow: 1;
+    width: 70%;
+  }
+  
+  .subject-table td {
+    height: 40px;
+    font-size: 14px;
+  }
+  
+  .subject-table-container {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+  }
+  
+  /* Modal Background */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  /* Centered Form */
+  .subject-form-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 50%;
+    max-width: 600px;
+    position: relative;
+  }
+  
+  /* Close Button */
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+  }
+  
+  /* Form Styling */
+  .subject-form label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+    color: #333;
+    font-weight: 500;
+  }
+  
+  .subject-form input,
+  .subject-form textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .subject-form textarea {
+    resize: vertical;
+    height: 80px;
+  }
+  
+  /* Buttons */
+  .form-buttons {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  .filter-section {
+    display: flex;
+  }
+  
+  .user-box {
+    .faculty-box {
+      border: 1px solid #8b0000;
+      padding: 2rem;
+      margin-top: -1rem;
+      height: 400px;
+     }
+  }
+  
+  .user-input {
+    width: 80%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .fac-alloc h3{
+    color: #8b0000;
+    border-bottom: 1px solid black;
+    width: 100%;
+    display: flex;
+    padding: 5px;
+    padding-top: 1rem;
+    margin: 0;
+    font-weight: 500;
+   }
+    
+   .fac-alloc .session-text{
+    text-align: center;
+    color: #8b0000;
+   padding: 5px;
+   font-size: 1.2rem;
+   }
+  
+   .box-overlay-text {
+    background-color: white;
+   margin-left: 1.2rem;
+   font-size: 0.8rem;
+   padding: 0.5rem;
+   }
+  
+   .faculty-box {
+    border: 1px solid #8b0000;
+    padding: 2rem;
+    margin-top: -1rem;
+    height: 400px;
+   }
+  
+   .institute-text {
+    margin-left: 0.7rem;
+   }
+  
+   Button {
+    margin-left: 0.7rem;
+    margin-top: 0.7rem;
+   }
+  
+   table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  
+  th, td {
+    border: 1px solid #000;
+    padding: 8px;
+    text-align: center;
+    color: white;
+  }
+  
+  th{
+    background-color: #8b0000;
+  }
+  
+  td {
+    color: rgb(22, 22, 22);
+  }

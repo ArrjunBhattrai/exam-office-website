@@ -28,7 +28,7 @@
   }
   
 
-  input-group {
+  .input-group {
     margin-bottom: 15px;
     display: flex;
     gap: 1rem;
@@ -53,7 +53,7 @@
   }
   
   
-  .hod-icons {
+  .user-icons {
     position: absolute;
     top: 15px;
     right: 20px;
@@ -81,7 +81,7 @@
     font-size: 16px;
   }
   
-  .faculty-box {
+  .user-box {
     .faculty-box {
       border: 1px solid #8b0000;
       padding: 2rem;
@@ -90,7 +90,7 @@
      }
   }
   
-  .faculty-input {
+  .user-input {
     width: 80%;
     padding: 10px;
     border-radius: 5px;

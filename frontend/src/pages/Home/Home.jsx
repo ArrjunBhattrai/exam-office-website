@@ -8,7 +8,7 @@ import BlueFooter from "../../components/BlueFooter";
 
 const Home = () => {
   return (
-    <div className="home-container">
+    <div className="home-container-landing">
       <BlueHeader />
       <div className="background">
         <div className="overlay"></div> 

@@ -14,11 +14,37 @@ exports.up = function (knex) {
     .createTable("branch", (table) => {
       table.string("branch_id").primary();
       table.string("branch_name").notNullable();
+      table.string("course_id").notNullable();
+
       table
-        .string("course_id")
-        .notNullable()
+        .foreign("course_id")
         .references("course_id")
         .inTable("course")
+        .onDelete("CASCADE");
+    })
+    .createTable("hod", (table) => {
+      table.string("branch_id").primary().notNullable();
+      table.string("hod_id").notNullable();
+      table.string("hod_email").notNullable();
+      table.string("password").notNullable();
+
+      table
+        .foreign("branch_id")
+        .references("branch_id")
+        .inTable("branch")
+        .onDelete("CASCADE");
+    })
+    .createTable("faculty_registration_request", (table) => {
+      table.string("faculty_id").primary();
+      table.string("faculty_name").notNullable();
+      table.string("faculty_email").unique().notNullable();
+      table.string("password").notNullable();
+      table.string("branch_id").notNullable();
+
+      table
+        .foreign("branch_id")
+        .references("branch_id")
+        .inTable("branch")
         .onDelete("CASCADE");
     })
     .createTable("faculty", (table) => {
@@ -26,50 +52,42 @@ exports.up = function (knex) {
       table.string("faculty_name").notNullable();
       table.string("faculty_email").unique().notNullable();
       table.string("password").notNullable();
+      table.string("branch_id").notNullable();
+
       table
-        .string("branch_id")
-        .notNullable()
-        .references("branch_id")
-        .inTable("branch")
-        .onDelete("CASCADE");
-    })
-    .createTable("hod", (table) => {
-      table
-        .string("hod_id")
-        .references("faculty_id")
-        .inTable("faculty")
-        .onDelete("CASCADE");
-      table
-        .string("branch_id")
-        .primary()
-        .notNullable()
+        .foreign("branch_id")
         .references("branch_id")
         .inTable("branch")
         .onDelete("CASCADE");
     })
     .createTable("subject", (table) => {
       table.string("subject_id").notNullable();
+      table.string("subject_type").notNullable();
       table.string("subject_name").notNullable();
       table.integer("semester").notNullable();
-      table.enu("subject_type", ["T", "P"]).notNullable();
+      table.string("branch_id").notNullable();
+
       table
-        .string("branch_id")
-        .notNullable()
+        .foreign("branch_id")
         .references("branch_id")
         .inTable("branch")
         .onDelete("CASCADE");
+
       table.primary(["subject_id", "subject_type"]);
- 
     })
     .createTable("faculty_subject", (table) => {
+      table.string("faculty_id").notNullable();
+      table.string("subject_id").notNullable();
+      table.string("subject_type").notNullable();
+
       table
-        .string("faculty_id")
-        .notNullable()
+        .foreign("faculty_id")
         .references("faculty_id")
         .inTable("faculty")
         .onDelete("CASCADE");
     
       table
+<<<<<<< HEAD
         .string("subject_id")
         .notNullable();
       
@@ -78,110 +96,108 @@ exports.up = function (knex) {
         .notNullable();
     
       table
+=======
+>>>>>>> 01cde6d922822bae675ff7ecde5dad3264d20250
         .foreign(["subject_id", "subject_type"])
         .references(["subject_id", "subject_type"])
         .inTable("subject")
         .onDelete("CASCADE");
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 01cde6d922822bae675ff7ecde5dad3264d20250
       table.primary(["faculty_id", "subject_id", "subject_type"]);
     })    
     .createTable("student", (table) => {
       table.string("enrollment_no").primary();
       table.string("student_name").notNullable();
+      table.string("branch_id").notNullable();
+
       table
-        .string("branch_id")
-        .notNullable()
+        .foreign("branch_id")
         .references("branch_id")
         .inTable("branch")
         .onDelete("CASCADE");
     })
     .createTable("student_subject", (table) => {
+      table.string("enrollment_no").notNullable();
+      table.string("subject_id").notNullable();
+      table.string("subject_type").notNullable();
+
       table
-        .string("enrollment_no")
-        .notNullable()
+        .foreign("enrollment_no")
         .references("enrollment_no")
         .inTable("student")
         .onDelete("CASCADE");
       table
-        .string("subject_id")
-        .notNullable()
-        .references("subject_id")
+        .foreign(["subject_id", "subject_type"])
+        .references(["subject_id", "subject_type"])
         .inTable("subject")
         .onDelete("CASCADE");
-        table
-        .enu("subject_type", ["T", "P"])
-        .notNullable();
+
       table.primary(["enrollment_no", "subject_id", "subject_type"]);
     })
     .createTable("course_outcome", (table) => {
       table.string("co_name").notNullable();
+      table.string("subject_id").notNullable();
+      table.string("subject_type").notNullable();
+
       table
-        .string("subject_id")
-        .notNullable()
-        .references("subject_id")
+        .foreign(["subject_id", "subject_type"])
+        .references(["subject_id", "subject_type"])
         .inTable("subject")
         .onDelete("CASCADE");
-      table
-        .enu("subject_type", ["T", "P"])
-        .notNullable();
-      table.primary(["co_name", "subject_id", "subject_type"]);
 
+      table.primary(["co_name", "subject_id", "subject_type"]);
     })
     .createTable("marks_temp", (table) => {
+      table.string("enrollment_no").notNullable();
+      table.string("subject_id").notNullable();
+      table.string("subject_type").notNullable();
+      table.enu("component_name", ["CW", "SW", "TH", "PR"]).notNullable();
+      table.string("sub_component_name").notNullable();
+      table.string("co_name").notNullable();
+      table.integer("marks").notNullable();
+
       table
-        .string("enrollment_no")
-        .notNullable()
+        .foreign("enrollment_no")
         .references("enrollment_no")
         .inTable("student")
         .onDelete("CASCADE");
       table
-        .string("subject_id")
-        .notNullable()
-        .references("subject_id")
-        .inTable("subject")
-        .onDelete("CASCADE");
-      table
-        .enu("subject_type", ["T", "P"])
-        .notNullable();   
-      table.enu("component_name", ["CW", "SW", "TH", "PR"]).notNullable();
-      table.string("sub_component_name").notNullable();
-      table
-        .string("co_name")
-        .notNullable()
-        .references("co_name")
+        .foreign(["co_name", "subject_id", "subject_type"])
+        .references(["co_name", "subject_id", "subject_type"])
         .inTable("course_outcome")
         .onDelete("CASCADE");
-      table.integer("marks").notNullable();
     })
     .createTable("marks_update_request", (table) => {
       table.increments("request_id").primary();
+      table.string("faculty_id").notNullable();
+      table.string("subject_id").notNullable();
+      table.string("subject_type").notNullable();
       table
-        .string("faculty_id")
-        .notNullable()
+        .enu("status", ["Pending", "Approved", "Rejected"])
+        .defaultTo("Pending");
+
+      table
+        .foreign("faculty_id")
         .references("faculty_id")
         .inTable("faculty")
         .onDelete("CASCADE");
       table
-        .string("subject_id")
-        .notNullable()
-        .references("subject_id")
+        .foreign(["subject_id", "subject_type"])
+        .references(["subject_id", "subject_type"])
         .inTable("subject")
         .onDelete("CASCADE");
-      table
-        .enu("subject_type", ["T", "P"])
-        .notNullable();
-      table
-        .enu("status", ["Pending", "Approved", "Rejected"])
-        .defaultTo("Pending");
     })
     .createTable("update_logs", (table) => {
       table.increments("log_id").primary();
       table.timestamp("timestamp").defaultTo(knex.fn.now());
       table.text("reason");
+      table.integer("request_id").unsigned().notNullable();
       table
-        .integer("request_id")
-        .unsigned()
-        .notNullable()
+        .foreign("request_id")
         .references("request_id")
         .inTable("marks_update_request")
         .onDelete("CASCADE");
@@ -190,10 +206,18 @@ exports.up = function (knex) {
 
 exports.down = async function (knex) {
   // Drop foreign keys before dropping tables
+  await knex.schema.alterTable("update_logs", (table) => {
+    table.dropForeign("request_id");
+  });
+
+  await knex.schema.alterTable("marks_update_request", (table) => {
+    table.dropForeign("faculty_id");
+    table.dropForeign(["subject_id", "subject_type"]);
+  });
+
   await knex.schema.alterTable("marks_temp", (table) => {
     table.dropForeign("enrollment_no");
-    table.dropForeign(["subject_id", "subject_type"]);
-    table.dropForeign("co_name");
+    table.dropForeign(["co_name", "subject_id", "subject_type"]);
   });
 
   await knex.schema.alterTable("course_outcome", (table) => {
@@ -218,7 +242,15 @@ exports.down = async function (knex) {
     table.dropForeign("branch_id");
   });
 
+  await knex.schema.alterTable("faculty_registration_request", (table) => {
+    table.dropForeign("branch_id");
+  });
+
   await knex.schema.alterTable("subject", (table) => {
+    table.dropForeign("branch_id");
+  });
+
+  await knex.schema.alterTable("hod", (table) => {
     table.dropForeign("branch_id");
   });
 
@@ -226,21 +258,7 @@ exports.down = async function (knex) {
     table.dropForeign("course_id");
   });
 
-  await knex.schema.alterTable("hod", (table) => {
-    table.dropForeign("hod_id");
-    table.dropForeign("branch_id");
-  });
-
-  await knex.schema.alterTable("marks_update_request", (table) => {
-    table.dropForeign("faculty_id");
-    table.dropForeign(["subject_id", "subject_type"]);
-  });
-
-  await knex.schema.alterTable("update_logs", (table) => {
-    table.dropForeign("request_id");
-  });
-
-  // Drop tables in reverse order
+  // Drop tables in reverse creation order
   await knex.schema
     .dropTableIfExists("update_logs")
     .dropTableIfExists("marks_update_request")
@@ -250,6 +268,7 @@ exports.down = async function (knex) {
     .dropTableIfExists("student")
     .dropTableIfExists("faculty_subject")
     .dropTableIfExists("faculty")
+    .dropTableIfExists("faculty_registration_request")
     .dropTableIfExists("subject")
     .dropTableIfExists("hod")
     .dropTableIfExists("branch")
