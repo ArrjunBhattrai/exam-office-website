@@ -13,18 +13,11 @@ const authenticateUser = async (req, res, next) => {
     let user;
     if (decoded.role === "admin") {
       user = await db("admin").where({ admin_id: decoded.userId }).first();
-    } else if (decoded.role === "faculty") {
-      user = await db("faculty").where({ faculty_id: decoded.userId }).first();
     } else if (decoded.role === "hod") {
-      user = await db("faculty")
-        .where({ faculty_id: decoded.userId })
-        .first();
-      const isHod = await db("hod").where({ hod_id: decoded.userId }).first();
-
-      if (!user || !isHod) {
-        return res.status(403).json({ error: "Invalid HOD access" });
-      }
-    }
+      user = await db("hod").where({ hod_id: decoded.userId }).first();
+    }else if (decoded.role === "faculty") {
+      user = await db("faculty").where({ faculty_id: decoded.userId }).first();
+    } 
 
     if (!user) return res.status(403).json({ error: "Invalid token or user does not exist" });
 

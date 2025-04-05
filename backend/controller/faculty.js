@@ -1,41 +1,7 @@
 const db = require("../db/db");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-
-// Faculty Login
-const facultyLogin = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const faculty = await db("faculty").where({ email }).first();
-
-    if (!faculty) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, faculty.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    const token = jwt.sign(
-      {
-        faculty_id: faculty.faculty_id,
-        branch_id: faculty.branch_id,
-        role: "Faculty",
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
-    res.status(200).json({ token, faculty });
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
 
 // Get subjects assigned to the faculty
-const subjectByFaculty = async (req, res) => {
+const assignedSubject = async (req, res) => {
   try {
     const { faculty_id } = req.params;
 
@@ -44,9 +10,12 @@ const subjectByFaculty = async (req, res) => {
     }
 
     const subjects = await db("faculty_subject")
-      .join("subject", "faculty_subject.subject_id", "subject.subject_id")
+      .join("subject", function () {
+        this.on("faculty_subject.subject_id", "=", "subject.subject_id")
+            .andOn("faculty_subject.subject_type", "=", "subject.subject_type");
+      })
       .where("faculty_subject.faculty_id", faculty_id)
-      .select("subject.subject_id", "subject.subject_name", "subject.year_semester");
+      .select("subject.subject_id", "subject.subject_type", "subject.subject_name", "subject.semester");
 
     res.json({ faculty_id, subjects });
   } catch (error) {
@@ -55,17 +24,22 @@ const subjectByFaculty = async (req, res) => {
   }
 };
 
+
 // Assign COs for a subject
 const assignCO = async (req, res) => {
   try {
-    const { subject_id, co_names } = req.body;
+    const { subject_id, subject_type, co_names } = req.body;
 
-    if (!subject_id || !Array.isArray(co_names) || co_names.length === 0) {
+    if (!subject_id || !subject_type || !Array.isArray(co_names) || co_names.length === 0) {
       return res.status(400).json({ error: "Invalid input" });
     }
 
     const insertedCOs = await db("course_outcome")
-      .insert(co_names.map((name) => ({ co_name: name, subject_id })))
+      .insert(co_names.map((name) => ({
+        co_name: name,
+        subject_id,
+        subject_type
+      })))
       .returning("*");
 
     res.json({ message: "COs added successfully", insertedCOs });
@@ -75,43 +49,55 @@ const assignCO = async (req, res) => {
   }
 };
 
+
 // Get students enrolled in a subject
 const studentBySubject = async (req, res) => {
   try {
-    const { subject_id } = req.params;
+    const { subject_id, subject_type } = req.params;
 
-    if (!subject_id) {
-      return res.status(400).json({ error: "Subject ID is required" });
+    if (!subject_id || !subject_type) {
+      return res.status(400).json({ error: "Subject ID and type are required" });
     }
 
     const students = await db("student_subject")
-      .join("student", "student_subject.student_id", "student.student_id")
-      .where("student_subject.subject_id", subject_id)
-      .select("student.student_id", "student.student_name", "student.enrollment_number");
+      .join("student", "student_subject.enrollment_no", "student.enrollment_no")
+      .where({
+        "student_subject.subject_id": subject_id,
+        "student_subject.subject_type": subject_type
+      })
+      .select("student.enrollment_no", "student.student_name");
 
-    res.json({ subject_id, students });
+    res.json({ subject_id, subject_type, students });
   } catch (error) {
     console.error("Error fetching students:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
+
 // Submit marks of students
 const submitMarks = async (req, res) => {
   try {
-    const { subject_id, component_name, sub_component_name, marks } = req.body;
+    const {
+      subject_id,
+      subject_type,
+      component_name,
+      sub_component_name,
+      marks
+    } = req.body;
 
-    if (!subject_id || !component_name || !sub_component_name || !Array.isArray(marks) || marks.length === 0) {
+    if (!subject_id || !subject_type || !component_name || !sub_component_name || !Array.isArray(marks)) {
       return res.status(400).json({ error: "Invalid input" });
     }
 
-    const marksData = marks.map(({ student_id, co_id, marks }) => ({
-      student_id,
+    const marksData = marks.map(({ enrollment_no, co_name, marks }) => ({
+      enrollment_no,
       subject_id,
-      co_id,
+      subject_type,
       component_name,
       sub_component_name,
-      marks,
+      co_name,
+      marks
     }));
 
     await db("marks_temp").insert(marksData);
@@ -126,32 +112,32 @@ const submitMarks = async (req, res) => {
 // Get the marks of a particular sub-component
 const getStudentMarks = async (req, res) => {
   try {
-    const { subject_id, component_name, sub_component_name } = req.params;
+    const { subject_id, subject_type, component_name, sub_component_name } = req.params;
 
-    if (!subject_id || !component_name || !sub_component_name) {
+    if (!subject_id || !subject_type || !component_name || !sub_component_name) {
       return res.status(400).json({ error: "Missing required parameters" });
     }
 
     const marksData = await db("marks_temp")
-      .join("student", "marks_temp.student_id", "student.student_id")
+      .join("student", "marks_temp.enrollment_no", "student.enrollment_no")
       .select(
-        "student.student_id",
+        "student.enrollment_no",
         "student.student_name",
-        "student.enrollment_number",
-        "marks_temp.co_id",
+        "marks_temp.co_name",
         "marks_temp.marks"
       )
       .where({
         "marks_temp.subject_id": subject_id,
+        "marks_temp.subject_type": subject_type,
         "marks_temp.component_name": component_name,
-        "marks_temp.sub_component_name": sub_component_name,
+        "marks_temp.sub_component_name": sub_component_name
       });
 
     if (marksData.length === 0) {
       return res.status(404).json({ message: "No marks found for given criteria" });
     }
 
-    res.status(200).json({ subject_id, component_name, sub_component_name, marks: marksData });
+    res.status(200).json({ subject_id, subject_type, component_name, sub_component_name, marks: marksData });
   } catch (error) {
     console.error("Error fetching student marks:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -159,8 +145,7 @@ const getStudentMarks = async (req, res) => {
 };
 
 module.exports = {
-  facultyLogin,
-  subjectByFaculty,
+  assignedSubject,
   assignCO,
   studentBySubject,
   submitMarks,

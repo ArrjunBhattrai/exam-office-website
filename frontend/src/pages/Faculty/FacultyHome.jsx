@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
 import "./faculty.css";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
@@ -15,16 +14,16 @@ const FacultyHome = () => {
 
   return (
     <div className="home-container">
-      <div className="hod-bg">
+      <div className="user-bg">
         <RedHeader />
-        <div className="hod-content">
+        <div className="user-content">
           <ActivityHeader />
 
-          <div className="hod-main">
+          <div className="user-main">
             <div className="sidebars">
               <Sidebar
-                className="sidebar-1"
-                title="Faculty Activity"
+                className="sidebar"
+                title="Faculty Activities"
                 activities={[
                   { name: "View Assigned Subjects", path: "/fac-view-sub" },
                   { name: "Marks Feeding Activities", path: "/fac-marks-feed" },
@@ -33,8 +32,8 @@ const FacultyHome = () => {
               />
             </div>
 
-            <div className="hod-info">
-              <div className="hod-icons">
+            <div className="user-info">
+              <div className="user-icons">
                 <button
                   className="icon-btn"
                   onClick={() => (window.location.href = "/fac-home")}
@@ -50,22 +49,22 @@ const FacultyHome = () => {
                   Logout
                 </button>
               </div>
-              <div className="hod-sec">
+              <div className="user-sec">
                 <p>
                   <span>Welcome: </span>
-                  <span className="hod-name">
+                  <span className="user-name">
                     [{user?.name || "Please Login"}]
                   </span>
                 </p>
                 <p>
-                  <span className="hod-role">Role: </span>
-                  <span className="hod-name">
+                  <span className="user-role">Role: </span>
+                  <span className="user-name">
                     [{user?.role || "Please Login"}]
                   </span>
                 </p>
                 <p>
-                  <span className="hod-role">Department: </span>
-                  <span className="hod-name">
+                  <span className="user-role">Department: </span>
+                  <span className="user-name">
                     [{user?.department || "Please Login"}]
                   </span>
                 </p>

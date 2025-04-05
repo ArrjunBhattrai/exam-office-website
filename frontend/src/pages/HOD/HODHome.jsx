@@ -8,7 +8,13 @@ import RedHeader from "../../components/RedHeader";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 const HODHome = () => {
-  const user = useSelector((state) => state.auth.user); // Get logged-in user
+  const { userId, isAuthenticated, role, token } = useSelector(
+    (state) => state.auth
+  );
+
+  if (!isAuthenticated) {
+    return <div>Please log in to access this page.</div>;
+  }
 
   return (
     <div className="home-container">
@@ -23,14 +29,18 @@ const HODHome = () => {
                 className="sidebar-0"
                 title="HOD Activities"
                 activities={[
-                  { name: "View Department Details", path: "/hod-dept-details" },
+                  {
+                    name: "View Department Details",
+                    path: "/hod-dept-details",
+                  },
                   { name: "Faculty Allocation", path: "/hod-fac-alloc" },
                   { name: "Progress Report", path: "/" },
-                  {name: "View Correction Requests", path: "/hod-correction-req" },
-                  
+                  {
+                    name: "View Correction Requests",
+                    path: "/hod-correction-req",
+                  },
                 ]}
               />
-          
             </div>
 
             <div className="user-info">
@@ -53,12 +63,14 @@ const HODHome = () => {
               <div className="user-sec">
                 <p>
                   <span>Welcome: </span>
-                  <span className="user-name">{user?.name || "HOD IT"}</span>
+                  <span className="user-name">{userId && `[${userId}]`}</span>
                 </p>
+
                 <p>
                   <span className="user-role">Role: </span>
-                  <span className="user-name">[{user?.role || "HOD"}]</span>
+                  <span className="user-name">[{role && `${role}`}]</span>
                 </p>
+                {/*
                 <p>
                   <span className="user-role">Department: </span>
                   <span className="user-name">
@@ -67,6 +79,7 @@ const HODHome = () => {
                     ]
                   </span>
                 </p>
+                */}
               </div>
             </div>
           </div>

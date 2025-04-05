@@ -29,13 +29,6 @@ const Login = () => {
 
   const val = useSelector((state) => state.auth);
 
-
-  // useEffect(() => {
-  //   if (isAuthenticated) {
-  //     navigate(`/${userType2.toLowerCase()}-home`);
-  //   }
-  // }, [isAuthenticated, userType2, navigate]);
-
   const validateEmail = (value) => {
     let error = "";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
@@ -66,9 +59,9 @@ const Login = () => {
         // Dispatch user login action with userId, role, and token
         dispatch(
           login({
-            userId: data.userId, // Extract from API response
+            userId: data.userId, 
             email,
-            role: data.role, // Extract from API response
+            role: data.role, 
             token: data.token,
           })
         );
@@ -80,11 +73,6 @@ const Login = () => {
       }
     }
   };
-  
-  /*const handleUserType = (e) => {
-    setUserType(e.target.value);
-
-  }*/
   
   console.log(val);
 
@@ -108,8 +96,8 @@ const Login = () => {
                 onChange={(e) => setUserType(e.target.value)}
               >
                 <option value="admin">Admin</option>
-                <option value="HOD">HOD</option>
-                <option value="FACULTY">Faculty</option>
+                <option value="hod">HOD</option>
+                <option value="faculty">Faculty</option>
               </select>
             </div>
 
