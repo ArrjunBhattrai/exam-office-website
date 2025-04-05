@@ -85,6 +85,7 @@ exports.up = function (knex) {
         .references("faculty_id")
         .inTable("faculty")
         .onDelete("CASCADE");
+    
       table
         .foreign(["subject_id", "subject_type"])
         .references(["subject_id", "subject_type"])
@@ -92,7 +93,7 @@ exports.up = function (knex) {
         .onDelete("CASCADE");
 
       table.primary(["faculty_id", "subject_id", "subject_type"]);
-    })
+    })    
     .createTable("student", (table) => {
       table.string("enrollment_no").primary();
       table.string("student_name").notNullable();

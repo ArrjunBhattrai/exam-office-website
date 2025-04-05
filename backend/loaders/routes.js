@@ -1,5 +1,6 @@
 module.exports = function (app) {
   console.log("============");
+  
   app.use("/api/user", require("../routes/user.routes"));
   app.use("/api/admin", require("../routes/admin.routes"));
   app.use("/api/hod", require("../routes/hod.routes"));
