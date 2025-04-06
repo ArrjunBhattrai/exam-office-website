@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 
+import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home/Home";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
@@ -9,17 +10,16 @@ import AdminHome from "./pages/Admin/AdminHome";
 import CourseManagement from "./pages/Admin/Course";
 import BranchManagement from "./pages/Admin/BranchManagment";
 import SessionManagement from "./pages/Admin/SessionManagament";
-import AssignHOD from "./pages/Admin/AssignHOD";
 import AdminUpload from "./pages/Admin/AdminUpload";
 import AdminRequest from "./pages/Admin/AdminRequest";
 import AdminProgressReport from "./pages/Admin/AdminProgressReport";
 
 import HODHome from "./pages/HOD/HODHome";
-import FacultyAllocation from "./pages/HOD/FacultyAllocation";
 import HODViewDeptt from "./pages/HOD/HODViewDeptt";
+import RegistrationRequest from "./pages/HOD/RegistrationRequest";
+import FacultyAllocation from "./pages/HOD/FacultyAllocation";
 import HODCorrectionReq from "./pages/HOD/HODCorrectionReq";
 import HodProgressReport from "./pages/HOD/HodProgressReport";
-import RegistrationRequest from "./pages/HOD/RegistrationRequest";
 /*
 import FacultyLogin from "./pages/Faculty/FacultyLogin";
 import FacultyRegister from "./pages/Faculty/FacultyRegister";
@@ -52,9 +52,6 @@ function App() {
           <Route path="/course-management" element={<CourseManagement />} />
           <Route path="/branch-management" element={<BranchManagement />} />
           <Route path="/session-management" element={<SessionManagement />} />
-          {/* <Route path="/faculty-management" element={<FacultyManagement />} /> */}
-          <Route path="/assign-hod" element={<AssignHOD />} />
-          {/* <Route path="/admin-new-sub" element={<AdminNewSub />} /> */}
           <Route path="/admin-upload" element={<AdminUpload />} />
           <Route path="/admin-req" element={<AdminRequest />} />
           <Route path="/admin-prog-report" element={<AdminProgressReport />} />

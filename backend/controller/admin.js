@@ -5,9 +5,9 @@ const bcrypt = require("bcryptjs");
 //Course Related Activities
 //Create a new course
 const createCourse = async (req, res) => {
-  const { course_id, course_name, course_year } = req.body;
+  const { course_id, course_name, no_of_semester } = req.body;
 
-  if (!course_id || !course_name || !course_year) {
+  if (!course_id || !course_name || !no_of_semester) {
     return res.status(400).json({ error: "All fields are required" });
   }
 
@@ -21,7 +21,7 @@ const createCourse = async (req, res) => {
     await db("course").insert({
       course_id,
       course_name,
-      course_year,
+      no_of_semester,
     });
 
     res.status(201).json({ message: "Course created successfully" });

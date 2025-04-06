@@ -9,7 +9,7 @@ exports.up = function (knex) {
     .createTable("course", (table) => {
       table.string("course_id").primary();
       table.string("course_name").notNullable();
-      table.integer("course_year").notNullable();
+      table.integer("no_of_semester").notNullable();
     })
     .createTable("branch", (table) => {
       table.string("branch_id").primary();
@@ -98,6 +98,7 @@ exports.up = function (knex) {
       table.string("enrollment_no").primary();
       table.string("student_name").notNullable();
       table.string("branch_id").notNullable();
+      table.integer("semester").notNullable();
 
       table
         .foreign("branch_id")

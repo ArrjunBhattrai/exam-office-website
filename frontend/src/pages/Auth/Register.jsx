@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-// import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import BlueHeader from "../../components/BlueHeader";
 import BlueFooter from "../../components/BlueFooter";
@@ -17,21 +16,16 @@ const generateCaptcha = () => {
 };
 
 const Register = () => {
-  // const dispatch = useDispatch();
   const navigate = useNavigate();
   const [captcha, setCaptcha] = useState(generateCaptcha());
+  const [userId, setuserId] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [enteredCaptcha, setEnteredCaptcha] = useState("");
-  const [userType, setUserType] = useState("admin"); // Change default to ADMIN
+  const [userType, setUserType] = useState("admin");
+  const [branchId, setBranchId] = useState("");
   const [errors, setErrors] = useState({});
-  //   const authState = useSelector((state) => state.auth);
-
-  //   const { isAuthenticated, userType: userType2 } = useSelector(
-  //     (state) => state.auth
-  //   );
-  //   const val = useSelector((state) => state.auth);
 
   const validateEmail = (value) => {
     let error = "";
@@ -54,36 +48,49 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (
-      !errors.email &&
-      !errors.captcha &&
-      name &&
-      email &&
-      password &&
-      enteredCaptcha
-    ) {
+    if (!userId || !name || !email || !password || !enteredCaptcha) {
+      return alert("Please fill in all required fields.");
+    }
+
+    if ((userType === "hod" || userType === "faculty") && !branchId) {
+      return alert("Branch ID is required for HOD and Faculty.");
+    }
+
+    if (errors.email || errors.captcha) return;
+
       try {
         const response = await fetch(`${BACKEND_URL}/api/user/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password, role: userType }),
+          body: JSON.stringify({
+            id: userId,
+            name,
+            email,
+            password,
+            role: userType,
+            branch_id: branchId,
+          }),
         });
 
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "Registration failed!");
 
-        alert("Registration Successful! Please login.");
-        navigate("/login");
-      } catch (error) {
+        if (userType === "faculty") {
+          alert("Request submitted! Please wait for HOD/Admin approval.");
+        } else {
+          alert("Registration Successful! Please login.");
+          navigate("/login");
+        }
+      }catch (error) {
         alert(error.message);
       }
-    }
+      
   };
-
+/*
   const handleFacultyRequest = async (e) => {
     e.preventDefault();
     if (!email || !password) return alert("Please fill all required fields.");
-  
+
     try {
       const response = await fetch(`${BACKEND_URL}/api/user/register`, {
         method: "POST",
@@ -95,16 +102,16 @@ const Register = () => {
           role: "FACULTY",
         }),
       });
-  
+
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Request failed!");
-  
+
       alert("Request submitted! Please wait for HOD/Admin approval.");
     } catch (error) {
       alert(error.message);
     }
   };
-  
+  */
 
   return (
     <div className="container">
@@ -121,11 +128,20 @@ const Register = () => {
                 onChange={(e) => setUserType(e.target.value)}
               >
                 <option value="admin">Admin</option>
-                <option value="HOD">HOD</option>
-                <option value="FACULTY">Faculty</option>
+                <option value="hod">HOD</option>
+                <option value="faculty">Faculty</option>
               </select>
             </div>
-
+            <div className="input-group-auth">
+              <label>User Id</label>
+              <input
+                type="text"
+                placeholder="Enter User Id"
+                value={userId}
+                onChange={(e) => setuserId(e.target.value)}
+                required
+              />
+            </div>
             {/* Name Field */}
             <div className="input-group-auth">
               <label>Name:</label>
@@ -166,6 +182,19 @@ const Register = () => {
               />
             </div>
 
+            {(userType === "hod" || userType === "faculty") && (
+              <div className="input-group-auth">
+                <label>Branch ID:</label>
+                <input
+                  type="text"
+                  placeholder="Enter Branch ID"
+                  value={branchId}
+                  onChange={(e) => setBranchId(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+
             {/* Captcha Field */}
             <div className="captcha-box">
               <span className="captcha-text">{captcha}</span>
@@ -189,21 +218,15 @@ const Register = () => {
             />
             {errors.captcha && <span className="error">{errors.captcha}</span>}
 
-            
-              {userType === "FACULTY" ? (
-                <button
-                  type="submit"
-                  className="auth-btn"
-                  onClick={handleFacultyRequest}
-                >
-                  Request Approval
-                </button>
-              ) : (
-                <button type="submit" className="auth-btn">
-                  Register
-                </button>
-              )}
-            
+            {userType === "faculty" ? (
+              <button type="submit" className="auth-btn">
+                Request Approval
+              </button>
+            ) : (
+              <button type="submit" className="auth-btn">
+                Register
+              </button>
+            )}
           </form>
 
           <p>

@@ -8,16 +8,15 @@ import RedHeader from "../../components/RedHeader";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 const HODHome = () => {
-  //to be removed:
   const user = useSelector((state) => state.auth.user); // Get logged-in user
 
-  // const { userId, isAuthenticated, role, token } = useSelector(
-  //           (state) => state.auth
-  //         );
-      
-  //         if (!isAuthenticated) {
-  //           return <div>Please log in to access this page.</div>;
-  //         } 
+  const { userId, isAuthenticated, role, token } = useSelector(
+    (state) => state.auth
+  );
+
+  if (!isAuthenticated) {
+    return <div>Please log in to access this page.</div>;
+  }
 
   return (
     <div className="home-container">
@@ -34,13 +33,15 @@ const HODHome = () => {
                 activities={[
                   {
                     name: "View Department Details",
-                    path: "/hod-dept-details",
+                    path: "/hod-deptt-details",
                   },
                   { name: "Faculty Allocation", path: "/hod-fac-alloc" },
                   { name: "Registration Requests", path: "/hod-reg-req" },
-                  {name: "View Correction Requests", path: "/hod-correction-req" },
+                  {
+                    name: "View Correction Requests",
+                    path: "/hod-correction-req",
+                  },
                   { name: "Progress Report", path: "/hod-prog-report" },
-                  
                 ]}
               />
             </div>
@@ -65,18 +66,13 @@ const HODHome = () => {
               <div className="user-sec">
                 <p>
                   <span>Welcome: </span>
-                  <span className="user-name">{user?.name || "Not logged in"}</span>
+                  <span className="user-name">{userId && `[${userId}]`}</span>
                 </p>
 
                 <p>
                   <span className="user-role">Role: </span>
-Not logged in                </p>
-                <p>
-                  <span className="user-role">Department: </span>
                   <span className="user-name">
-                    [
-                    {user?.department || "Not Logged in"}
-                    ]
+                    [{(role && `${role}`)}]
                   </span>
                 </p>
                 

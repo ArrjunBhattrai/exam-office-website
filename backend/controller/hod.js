@@ -102,7 +102,7 @@ const getPendingFacultyRequests = async (req, res) => {
       .where("branch_id", branch.branch_id)
       .select("faculty_id", "faculty_name", "faculty_email");
 
-    return res.status(200).json({ requests: pendingRequests });
+    return res.status(200).json(pendingRequests);
   } catch (error) {
     console.error("Error fetching faculty registration requests:", error);
     res.status(500).json({ message: "Internal Server Error" });

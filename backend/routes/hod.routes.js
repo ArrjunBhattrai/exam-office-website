@@ -10,8 +10,8 @@ router.get("/branch/subjects", authenticateUser, authorizeRole(["hod"]), hodCont
 
 // Faculty Registration Requests
 router.get("/faculty/requests", authenticateUser, authorizeRole(["hod"]), hodController.getPendingFacultyRequests);
-router.post("/faculty/requests/:faculty_id/approve", authenticateUser, authorizeRole(["hod"]), hodController.approveFacultyRequest);
-router.delete("/faculty/requests/:faculty_id/reject", authenticateUser, authorizeRole(["hod"]), hodController.rejectFacultyRequest);
+router.post("/faculty/requests/approve", authenticateUser, authorizeRole(["hod"]), hodController.approveFacultyRequest);
+router.delete("/faculty/requests/reject", authenticateUser, authorizeRole(["hod"]), hodController.rejectFacultyRequest);
 
 // Faculty Assignment
 router.post("/faculty/assign", authenticateUser, authorizeRole(["hod"]), hodController.assignFaculty);

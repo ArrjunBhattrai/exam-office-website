@@ -22,7 +22,7 @@ const CourseManagement = () => {
   const [formData, setFormData] = useState({
     course_id: "",
     course_name: "",
-    course_year: "",
+    no_of_semester: "",
   });
 
   // Fetch all courses
@@ -74,7 +74,7 @@ const CourseManagement = () => {
 
       toast.success("Course added successfully");
       fetchCourses();
-      setFormData({ course_id: "", course_name: "", course_year: "" });
+      setFormData({ course_id: "", course_name: "", no_of_semester: "" });
     } catch (error) {
       toast.error(error.message || "Operation failed");
     }
@@ -186,10 +186,10 @@ const CourseManagement = () => {
                       />
                       <input
                         type="number"
-                        name="course_year"
-                        value={formData.course_year}
+                        name="no_of_semester"
+                        value={formData.no_of_semester}
                         onChange={handleChange}
-                        placeholder="Year of Pursuing"
+                        placeholder="Semester in the Course"
                         className="w-full px-3 py-2 border rounded-lg"
                         required
                       />
@@ -207,7 +207,7 @@ const CourseManagement = () => {
                             <tr>
                               <th>Course Id</th>
                               <th>Course Name</th>
-                              <th>Year of Pursuing</th>
+                              <th>Semester in the course</th>
                               <th>Actions</th>
                             </tr>
                           </thead>
@@ -216,7 +216,7 @@ const CourseManagement = () => {
                               <tr key={course.course_id}>
                                 <td>{course.course_id}</td>
                                 <td>{course.course_name}</td>
-                                <td>{course.course_year}</td>
+                                <td>{course.no_of_semester}</td>
                                 <td>
                                   <button
                                     onClick={() =>

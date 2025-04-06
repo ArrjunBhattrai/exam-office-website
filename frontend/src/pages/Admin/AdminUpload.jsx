@@ -12,18 +12,6 @@ import Dropdown from "../../components/Dropdown";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 const AdminUpload = () => {
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (storedToken) {
-      dispatch(login({
-        userId: localStorage.getItem("userId"),
-        role: localStorage.getItem("role"),
-        token: storedToken
-      }));
-    }
-  }, [dispatch]);
 
   const { userId, isAuthenticated, role, token } = useSelector(
     (state) => state.auth
@@ -33,18 +21,13 @@ const AdminUpload = () => {
     return <div>Please log in to access this page.</div>;
   } 
 
-  (console.log(useSelector((state) => state.auth)));
-  console.log(localStorage.getItem("token"));
+  //(console.log(useSelector((state) => state.auth)));
+  //console.log(localStorage.getItem("token"));
   //console.log(role);
   //const authState = useSelector((state) => state.auth);
   //console.log("Auth State in Redux:", authState);
   //console.log("Stored Token:", localStorage.getItem("token"));
 
-    /*
-  if (!isAuthenticated) {
-    return <div>Please log in to access this page.</div>;
-  }
-    */
 
   const [courses, setCourses] = useState([]);
   const [branches, setBranches] = useState([]);
