@@ -173,7 +173,7 @@ const Login = () => {
           </p>
           <p>
             Don't have an account?{" "}
-            <Link to="/admin-register">Register here</Link>
+            <Link to="/register">Register here</Link>
           </p>
         </div>
       </div>

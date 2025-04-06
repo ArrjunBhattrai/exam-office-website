@@ -34,7 +34,7 @@ const HODHome = () => {
                 activities={[
                   {
                     name: "View Department Details",
-                    path: "/hod-dept-details",
+                    path: "/hod-deptt-details",
                   },
                   { name: "Faculty Allocation", path: "/hod-fac-alloc" },
                   { name: "Registration Requests", path: "/hod-reg-req" },

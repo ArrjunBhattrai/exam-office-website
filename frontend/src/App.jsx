@@ -52,9 +52,7 @@ function App() {
           <Route path="/course-management" element={<CourseManagement />} />
           <Route path="/branch-management" element={<BranchManagement />} />
           <Route path="/session-management" element={<SessionManagement />} />
-          {/* <Route path="/faculty-management" element={<FacultyManagement />} /> */}
           <Route path="/assign-hod" element={<AssignHOD />} />
-          {/* <Route path="/admin-new-sub" element={<AdminNewSub />} /> */}
           <Route path="/admin-upload" element={<AdminUpload />} />
           <Route path="/admin-req" element={<AdminRequest />} />
           <Route path="/admin-prog-report" element={<AdminProgressReport />} />
