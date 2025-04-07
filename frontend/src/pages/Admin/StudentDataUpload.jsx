@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useSelector,useDispatch } from "react-redux"
-import {login } from "../../redux/authSlice"
+import { useSelector } from "react-redux";
 import { Toaster, toast } from "react-hot-toast";
 import { BACKEND_URL } from "../../../config";
 import "./admin.css";
@@ -11,34 +10,29 @@ import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
-const AdminUpload = () => {
-
+const StudentDataUpload = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
     (state) => state.auth
   );
 
-  if (!isAuthenticated) {
-    return <div>Please log in to access this page.</div>;
-  } 
-
-  //(console.log(useSelector((state) => state.auth)));
-  //console.log(localStorage.getItem("token"));
-  //console.log(role);
-  //const authState = useSelector((state) => state.auth);
-  //console.log("Auth State in Redux:", authState);
-  //console.log("Stored Token:", localStorage.getItem("token"));
-
+  if (!isAuthenticated || role != "admin") {
+    return (
+      <div>
+        You are not authorized to view this page. Please login to get access to
+        this page.
+      </div>
+    );
+  }
 
   const [courses, setCourses] = useState([]);
   const [branches, setBranches] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("");
-
   const [file, setFile] = useState(null);
+  const [fileInputKey, setFileInputKey] = useState(Date.now());
 
   // fetch courses
   const fetchCourses = async () => {
-    
     try {
       const response = await fetch(`${BACKEND_URL}/api/admin/courses`, {
         method: "GET",
@@ -64,8 +58,11 @@ const AdminUpload = () => {
   }, [token]);
 
   const courseOptions = courses.length
-  ? courses.map((course) => ({ value: course.course_id, label: course.course_name }))
-  : [{ value: "", label: "No courses available" }];
+    ? courses.map((course) => ({
+        value: course.course_id,
+        label: course.course_name,
+      }))
+    : [{ value: "", label: "No courses available" }];
 
   //fetch course of the selected branch
   const fetchBranchesByCourse = async () => {
@@ -88,7 +85,6 @@ const AdminUpload = () => {
 
       const data = await response.json();
       setBranches(data.branches);
-      console.log(data);
     } catch (error) {
       toast.error(error.message || "Failed to fetch branches");
     }
@@ -101,16 +97,56 @@ const AdminUpload = () => {
   }, [token, selectedCourse]);
 
   const branchOptions = branches.length
-  ? branches.map((branch) => ({ value: branch.branch_id, label: branch.branch_name }))
-  : [{ value: "", label: "No branches available" }];
+    ? branches.map((branch) => ({
+        value: branch.branch_id,
+        label: branch.branch_name,
+      }))
+    : [{ value: "", label: "No branches available" }];
 
-  console.log("Courses:", courses);
-console.log("Branches:", branches);
-console.log("Course Options:", courseOptions);
-console.log("Branch Options:", branchOptions);
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const handleUpload = async () => {
+    if (!file) {
+      toast.error("Please select a CSV file.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("branch_id", selectedBranch);
+
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/admin/upload/student-data`,
+        {
+          method: "POST",
+          headers: {
+            authorization: token,
+          },
+          body: formData,
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast.success(result.message || "Upload successful!");
+        setSelectedCourse("");
+        setSelectedBranch("");
+        setFile(null);
+        setFileInputKey(Date.now());
+      } else {
+        toast.error(result.error || "Upload failed.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong.");
+    }
+  };
 
   return (
-    
     <div className="home-container">
       <div className="user-bg">
         <RedHeader />
@@ -123,13 +159,13 @@ console.log("Branch Options:", branchOptions);
                 className="sidebar"
                 title="Admin Activities"
                 activities={[
-                  { name: "Course Management", path: "/course-management" },
-                  { name: "Branch Management", path: "/branch-management" },
-                  { name: "Session Management", path: "/session-management" },
-                  { name: "Upload Academic Scheme", path: "/admin-upload" },
-                  { name: "Upload Student Data", path: "/admin-upload" },
-                  { name: "Address Requests", path: "/admin-req" },
-                  { name: "Progress Report", path: "/admin-prog-report" },
+                  { name: "Course Management", path: "/admin/course-management" },
+                  { name: "Branch Management", path: "/admin/branch-management" },
+                  { name: "Session Management", path: "/admin/session-management" },
+                  { name: "Upload Academic Scheme", path: "/admin/academic-scheme-upload" },
+                  { name: "Upload Student Data", path: "/admin/student-data-upload" },
+                  { name: "Address Requests", path: "/admin/req" },
+                  { name: "Progress Report", path: "/admin/prog-report" },
                 ]}
               />
             </div>
@@ -138,7 +174,7 @@ console.log("Branch Options:", branchOptions);
               <div className="user-icons">
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/admin-home")}
+                  onClick={() => (window.location.href = "/admin/home")}
                 >
                   <FaHome className="icon" />
                   Home
@@ -167,7 +203,7 @@ console.log("Branch Options:", branchOptions);
               <div>
                 {/* here */}
                 <div className="fac-alloc">
-                  <h3>Upload Academic Scheme</h3>
+                  <h3>Upload Student Data</h3>
                   <p className="session-text">Current Session: June 2025</p>
 
                   <span className="box-overlay-text">Upload</span>
@@ -192,17 +228,23 @@ console.log("Branch Options:", branchOptions);
                         onChange={setSelectedBranch}
                       />
                     </div>
-                    {/*
+
                     <div className="upload-container">
-                      <input type="file" accept=".csv" className="file-input" />
+                      <input
+                        key={fileInputKey}
+                        type="file"
+                        accept=".csv"
+                        className="file-input"
+                        onChange={handleFileChange}
+                      />
                       <button
                         className="upload-button"
                         disabled={!selectedCourse || !selectedBranch}
+                        onClick={handleUpload}
                       >
-                        Upload CSV
+                        Upload
                       </button>
                     </div>
-                    */}
                   </div>
                 </div>
               </div>
@@ -216,4 +258,4 @@ console.log("Branch Options:", branchOptions);
   );
 };
 
-export default AdminUpload;
+export default StudentDataUpload;

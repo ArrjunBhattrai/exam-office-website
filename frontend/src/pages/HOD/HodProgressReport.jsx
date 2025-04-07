@@ -27,15 +27,15 @@ const HodProgressReport = () => {
                 activities={[
                   {
                     name: "View Department Details",
-                    path: "/hod-deptt-details",
+                    path: "/hod/department/details",
                   },
-                  { name: "Faculty Allocation", path: "/hod-fac-alloc" },
-                  { name: "Registration Requests", path: "/hod-reg-req" },
+                  { name: "Faculty Allocation", path: "/hod/faculcty-allocation" },
+                  { name: "Registration Requests", path: "/hod/registration-request" },
                   {
                     name: "View Correction Requests",
-                    path: "/hod-correction-req",
+                    path: "/hod/correction-request",
                   },
-                  { name: "Progress Report", path: "/hod-prog-report" },
+                  { name: "Progress Report", path: "/hod/progress-report" },
                 ]}
               />
             </div>

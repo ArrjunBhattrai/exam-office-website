@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 
-import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home/Home";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
@@ -10,7 +9,8 @@ import AdminHome from "./pages/Admin/AdminHome";
 import CourseManagement from "./pages/Admin/Course";
 import BranchManagement from "./pages/Admin/BranchManagment";
 import SessionManagement from "./pages/Admin/SessionManagament";
-import AdminUpload from "./pages/Admin/AdminUpload";
+import AcademicSchemeUpload from "./pages/Admin/AcademicSchemeUpload";
+import StudentDataUpload from "./pages/Admin/StudentDataUpload";
 import AdminRequest from "./pages/Admin/AdminRequest";
 import AdminProgressReport from "./pages/Admin/AdminProgressReport";
 
@@ -48,20 +48,21 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           
-          <Route path="/admin-home" element={<AdminHome />} />
-          <Route path="/course-management" element={<CourseManagement />} />
-          <Route path="/branch-management" element={<BranchManagement />} />
-          <Route path="/session-management" element={<SessionManagement />} />
-          <Route path="/admin-upload" element={<AdminUpload />} />
-          <Route path="/admin-req" element={<AdminRequest />} />
-          <Route path="/admin-prog-report" element={<AdminProgressReport />} />
+          <Route path="/admin/home" element={<AdminHome />} />
+          <Route path="/admin/course-management" element={<CourseManagement />} />
+          <Route path="/admin/branch-management" element={<BranchManagement />} />
+          <Route path="/admin/session-management" element={<SessionManagement />} />
+          <Route path="/admin/academic-scheme-upload" element={<AcademicSchemeUpload />} />
+          <Route path="/admin/student-data-upload" element={<StudentDataUpload />} />
+          <Route path="/admin/req" element={<AdminRequest />} />
+          <Route path="/admin/progress-report" element={<AdminProgressReport />} />
            
-          <Route path="/hod-home" element={<HODHome />} />
-          <Route path="/hod-fac-alloc" element={<FacultyAllocation />} />
-          <Route path="/hod-deptt-details" element={<HODViewDeptt />} />
-          <Route path="/hod-correction-req" element={<HODCorrectionReq />} />
-          <Route path="/hod-prog-report" element={<HodProgressReport />} />
-          <Route path="/hod-reg-req" element={<RegistrationRequest />} />
+          <Route path="/hod/home" element={<HODHome />} />
+          <Route path="/hod/faculty-allocation" element={<FacultyAllocation />} />
+          <Route path="/hod/deptartment-details" element={<HODViewDeptt />} />
+          <Route path="/hod/correction-request" element={<HODCorrectionReq />} />
+          <Route path="/hod/progress-report" element={<HodProgressReport />} />
+          <Route path="/hod/registration-request" element={<RegistrationRequest />} />
 
           {/*
           <Route path="/faculty-login" element={<FacultyLogin />} />

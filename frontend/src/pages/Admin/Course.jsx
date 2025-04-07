@@ -15,8 +15,8 @@ const CourseManagement = () => {
       (state) => state.auth
     );
 
-    if (!isAuthenticated) {
-      return <div>Please log in to access this page.</div>;
+    if (!isAuthenticated || role != "admin") {
+      return <div>You are not authorized to view this page. Please login to get access to this page.</div>;
     } 
   const [courses, setCourses] = useState([]);
   const [formData, setFormData] = useState({
@@ -114,13 +114,13 @@ const CourseManagement = () => {
                 className="sidebar"
                 title="Admin Activities"
                 activities={[
-                  { name: "Course Management", path: "/course-management" },
-                  { name: "Branch Management", path: "/branch-management" },
-                  { name: "Session Management", path: "/session-management" },
-                  { name: "Upload Academic Scheme", path: "/admin-upload" },
-                  { name: "Upload Student Data", path: "/admin-upload" },
-                  { name: "Address Requests", path: "/admin-req" },
-                  { name: "Progress Report", path: "/admin-prog-report" },
+                  { name: "Course Management", path: "/admin/course-management" },
+                  { name: "Branch Management", path: "/admin/branch-management" },
+                  { name: "Session Management", path: "/admin/session-management" },
+                  { name: "Upload Academic Scheme", path: "/admin/academic-scheme-upload" },
+                  { name: "Upload Student Data", path: "/admin/student-data-upload" },
+                  { name: "Address Requests", path: "/admin/req" },
+                  { name: "Progress Report", path: "/admin/prog-report" },
                 ]}
               />
             </div>

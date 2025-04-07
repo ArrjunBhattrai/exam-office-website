@@ -16,6 +16,15 @@ const RegistrationRequest = () => {
     (state) => state.auth
   );
 
+  if (!isAuthenticated || role != "hod") {
+    return (
+      <div>
+        You are not authorized to view this page. Please login to get access to
+        this page.
+      </div>
+    );
+  }
+
   const [pendingRequests, setPendingRequests] = useState([]);
 
   const fetchRequests = async () => {
@@ -48,7 +57,7 @@ const RegistrationRequest = () => {
     try {
       let endpoint = "";
       let method = "";
-  
+
       if (action === "approve") {
         endpoint = "/api/hod/faculty/requests/approve";
         method = "POST";
@@ -58,7 +67,7 @@ const RegistrationRequest = () => {
       } else {
         throw new Error("Invalid action type");
       }
-  
+
       const response = await fetch(`${BACKEND_URL}${endpoint}`, {
         method: method,
         headers: {
@@ -67,13 +76,13 @@ const RegistrationRequest = () => {
         },
         body: JSON.stringify({ faculty_id }),
       });
-  
+
       const result = await response.json();
-  
+
       if (!response.ok) {
         throw new Error(result.error || `Failed to ${action} request`);
       }
-  
+
       toast.success(`Request ${action}ed successfully`);
       fetchRequests();
     } catch (error) {
@@ -81,7 +90,6 @@ const RegistrationRequest = () => {
       console.error(error);
     }
   };
-  
 
   useEffect(() => {
     fetchRequests();
@@ -102,15 +110,15 @@ const RegistrationRequest = () => {
                 activities={[
                   {
                     name: "View Department Details",
-                    path: "/hod-deptt-details",
+                    path: "/hod/department/details",
                   },
-                  { name: "Faculty Allocation", path: "/hod-fac-alloc" },
-                  { name: "Registration Requests", path: "/hod-reg-req" },
+                  { name: "Faculty Allocation", path: "/hod/faculcty-allocation" },
+                  { name: "Registration Requests", path: "/hod/registration-request" },
                   {
                     name: "View Correction Requests",
-                    path: "/hod-correction-req",
+                    path: "/hod/correction-request",
                   },
-                  { name: "Progress Report", path: "/hod-prog-report" },
+                  { name: "Progress Report", path: "/hod/progress-report" },
                 ]}
               />
             </div>

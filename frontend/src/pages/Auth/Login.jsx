@@ -67,7 +67,7 @@ const Login = () => {
         );
   
         alert("Login Successful!");
-        navigate(`/${data.role.toLowerCase()}-home`); // Navigate based on role
+        navigate(`/${data.role.toLowerCase()}/home`); // Navigate based on role
       } catch (error) {
         alert(error.message);
       }

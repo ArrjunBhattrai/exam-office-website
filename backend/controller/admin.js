@@ -1,6 +1,6 @@
 const db = require("../db/db");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
+const csv = require("csv-parser");
+const fs = require("fs");
 
 //Course Related Activities
 //Create a new course
@@ -136,7 +136,6 @@ const getBranchesByCourseId = async (req, res) => {
   if (!course) return res.status(400).json({ error: "Course is required" });
 
   try {
-    
     const branches = await db("branch")
       .select("branch_id", "branch_name")
       .where("course_id", course);
@@ -148,6 +147,122 @@ const getBranchesByCourseId = async (req, res) => {
   }
 };
 
+//Upload Academic Scheme
+const academicSchemeUpload = (req, res) => {
+  const branchId = req.body.branch_id;
+
+  if (!req.file || !branchId) {
+    return res
+      .status(400)
+      .json({ error: "CSV file and branch_id are required." });
+  }
+  const results = [];
+  const filePath = req.file.path;
+
+  fs.createReadStream(filePath)
+    .pipe(
+      csv({ mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/, "") })
+    )
+    .on("data", (row) => {
+      const subjectId = row["Subject Id"]?.trim();
+      const subjectName = row["Subject Name"]?.trim();
+      const subjectType = row["Subject Type"]?.trim();
+      const semester = parseInt(row["Semester"]);
+
+      if (!subjectId || !subjectName || !subjectType || isNaN(semester)) return;
+
+      results.push({
+        subject_id: subjectId,
+        subject_name: subjectName,
+        subject_type: subjectType,
+        semester,
+        branch_id: branchId,
+      });
+    })
+    .on("end", async () => {
+      try {
+        if (results.length === 0) {
+          fs.unlinkSync(filePath);
+          return res.status(400).json({ error: "No valid data found in CSV." });
+        }
+
+        await db("subject").insert(results);
+        fs.unlinkSync(filePath);
+        res
+          .status(200)
+          .json({ message: "Academic scheme uploaded successfully!" });
+      } catch (err) {
+        console.error(err);
+        res
+          .status(500)
+          .json({ message: "DB Insert failed", error: err.message });
+      }
+    })
+    .on("error", (error) => {
+      console.error("CSV Parsing Error:", error.message);
+      res.status(500).json({ error: "Error processing CSV file." });
+    });
+};
+
+//Upload Student Data
+const studentDataUpload = (req, res) => {
+  const branchId = req.body.branch_id;
+
+  if (!req.file || !branchId) {
+    return res
+      .status(400)
+      .json({ error: "CSV file and branch_id are required." });
+  }
+  const results = [];
+  const filePath = req.file.path;
+
+  fs.createReadStream(filePath)
+    .pipe(
+      csv({ mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/, "") })
+    )
+    .on("data", (row) => {
+      const enrollmentNo = row["Enrollment No."]?.trim();
+      const studentName = row["Student Name"]?.trim();
+      const semester = parseInt(row["Semester"]);
+      
+      console.log(enrollmentNo);
+      if (!enrollmentNo || !studentName || isNaN(semester)) {
+        console.log("file is not as per the requirement");
+        return;
+      }
+
+      results.push({
+        enrollment_no: enrollmentNo,
+        student_name: studentName,
+        branch_id: branchId,
+        semester,
+      });
+    })
+    .on("end", async () => {
+      try {
+        if (results.length === 0) {
+          fs.unlinkSync(filePath);
+          return res.status(400).json({ error: "No valid data found in CSV." });
+        }
+
+        await db("student").insert(results);
+        fs.unlinkSync(filePath);
+        res
+          .status(200)
+          .json({ message: "Student Data uploaded successfully!" });
+      } catch (err) {
+        console.error(err);
+        res
+          .status(500)
+          .json({ message: "DB Insert failed", error: err.message });
+      }
+    })
+    .on("error", (error) => {
+      console.error("CSV Parsing Error:", error.message);
+      res.status(500).json({ error: "Error processing CSV file." });
+    });
+};
+
 module.exports = {
   createCourse,
   deleteCourse,
@@ -156,4 +271,6 @@ module.exports = {
   createBranch,
   deleteBranch,
   getBranches,
+  academicSchemeUpload,
+  studentDataUpload,
 };

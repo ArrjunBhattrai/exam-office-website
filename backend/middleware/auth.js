@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const db = require("../db/db"); // Adjust according to your setup
+const db = require("../db/db"); 
 
 const authenticateUser = async (req, res, next) => {
   const token = req.header("Authorization");
@@ -9,7 +9,6 @@ const authenticateUser = async (req, res, next) => {
     const decoded = jwt.verify(token.replace("Bearer ", ""), process.env.JWT_SECRET);
     req.user = decoded;
 
-    // Validate if user exists in the respective table
     let user;
     if (decoded.role === "admin") {
       user = await db("admin").where({ admin_id: decoded.userId }).first();

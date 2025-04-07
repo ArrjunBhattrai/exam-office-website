@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
 import "./hod.css";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
@@ -115,15 +114,15 @@ const FacultyAllocation = () => {
                 activities={[
                   {
                     name: "View Department Details",
-                    path: "/hod-deptt-details",
+                    path: "/hod/department/details",
                   },
-                  { name: "Faculty Allocation", path: "/hod-fac-alloc" },
-                  { name: "Registration Requests", path: "/hod-reg-req" },
+                  { name: "Faculty Allocation", path: "/hod/faculcty-allocation" },
+                  { name: "Registration Requests", path: "/hod/registration-request" },
                   {
                     name: "View Correction Requests",
-                    path: "/hod-correction-req",
+                    path: "/hod/correction-request",
                   },
-                  { name: "Progress Report", path: "/hod-prog-report" },
+                  { name: "Progress Report", path: "/hod/progress-report" },
                 ]}
               />
             </div>
