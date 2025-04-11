@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import "./hod.css";
+import { BACKEND_URL } from "../../../config";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
@@ -9,58 +10,111 @@ import Dropdown from "../../components/Dropdown";
 import Button from "../../components/Button";
 import ReactModal from "react-modal";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
+import { Toaster, toast } from "react-hot-toast";
 
 const HODViewDeptt = () => {
-  //to be removed:
-  const user = useSelector((state) => state.auth.user); // Get logged-in user
+  const { userId, isAuthenticated, role, token } = useSelector(
+    (state) => state.auth
+  );
 
-  // const { userId, isAuthenticated, role, token } = useSelector(
-  //           (state) => state.auth
-  //         );
-
-  //         if (!isAuthenticated) {
-  //           return <div>Please log in to access this page.</div>;
-  //         }
-
-  //sample data:
-  const [subjects, setSubjects] = useState([
-    {
-      subject_id: "CS101",
-      subject_name: "Data Structures",
-      subject_type: "T",
-      faculty: { faculty_id: "F001", faculty_name: "Dr. A Sharma" },
-    },
-    {
-      subject_id: "CS202",
-      subject_name: "Computer Networks",
-      subject_type: "T",
-      faculty: { faculty_id: "F002", faculty_name: "Ms. B Verma" },
-    },
-  ]);
-
+  if (!isAuthenticated || role != "hod") {
+    return (
+      <div>
+        You are not authorized to view this page. Please login to get access to
+        this page.
+      </div>
+    );
+  }
+  const [semesterOptions, setSemesterOptions] = useState([]);
+  const [selectedSemester, setSelectedSemester] = useState("");
+  const [subjects, setSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [students, setStudents] = useState([
-    { enrollment_no: "IT01", student_name: "ABC" },
-    { enrollment_no: "IT02", student_name: "XYZ" },
-  ]);
-
-  const [semester, setSemester] = useState("");
+  const [students, setStudents] = useState([]);
 
   const openModal = (subject) => {
     setSelectedSubject(subject);
+    setStudents(subject.students_enrolled);
     setModalIsOpen(true);
-
-    // backend fetch will happen
-    // fetch(`/api/getStudents?subject_id=${subject.subject_id}`)
-    //   .then(res => res.json())
-    //   .then(data => setStudents(data));
   };
 
   const closeModal = () => {
     setModalIsOpen(false);
     setSelectedSubject(null);
   };
+
+  const toRoman = (num) => {
+    const romanMap = {
+      1: "I",
+      2: "II",
+      3: "III",
+      4: "IV",
+      5: "V",
+      6: "VI",
+      7: "VII",
+      8: "VIII",
+    };
+    return romanMap[num] || num;
+  };
+
+  const fetchSemesters = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/hod/semesters`, {
+        method: "GET",
+        headers: {
+          authorization: token,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch semesters");
+      }
+      const responseData = await response.json();
+      const semesters = responseData.semesters;
+      const formatted = semesters.map((s) => ({
+        label: toRoman(s),
+        value: s,
+      }));
+      setSemesterOptions(formatted);
+    } catch (error) {
+      toast.error(error.message || "Failed to fetch semesters");
+    }
+  };
+
+  useEffect(() => {
+    fetchSemesters();
+  }, [token]);
+
+  const fetchDepartmentDetails = async () => {
+    if (!selectedSemester) return;
+
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/hod/department-details/${selectedSemester}`,
+        {
+          method: "GET",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch department details");
+
+      const data = await response.json();
+      setSubjects(data.details);
+    } catch (error) {
+      toast.error(
+        error.message || "Something went wrong while fetching subjects"
+      );
+    }
+  };
+
+  useEffect(() => {
+    fetchDepartmentDetails();
+  }, [selectedSemester, token]);
 
   return (
     <div className="home-container">
@@ -77,10 +131,17 @@ const HODViewDeptt = () => {
                 activities={[
                   {
                     name: "View Department Details",
-                    path: "/hod/department/details",
+                    path: "/hod/department-details",
                   },
-                  { name: "Faculty Allocation", path: "/hod/faculcty-allocation" },
-                  { name: "Registration Requests", path: "/hod/registration-request" },
+                  {
+                    name: "Registration Requests",
+                    path: "/hod/registration-request",
+                  },
+                  {
+                    name: "Faculty Allocation",
+                    path: "/hod/faculty-allocation",
+                  },
+
                   {
                     name: "View Correction Requests",
                     path: "/hod/correction-request",
@@ -94,7 +155,7 @@ const HODViewDeptt = () => {
               <div className="user-icons">
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/hod-home")}
+                  onClick={() => (window.location.href = "/hod/home")}
                 >
                   <FaHome className="icon" />
                   Home
@@ -110,21 +171,12 @@ const HODViewDeptt = () => {
               <div className="user-sec">
                 <p>
                   <span>Welcome: </span>
-                  <span className="user-name">
-                    [{user?.name || "Please Login"}]
-                  </span>
+                  <span className="user-name">{userId && `[${userId}]`}</span>
                 </p>
+
                 <p>
                   <span className="user-role">Role: </span>
-                  <span className="user-name">
-                    [{user?.role || "Please Login"}]
-                  </span>
-                </p>
-                <p>
-                  <span className="user-role">Department: </span>
-                  <span className="user-name">
-                    [{user?.department || "Please Login"}]
-                  </span>
+                  <span className="user-name">[{role && `${role}`}]</span>
                 </p>
               </div>
 
@@ -145,84 +197,82 @@ const HODViewDeptt = () => {
                   <div className="dropdown-container">
                     <Dropdown
                       label="Semester"
-                      options={[
-                        "I",
-                        "II",
-                        "III",
-                        "IV",
-                        "V",
-                        "VI",
-                        "VII",
-                        "VIII",
-                      ]}
-                      selectedValue={semester}
-                      onChange={setSemester}
+                      options={semesterOptions}
+                      selectedValue={selectedSemester}
+                      onChange={setSelectedSemester}
                     />
                   </div>
 
                   <div>
-                    
-                    {semester && (
+                    {selectedSemester && (
                       <>
-                      <div className="details-table-container">
-                      <table className="subject-table">
-                        <thead>
-                          <tr>
-                            <th>S. No.</th>
-                            <th>Subject Code & Name</th>
-                            <th>Faculty Assigned</th>
-                            <th>Students Enrolled</th>
-                          </tr>
-                        </thead>
+                        <div className="details-table-container">
+                          <table className="subject-table">
+                            <thead>
+                              <tr>
+                                <th>Subject Code</th>
+                                <th>Subject Type</th>
+                                <th>Subject Name</th>
+                                <th>Faculty Assigned</th>
+                                <th>Students Enrolled</th>
+                              </tr>
+                            </thead>
 
-                        <tbody>
-                          {subjects.map((subject, index) => (
-                            <tr key={subject.subject_id}>
-                              <td>{index + 1}</td>
-                              <td>{`${subject.subject_id} - ${subject.subject_name}`}</td>
-                              <td>{subject.faculty?.faculty_name}</td>
-                              <td>
-                                <Button
-                                  text="View Students"
-                                  onClick={() => openModal(subject)}
-                                />
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    
-                    <ReactModal
-                      isOpen={modalIsOpen}
-                      onRequestClose={closeModal}
-                      contentLabel="Student List Modal"
-                      className="custom-modal"
-                      overlayClassName="custom-overlay"
-                    >
-                      <h2>
-                        Students Enrolled in:{" "}
-                        {selectedSubject?.subject_name || "Selected Subject"}
-                      </h2>
-                      <table className="student-table">
-                        <thead>
-                          <tr>
-                            <th>Enrollment No</th>
-                            <th>Student Name</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {students.map((student) => (
-                            <tr key={student.enrollment_no}>
-                              <td>{student.enrollment_no}</td>
-                              <td>{student.student_name}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      <Button text="Close" onClick={closeModal} />
-                    </ReactModal>
-                    </>
+                            <tbody>
+                              {subjects.map((subject, index) => (
+                                <tr
+                                  key={`${subject.subject_id}_${subject.subject_type}`}
+                                >
+                                  <td>{subject.subject_id}</td>
+                                  <td>{subject.subject_type}</td>
+                                  <td>{subject.subject_name}</td>
+                                  <td>
+                                    {subject.faculty_assigned?.faculty_name ||
+                                      "No faculty assigned yet"}
+                                  </td>{" "}
+                                  <td>
+                                    <Button
+                                      text="View Students"
+                                      onClick={() => openModal(subject)}
+                                    />
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <ReactModal
+                          isOpen={modalIsOpen}
+                          onRequestClose={closeModal}
+                          contentLabel="Student List Modal"
+                          className="custom-modal"
+                          overlayClassName="custom-overlay"
+                        >
+                          <h2>
+                            Students Enrolled in:{" "}
+                            {selectedSubject?.subject_name ||
+                              "Selected Subject"}
+                          </h2>
+                          <table className="student-table">
+                            <thead>
+                              <tr>
+                                <th>Enrollment No</th>
+                                <th>Student Name</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {students.map((student) => (
+                                <tr key={student.enrollment_no}>
+                                  <td>{student.enrollment_no}</td>
+                                  <td>{student.student_name}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                          <Button text="Close" onClick={closeModal} />
+                        </ReactModal>
+                      </>
                     )}
                   </div>
                 </div>

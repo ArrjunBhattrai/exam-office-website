@@ -110,10 +110,17 @@ const RegistrationRequest = () => {
                 activities={[
                   {
                     name: "View Department Details",
-                    path: "/hod/department/details",
+                    path: "/hod/department-details",
                   },
-                  { name: "Faculty Allocation", path: "/hod/faculcty-allocation" },
-                  { name: "Registration Requests", path: "/hod/registration-request" },
+                  {
+                    name: "Registration Requests",
+                    path: "/hod/registration-request",
+                  },
+
+                  {
+                    name: "Faculty Allocation",
+                    path: "/hod/faculty-allocation",
+                  },
                   {
                     name: "View Correction Requests",
                     path: "/hod/correction-request",

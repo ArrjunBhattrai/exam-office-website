@@ -120,7 +120,7 @@ const CourseManagement = () => {
                   { name: "Upload Academic Scheme", path: "/admin/academic-scheme-upload" },
                   { name: "Upload Student Data", path: "/admin/student-data-upload" },
                   { name: "Address Requests", path: "/admin/req" },
-                  { name: "Progress Report", path: "/admin/prog-report" },
+                  { name: "Progress Report", path: "/admin/progress-report" },
                 ]}
               />
             </div>
@@ -167,12 +167,13 @@ const CourseManagement = () => {
                       className="space-y-4 p-4 bg-white rounded-lg shadow"
                     >
                       <input
+                   
                         type="text"
                         name="course_id"
                         value={formData.course_id}
                         onChange={handleChange}
                         placeholder="Course Id"
-                        className="w-full px-3 py-2 border rounded-lg"
+                        className="input-fac w-full px-3 py-2 border rounded-lg"
                         required
                       />
                       <input
@@ -181,7 +182,7 @@ const CourseManagement = () => {
                         value={formData.course_name}
                         onChange={handleChange}
                         placeholder="Course Name"
-                        className="w-full px-3 py-2 border rounded-lg"
+                        className="input-fac w-full px-3 py-2 border rounded-lg"
                         required
                       />
                       <input
@@ -190,7 +191,7 @@ const CourseManagement = () => {
                         value={formData.no_of_semester}
                         onChange={handleChange}
                         placeholder="Semester in the Course"
-                        className="w-full px-3 py-2 border rounded-lg"
+                        className="input-fac w-full px-3 py-2 border rounded-lg"
                         required
                       />
                       <button

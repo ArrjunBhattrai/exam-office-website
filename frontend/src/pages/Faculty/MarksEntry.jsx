@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Button from "../../../components/Button"; // Your button component
+import Button from "../../components/Button"; // Your button component
 import "./faculty.css";
-import BlueHeader from "../../../components/BlueHeader";
-import BlueFooter from "../../../components/BlueFooter";
+import BlueHeader from "../../components/BlueHeader";
+import BlueFooter from "../../components/BlueFooter";
 
 function MarksEntry() {
   const location = useLocation();

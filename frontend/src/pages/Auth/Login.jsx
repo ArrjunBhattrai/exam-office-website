@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../../redux/authSlice";
 import { Link, useNavigate } from "react-router-dom";
@@ -23,7 +24,10 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [enteredCaptcha, setEnteredCaptcha] = useState("");
-  const [userType, setUserType] = useState("admin"); // Change default to ADMIN
+  const location = useLocation();
+  const defaultRole = location.state?.role || "admin";
+  const [userType, setUserType] = useState(defaultRole);
+  
   const [errors, setErrors] = useState({});
   const authState = useSelector((state) => state.auth);
 
@@ -56,7 +60,7 @@ const Login = () => {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "Login failed");
         console.log("Login Response:", data);
-        // Dispatch user login action with userId, role, and token
+
         dispatch(
           login({
             userId: data.userId, 
@@ -67,14 +71,13 @@ const Login = () => {
         );
   
         alert("Login Successful!");
-        navigate(`/${data.role.toLowerCase()}/home`); // Navigate based on role
+        navigate(`/${data.role.toLowerCase()}/home`); 
       } catch (error) {
         alert(error.message);
       }
     }
   };
   
-  console.log(val);
 
   const refreshCaptcha = () => {
     setCaptcha(generateCaptcha());
@@ -173,7 +176,7 @@ const Login = () => {
           </p>
           <p>
             Don't have an account?{" "}
-            <Link to="/admin-register">Register here</Link>
+            <Link to="/register">Register here</Link>
           </p>
         </div>
       </div>

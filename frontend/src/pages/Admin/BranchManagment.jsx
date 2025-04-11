@@ -121,7 +121,7 @@ const BranchManagement = () => {
                   { name: "Upload Academic Scheme", path: "/admin/academic-scheme-upload" },
                   { name: "Upload Student Data", path: "/admin/student-data-upload" },
                   { name: "Address Requests", path: "/admin/req" },
-                  { name: "Progress Report", path: "/admin/prog-report" },
+                  { name: "Progress Report", path: "/admin/progress-report" },
                 ]}
               />
             </div>
@@ -178,7 +178,7 @@ const BranchManagement = () => {
                         value={formData.course_id}
                         onChange={handleChange}
                         placeholder="Course ID"
-                        className="w-full px-3 py-2 border rounded-lg"
+                        className="input-fac w-full px-3 py-2 border rounded-lg"
                         required
                       />
                       <input
@@ -187,7 +187,7 @@ const BranchManagement = () => {
                         value={formData.branch_id}
                         onChange={handleChange}
                         placeholder="Branch ID"
-                        className="w-full px-3 py-2 border rounded-lg"
+                        className="input-fac w-full px-3 py-2 border rounded-lg"
                         required
                       />
                       <input
@@ -196,7 +196,7 @@ const BranchManagement = () => {
                         value={formData.branch_name}
                         onChange={handleChange}
                         placeholder="Branch Name"
-                        className="w-full px-3 py-2 border rounded-lg"
+                        className="input-fac w-full px-3 py-2 border rounded-lg"
                         required
                       />
                       <button

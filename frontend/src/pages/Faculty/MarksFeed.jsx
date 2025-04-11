@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import Sidebar from "../../../components/Sidebar";
-import ActivityHeader from "../../../components/ActivityHeader";
-import RedFooter from "../../../components/RedFooter";
-import RedHeader from "../../../components/RedHeader";
-import Dropdown from "../../../components/Dropdown";
-import Button from "../../../components/Button";
+import Sidebar from "../../components/Sidebar";
+import ActivityHeader from "../../components/ActivityHeader";
+import RedFooter from "../../components/RedFooter";
+import RedHeader from "../../components/RedHeader";
+import Dropdown from "../../components/Dropdown";
+import Button from "../../components/Button";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 function MarksFeed() {
@@ -82,13 +81,13 @@ function MarksFeed() {
   const allCOsFilled = Object.values(maxMarks).every((value) => value !== "");
 
   return (
-    <div className="hod-home-container">
-      <div className="hod-bg">
+    <div className="home-container">
+      <div className="user-bg">
         <RedHeader />
-        <div className="hod-content">
+        <div className="user-content">
           <ActivityHeader />
 
-          <div className="hod-main">
+          <div className="user-main">
             <div className="sidebars">
               <Sidebar
                 className="sidebar-1"
@@ -105,8 +104,8 @@ function MarksFeed() {
 
             </div>
 
-            <div className="hod-info">
-              <div className="hod-icons">
+            <div className="user-info">
+              <div className="user-icons">
                 <button
                   className="icon-btn"
                   onClick={() => (window.location.href = "/fac-home")}
@@ -122,7 +121,7 @@ function MarksFeed() {
                   Logout
                 </button>
               </div>
-              <div className="hod-sec">
+              <div className="user-sec">
                 <p>
                   <span>Welcome: </span>
                   <span className="hod-name">
@@ -130,14 +129,14 @@ function MarksFeed() {
                   </span>
                 </p>
                 <p>
-                  <span className="hod-role">Role: </span>
-                  <span className="hod-name">
+                  <span className="user-role">Role: </span>
+                  <span className="user-name">
                     [{user?.role || "Please Login"}]
                   </span>
                 </p>
                 <p>
-                  <span className="hod-role">Department: </span>
-                  <span className="hod-name">
+                  <span className="user-role">Department: </span>
+                  <span className="user-name">
                     [{user?.department || "Please Login"}]
                   </span>
                 </p>

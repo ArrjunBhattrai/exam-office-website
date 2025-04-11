@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
 // import "./HODHome.css";
-import Sidebar from "../../../components/Sidebar";
-import ActivityHeader from "../../../components/ActivityHeader";
-import RedFooter from "../../../components/RedFooter";
-import RedHeader from "../../../components/RedHeader";
-import Dropdown from "../../../components/Dropdown";
-import Button from "../../../components/Button";
+import Sidebar from "../../components/Sidebar";
+import ActivityHeader from "../../components/ActivityHeader";
+import RedFooter from "../../components/RedFooter";
+import RedHeader from "../../components/RedHeader";
+import Dropdown from "../../components/Dropdown";
+import Button from "../../components/Button";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 const FacCorrectionReq = () => {
@@ -18,13 +17,13 @@ const FacCorrectionReq = () => {
   const [semester, setSemester] = useState("");
 
   return (
-    <div className="hod-home-container">
-      <div className="hod-bg">
+    <div className="home-container">
+      <div className="user-bg">
         <RedHeader />
-        <div className="hod-content">
+        <div className="user-content">
           <ActivityHeader />
 
-          <div className="hod-main">
+          <div className="user-main">
             <div className="sidebars">
               <Sidebar
                 className="sidebar-1"
@@ -40,8 +39,8 @@ const FacCorrectionReq = () => {
               />
             </div>
 
-            <div className="hod-info">
-              <div className="hod-icons">
+            <div className="user-info">
+              <div className="user-icons">
                 <button
                   className="icon-btn"
                   onClick={() => (window.location.href = "/fac-home")}
@@ -57,22 +56,22 @@ const FacCorrectionReq = () => {
                   Logout
                 </button>
               </div>
-              <div className="hod-sec">
+              <div className="user-sec">
                 <p>
                   <span>Welcome: </span>
-                  <span className="hod-name">
+                  <span className="user-name">
                     [{user?.name || "Please Login"}]
                   </span>
                 </p>
                 <p>
-                  <span className="hod-role">Role: </span>
-                  <span className="hod-name">
+                  <span className="user-role">Role: </span>
+                  <span className="user-name">
                     [{user?.role || "Please Login"}]
                   </span>
                 </p>
                 <p>
-                  <span className="hod-role">Department: </span>
-                  <span className="hod-name">
+                  <span className="user-role">Department: </span>
+                  <span className="user-name">
                     [{user?.department || "Please Login"}]
                   </span>
                 </p>

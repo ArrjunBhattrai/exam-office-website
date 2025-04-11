@@ -8,7 +8,6 @@ import RedHeader from "../../components/RedHeader";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 const HODHome = () => {
-  const user = useSelector((state) => state.auth.user); // Get logged-in user
 
   const { userId, isAuthenticated, role, token } = useSelector(
     (state) => state.auth
@@ -33,10 +32,10 @@ const HODHome = () => {
                 activities={[
                   {
                     name: "View Department Details",
-                    path: "/hod/department/details",
+                    path: "/hod/department-details",
                   },
-                  { name: "Faculty Allocation", path: "/hod/faculcty-allocation" },
                   { name: "Registration Requests", path: "/hod/registration-request" },
+                  { name: "Faculty Allocation", path: "/hod/faculty-allocation" },
                   {
                     name: "View Correction Requests",
                     path: "/hod/correction-request",

@@ -4,9 +4,10 @@ const { authenticateUser, authorizeRole } = require("../middleware/auth");
 const hodController = require("../controller/hod");
 
 // Branch Details
-router.get("/branch/details", authenticateUser, authorizeRole(["hod"]), hodController.getBranchDetails);
 router.get("/branch/faculties", authenticateUser, authorizeRole(["hod"]), hodController.getFaculties);
-router.get("/branch/subjects", authenticateUser, authorizeRole(["hod"]), hodController.getSubjects);
+router.get("/semesters", authenticateUser, authorizeRole(["hod"]), hodController.getDistinctSemester);
+router.get("/", authenticateUser, authorizeRole(["hod"]), hodController.getDistinctSemester);
+router.get("/department-details/:semester", authenticateUser, authorizeRole(["hod"]), hodController.getdepartmentDetails);
 
 // Faculty Registration Requests
 router.get("/faculty/requests", authenticateUser, authorizeRole(["hod"]), hodController.getPendingFacultyRequests);

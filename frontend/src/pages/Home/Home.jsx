@@ -11,23 +11,30 @@ const Home = () => {
     <div className="home-container-landing">
       <BlueHeader />
       <div className="background">
-        <div className="overlay"></div> 
-        
+        <div className="overlay"></div>
+
         <div className="login-card">
-          <Link to="/login" className="login-btn-home">
-            <FontAwesomeIcon icon={faUser} className="icon" /> 
+          <Link
+            to="/login"
+            state={{ role: "admin" }}
+            className="login-btn-home"
+          >
+            <FontAwesomeIcon icon={faUser} className="icon" />
             <span>Admin Login</span>
           </Link>
-          <Link to="/login" className="login-btn-home">
-            <FontAwesomeIcon icon={faUser} className="icon" /> 
+          <Link to="/login" state={{ role: "hod" }} className="login-btn-home">
+            <FontAwesomeIcon icon={faUser} className="icon" />
             <span>HOD Login</span>
           </Link>
-          <Link to="/login" className="login-btn-home">
+          <Link
+            to="/login"
+            state={{ role: "faculty" }}
+            className="login-btn-home"
+          >
             <FontAwesomeIcon icon={faUser} className="icon" />
             <span>Faculty Login</span>
           </Link>
         </div>
-
       </div>
       <BlueFooter />
     </div>

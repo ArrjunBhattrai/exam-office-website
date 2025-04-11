@@ -175,7 +175,7 @@ const SessionManagement = () => {
                   { name: "Upload Academic Scheme", path: "/admin/academic-scheme-upload" },
                   { name: "Upload Student Data", path: "/admin/student-data-upload" },
                   { name: "Address Requests", path: "/admin/req" },
-                  { name: "Progress Report", path: "/admin/prog-report" },
+                  { name: "Progress Report", path: "/admin/progress-report" },
                 ]}
               />
             </div>

@@ -20,16 +20,16 @@ import RegistrationRequest from "./pages/HOD/RegistrationRequest";
 import FacultyAllocation from "./pages/HOD/FacultyAllocation";
 import HODCorrectionReq from "./pages/HOD/HODCorrectionReq";
 import HodProgressReport from "./pages/HOD/HodProgressReport";
-/*
-import FacultyLogin from "./pages/Faculty/FacultyLogin";
-import FacultyRegister from "./pages/Faculty/FacultyRegister";
+
+
+
 import FacultyHome from "./pages/Faculty/FacultyHome";
 import ViewSubjects from "./pages/Faculty/ViewSubjects";
 import FacCorrectionReq from "./pages/Faculty/FacCorrectionReq";
 import FacFilledForm from "./pages/Faculty/FacFilledForm";
 import MarksFeed from "./pages/Faculty/MarksFeed";
 import MarksEntry from "./pages/Faculty/MarksEntry";
-*/
+
 
 //Faculty imports
 // import FacultyHome from "./pages/Faculty/FacultyHome";
@@ -59,21 +59,18 @@ function App() {
            
           <Route path="/hod/home" element={<HODHome />} />
           <Route path="/hod/faculty-allocation" element={<FacultyAllocation />} />
-          <Route path="/hod/deptartment-details" element={<HODViewDeptt />} />
+          <Route path="/hod/department-details" element={<HODViewDeptt />} />
           <Route path="/hod/correction-request" element={<HODCorrectionReq />} />
           <Route path="/hod/progress-report" element={<HodProgressReport />} />
           <Route path="/hod/registration-request" element={<RegistrationRequest />} />
 
-          {/*
-          <Route path="/faculty-login" element={<FacultyLogin />} />
-          <Route path="/faculty-register" element={<FacultyRegister />} />
-          <Route path="/fac-home" element={<FacultyHome />} />
           <Route path="/fac-view-sub" element={<ViewSubjects />} />
+          <Route path="/fac-home" element={<FacultyHome />} />
           <Route path="/fac-correction-req" element={<FacCorrectionReq />} />
           <Route path="/fac-filled-form" element={<FacFilledForm />} />
           <Route path="/fac-marks-feed" element={<MarksFeed />} />
           <Route path="/fac-marks-entry" element={<MarksEntry />} />
-           */}
+           
         </Routes>
       </div>
     </Router>

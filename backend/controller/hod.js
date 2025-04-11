@@ -1,34 +1,81 @@
 const db = require("../db/db");
 
-// Get Branch Details
-const getBranchDetails = async (req, res) => {
+//Get distinct Semsesters
+const getDistinctSemester = async (req, res) => {
   try {
-    const hod_id = req.user.userId; 
-    const branch = await db('hod')
-      .select('branch_id')
-      .where('hod_id', hod_id)
-      .first();
+    const semesters = await db("subject")
+      .distinct("semester")
+      .orderBy("semester");
 
-    if (!branch) {
-      return res.status(403).json({ message: "This Hod Id doesn't exist for any branch" });
-    }
-
-    const faculties = await db('faculty')
-      .where('branch_id', branch.branch_id)
-      .select('faculty_id', 'faculty_name', 'faculty_email');
-
-    const students = await db('student')
-      .where('branch_id', branch.branch_id)
-      .select('enrollment_no', 'student_name');
-
-    return res.json({
-      branch_id: branch.branch_id,
-      faculties,
-      students,
+    res.status(200).json({
+      semesters: semesters.map((row) => row.semester),
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error fetching semesters:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+//Get Department details
+const getdepartmentDetails = async (req, res) => {
+  const { semester } = req.params;
+
+  try {
+    const subjects = await db("subject")
+      .where("semester", semester)
+      .select("subject_id", "subject_type", "subject_name");
+
+    const details = await Promise.all(
+      subjects.map(async (subject) => {
+        const { subject_id, subject_type, subject_name } = subject;
+
+        const faculty = await db("faculty_subject")
+          .join("faculty", "faculty_subject.faculty_id", "faculty.faculty_id")
+          .where({
+            "faculty_subject.subject_id": subject_id,
+            "faculty_subject.subject_type": subject_type,
+          })
+          .select("faculty.faculty_id", "faculty.faculty_name")
+          .first();
+
+          const students = await db("student_subject")
+          .join("student", "student_subject.enrollment_no", "student.enrollment_no")
+          .where({
+            "student_subject.subject_id": subject_id,
+            "student_subject.subject_type": subject_type,
+          })
+          .select("student.enrollment_no", "student.student_name");
+
+        return {
+          subject_id,
+          subject_type,
+          subject_name,
+          faculty_assigned: faculty || null,
+          students_enrolled: students.map((s) => s.enrollment_no),
+        };
+      })
+    );
+
+    res.status(200).json({ details: details });
+  } catch (error) {
+    console.error("Error fetching detailed subjects:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+//Get Subjects of a semester
+const getSubjectBySemester = async (req, res) => {
+  const { semester } = req.params;
+
+  try {
+    const subjects = await db("subject")
+      .where("semester", semester)
+      .select("subject_id", "subject_name", "subject_type", "semester");
+
+    res.status(200).json({ subjects });
+  } catch (error) {
+    console.error("Error fetching subjects by semester:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -37,45 +84,22 @@ const getFaculties = async (req, res) => {
   try {
     const hod_id = req.user.userId;
 
-    const branch = await db('hod')
-      .select('branch_id')
-      .where('hod_id', hod_id)
+    const branch = await db("hod")
+      .select("branch_id")
+      .where("hod_id", hod_id)
       .first();
 
     if (!branch) {
-      return res.status(403).json({ message: "Unauthorized: You are not an HOD" });
+      return res
+        .status(403)
+        .json({ message: "Unauthorized: You are not an HOD" });
     }
 
-    const faculties = await db('faculty')
-      .where('branch_id', branch.branch_id)
-      .select('faculty_id', 'faculty_name', 'faculty_email');
+    const faculties = await db("faculty")
+      .where("branch_id", branch.branch_id)
+      .select("faculty_id", "faculty_name", "faculty_email");
 
     return res.json(faculties);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
-// Get Subjects of the branch
-const getSubjects = async (req, res) => {
-  try {
-    const hod_id = req.user.userId;
-
-    const branch = await db('hod')
-      .select('branch_id')
-      .where('hod_id', hod_id)
-      .first();
-
-    if (!branch) {
-      return res.status(403).json({ message: "Unauthorized: You are not an HOD" });
-    }
-
-    const subjects = await db('subject')
-      .where('branch_id', branch.branch_id)
-      .select('subject_id', 'subject_name', 'semester', 'subject_type');
-
-    return res.json(subjects);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -85,7 +109,7 @@ const getSubjects = async (req, res) => {
 // GET all pending faculty registration requests for HOD's branch
 const getPendingFacultyRequests = async (req, res) => {
   try {
-    const hod_id = req.user.userId; 
+    const hod_id = req.user.userId;
 
     const branch = await db("hod")
       .select("branch_id")
@@ -121,7 +145,9 @@ const approveFacultyRequest = async (req, res) => {
       .first();
 
     if (!branch) {
-      return res.status(403).json({ message: "Unauthorized: You are not an HOD" });
+      return res
+        .status(403)
+        .json({ message: "Unauthorized: You are not an HOD" });
     }
 
     const request = await db("faculty_registration_request")
@@ -140,9 +166,7 @@ const approveFacultyRequest = async (req, res) => {
       branch_id: request.branch_id,
     });
 
-    await db("faculty_registration_request")
-      .where({ faculty_id })
-      .del();
+    await db("faculty_registration_request").where({ faculty_id }).del();
 
     return res.status(200).json({ message: "Faculty approved successfully" });
   } catch (error) {
@@ -163,7 +187,9 @@ const rejectFacultyRequest = async (req, res) => {
       .first();
 
     if (!branch) {
-      return res.status(403).json({ message: "Unauthorized: You are not an HOD" });
+      return res
+        .status(403)
+        .json({ message: "Unauthorized: You are not an HOD" });
     }
 
     const deleted = await db("faculty_registration_request")
@@ -174,7 +200,9 @@ const rejectFacultyRequest = async (req, res) => {
       return res.status(404).json({ message: "Faculty request not found" });
     }
 
-    return res.status(200).json({ message: "Faculty request rejected and removed" });
+    return res
+      .status(200)
+      .json({ message: "Faculty request rejected and removed" });
   } catch (error) {
     console.error("Error rejecting faculty request:", error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -187,32 +215,42 @@ const assignFaculty = async (req, res) => {
     const { faculty_id, subject_id, subject_type } = req.body;
     const hod_id = req.user.userId;
 
-    const branch = await db('hod')
-      .select('branch_id')
-      .where('hod_id', hod_id)
+    const branch = await db("hod")
+      .select("branch_id")
+      .where("hod_id", hod_id)
       .first();
 
     if (!branch) {
-      return res.status(403).json({ message: "Unauthorized: You are not an HOD" });
+      return res
+        .status(403)
+        .json({ message: "Unauthorized: You are not an HOD" });
     }
 
-    const subject = await db('subject')
+    const subject = await db("subject")
       .where({ subject_id, subject_type, branch_id: branch.branch_id })
       .first();
 
     if (!subject) {
-      return res.status(404).json({ message: "Subject not found in HOD's department" });
+      return res
+        .status(404)
+        .json({ message: "Subject not found in HOD's department" });
     }
 
-    const faculty = await db('faculty')
+    const faculty = await db("faculty")
       .where({ faculty_id, branch_id: branch.branch_id })
       .first();
 
     if (!faculty) {
-      return res.status(404).json({ message: "Faculty not found in department" });
+      return res
+        .status(404)
+        .json({ message: "Faculty not found in department" });
     }
 
-    await db('faculty_subject').insert({ faculty_id, subject_id, subject_type });
+    await db("faculty_subject").insert({
+      faculty_id,
+      subject_id,
+      subject_type,
+    });
 
     return res.json({ message: "Faculty assigned successfully" });
   } catch (error) {
@@ -224,35 +262,42 @@ const assignFaculty = async (req, res) => {
 // Update assigned faculty
 const updateAssignedFaculty = async (req, res) => {
   try {
-    const { old_faculty_id, new_faculty_id, subject_id, subject_type } = req.body;
+    const { old_faculty_id, new_faculty_id, subject_id, subject_type } =
+      req.body;
     const hod_id = req.user.userId;
 
-    const branch = await db('hod')
-      .select('branch_id')
-      .where('hod_id', hod_id)
+    const branch = await db("hod")
+      .select("branch_id")
+      .where("hod_id", hod_id)
       .first();
 
     if (!branch) {
-      return res.status(403).json({ message: "Unauthorized: You are not an HOD" });
+      return res
+        .status(403)
+        .json({ message: "Unauthorized: You are not an HOD" });
     }
 
-    const faculty = await db('faculty')
+    const faculty = await db("faculty")
       .where({ faculty_id: new_faculty_id, branch_id: branch.branch_id })
       .first();
 
     if (!faculty) {
-      return res.status(404).json({ message: "New faculty not found in department" });
+      return res
+        .status(404)
+        .json({ message: "New faculty not found in department" });
     }
 
-    const existingAssignment = await db('faculty_subject')
+    const existingAssignment = await db("faculty_subject")
       .where({ faculty_id: old_faculty_id, subject_id, subject_type })
       .first();
 
     if (!existingAssignment) {
-      return res.status(404).json({ message: "Old faculty is not assigned to this subject" });
+      return res
+        .status(404)
+        .json({ message: "Old faculty is not assigned to this subject" });
     }
 
-    await db('faculty_subject')
+    await db("faculty_subject")
       .where({ faculty_id: old_faculty_id, subject_id, subject_type })
       .update({ faculty_id: new_faculty_id });
 
@@ -269,24 +314,28 @@ const removeAssignedFaculty = async (req, res) => {
     const { faculty_id, subject_id, subject_type } = req.body;
     const hod_id = req.user.userId;
 
-    const branch = await db('hod')
-      .select('branch_id')
-      .where('hod_id', hod_id)
+    const branch = await db("hod")
+      .select("branch_id")
+      .where("hod_id", hod_id)
       .first();
 
     if (!branch) {
-      return res.status(403).json({ message: "Unauthorized: You are not an HOD" });
+      return res
+        .status(403)
+        .json({ message: "Unauthorized: You are not an HOD" });
     }
 
-    const existingAssignment = await db('faculty_subject')
+    const existingAssignment = await db("faculty_subject")
       .where({ faculty_id, subject_id, subject_type })
       .first();
 
     if (!existingAssignment) {
-      return res.status(404).json({ message: "Faculty is not assigned to this subject" });
+      return res
+        .status(404)
+        .json({ message: "Faculty is not assigned to this subject" });
     }
 
-    await db('faculty_subject')
+    await db("faculty_subject")
       .where({ faculty_id, subject_id, subject_type })
       .del();
 
@@ -298,9 +347,10 @@ const removeAssignedFaculty = async (req, res) => {
 };
 
 module.exports = {
-  getBranchDetails,
+  getDistinctSemester,
+  getSubjectBySemester,
+  getdepartmentDetails,
   getFaculties,
-  getSubjects,
   getPendingFacultyRequests,
   approveFacultyRequest,
   rejectFacultyRequest,

@@ -33,7 +33,7 @@ body {
   width: 80%;
   max-width: 1200px;
   min-width: 1000px;
-  height: calc(100vh - 80px);
+  height: calc(100vh-80);
   background: white;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
@@ -41,7 +41,7 @@ body {
   z-index: 2;
   margin-bottom: 4rem;
   overflow: hidden;
-  margin-top: 0;
+  margin-top: 100px;
   padding-top: 0;
   overflow: hidden;
 }
@@ -384,4 +384,8 @@ th{
 
 td {
   color: rgb(22, 22, 22);
+}
+
+.input-fac {
+  margin-right: 20px;
 }
