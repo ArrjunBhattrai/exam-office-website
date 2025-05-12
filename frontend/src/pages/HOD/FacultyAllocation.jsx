@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
+import { toast } from "react-toastify";
+import { FaHome, FaSignOutAlt } from "react-icons/fa";
 import "./hod.css";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
@@ -8,10 +9,10 @@ import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
 import Button from "../../components/Button";
-import { FaHome, FaSignOutAlt } from "react-icons/fa";
+import { BACKEND_URL } from "../../../config";
 
 const FacultyAllocation = () => {
-  const { userId, isAuthenticated, role, token } = useSelector(
+  const { userId, isAuthenticated, role, token, branchId } = useSelector(
     (state) => state.auth
   );
 
@@ -26,69 +27,10 @@ const FacultyAllocation = () => {
 
   const [semesterOptions, setSemesterOptions] = useState([]);
   const [selectedSemester, setSelectedSemester] = useState("");
-  const [subjects, setSubjects] = useState([]);
+  const [subjectDetails, setSubjectDetails] = useState([]);
   const [faculties, setFaculties] = useState([]);
-  const [assignments, setAssignments] = useState({});
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [showModal, setShowModal] = useState(false);
-
-  useEffect(() => {
-    if (!selectedSemester) return;
-
-    // Simulating API call with sample data
-    const sampleFaculties = [
-      { faculty_id: "F001", faculty_name: "Dr. ABC" },
-      { faculty_id: "F002", faculty_name: "Prof. XYZ" },
-      { faculty_id: "F003", faculty_name: "Dr. UVW" },
-    ];
-
-    const sampleSubjects = [
-      {
-        subject_id: "CS301",
-        subject_name: "Data Structures",
-        subject_type: "Theory",
-        semester: "III",
-      },
-      {
-        subject_id: "CS302",
-        subject_name: "Database Management Systems",
-        subject_type: "Theory",
-        semester: "III",
-      },
-      {
-        subject_id: "CS303",
-        subject_name: "Operating Systems Lab",
-        subject_type: "Practical",
-        semester: "III",
-      },
-    ];
-
-    // Filter subjects based on selected semester (for realism)
-    const filteredSubjects = sampleSubjects.filter(
-      (subject) => subject.semester === semester
-    );
-
-    setFaculties(sampleFaculties);
-    setSubjects(filteredSubjects);
-  }, [semester]);
-
-  const handleSubmit = async () => {
-    const payload = Object.entries(assignments).map(([subject_id, faculty]) => {
-      const subject = subjects.find((s) => s.subject_id === subject_id);
-      return {
-        faculty_id: faculty.faculty_id,
-        subject_id: subject.subject_id,
-        subject_type: subject.subject_type,
-      };
-    });
-
-    try {
-      await axios.post("http://localhost:8080/api/faculty-allocation", payload);
-      alert("Allocation submitted successfully!");
-    } catch (error) {
-      console.error("Submit error:", error);
-    }
-  };
 
   const toRoman = (num) => {
     const romanMap = {
@@ -106,7 +48,7 @@ const FacultyAllocation = () => {
 
   const fetchSemesters = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/hod/semesters`, {
+      const response = await fetch(`${BACKEND_URL}/api/hod/branch/semesters`, {
         method: "GET",
         headers: {
           authorization: token,
@@ -128,10 +70,100 @@ const FacultyAllocation = () => {
       toast.error(error.message || "Failed to fetch semesters");
     }
   };
-
   useEffect(() => {
     fetchSemesters();
   }, [token]);
+
+  const fetchSubjectDetailsBySemester = async () => {
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/hod/branch/subjects/${selectedSemester}`,
+        {
+          method: "GET",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch subjects");
+      }
+      const data = await response.json();
+      setSubjectDetails(data.subjects);
+    } catch (error) {
+      toast.error(error.message || "Failed to fetch subjects");
+    }
+  };
+  useEffect(() => {
+    if (selectedSemester) {
+      fetchSubjectDetailsBySemester();
+    }
+  }, [selectedSemester, token]);
+
+  const fetchFaculties = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/hod/branch/faculties`, {
+        method: "GET",
+        headers: {
+          authorization: token,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch faculties");
+      }
+
+      const data = await response.json();
+      setFaculties(data);
+    } catch (error) {
+      toast.error(error.message || "Failed to fetch Faculties");
+    }
+  };
+  useEffect(() => {
+    if (selectedSemester) {
+      fetchFaculties();
+    }
+  }, [selectedSemester, token]);
+
+  const handleAssignment = async (faculty, subject_id, subject_type) => {
+    if (!selectedSubject) return;
+
+    const body = {
+      faculty_id: faculty.faculty_id,
+      subject_id,
+      subject_type,
+    };
+
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/hod/faculty-assignment`,
+        {
+          method: "POST",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to assign faculty");
+      }
+
+      toast.success(
+        `${faculty.faculty_name} assigned to ${selectedSubject.subject_name}`
+      );
+
+      fetchSubjectDetailsBySemester();
+      setShowModal(false);
+    } catch (error) {
+      toast.error(error.message || "Assignment failed");
+    }
+  };
 
   return (
     <div className="home-container">
@@ -148,16 +180,21 @@ const FacultyAllocation = () => {
                 activities={[
                   {
                     name: "View Department Details",
-                    path: "/hod-deptt-details",
+                    path: "/hod/department-details",
                   },
-                  { name: "Registration Requests", path: "/hod-reg-req" },
-
-                  { name: "Faculty Allocation", path: "/hod-fac-alloc" },
+                  {
+                    name: "Registration Requests",
+                    path: "/hod/registration-request",
+                  },
+                  {
+                    name: "Faculty Allocation",
+                    path: "/hod/faculty-allocation",
+                  },
                   {
                     name: "View Correction Requests",
-                    path: "/hod-correction-req",
+                    path: "/hod/correction-request",
                   },
-                  { name: "Progress Report", path: "/hod-prog-report" },
+                  { name: "Progress Report", path: "/hod/progress-report" },
                 ]}
               />
             </div>
@@ -182,21 +219,12 @@ const FacultyAllocation = () => {
               <div className="user-sec">
                 <p>
                   <span>Welcome: </span>
-                  <span className="user-name">
-                    [{user?.name || "Please Login"}]
-                  </span>
+                  <span className="user-name">{userId && [`${userId}`]}</span>
                 </p>
+
                 <p>
                   <span className="user-role">Role: </span>
-                  <span className="user-name">
-                    [{user?.role || "Please Login"}]
-                  </span>
-                </p>
-                <p>
-                  <span className="user-role">Department: </span>
-                  <span className="user-name">
-                    [{user?.department || "Please Login"}]
-                  </span>
+                  <span className="user-name">[{role && `${role}`}]</span>
                 </p>
               </div>
 
@@ -223,55 +251,57 @@ const FacultyAllocation = () => {
 
                   {selectedSemester && (
                     <>
-                      {/* here i want a table
-                      the table heads are:
-                      
-                      */}
-
                       <table className="subject-table">
                         <thead>
                           <tr>
-                            <th>S. No.</th>
-                            <th>Subject Code - Name</th>
-                            <th>Type</th>
-                            <th>Assigned To</th>
-                            <th>Action</th>
+                            <th>Subject Code</th>
+                            <th>Subject Name</th>
+                            <th>Subject Type</th>
+                            <th>Faculty Assigned</th>
+                            <th>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {subjects.map((subject, index) => (
-                            <tr
-                              key={
-                                $subject / subject_id - $subject.subject_type
-                              }
-                            >
-                              <td>{index + 1}</td>
-                              <td>
-                                {subject.subject_id} - {subject.subject_name}
-                              </td>
-                              <td>{subject.subject_type}</td>
-                              <td>
-                                {assignments[subject.subject_id]
-                                  ?.faculty_name || "Not Assigned"}
-                              </td>
-                              <td>
-                                <Button
-                                  text="Assign"
-                                  onClick={() => {
-                                    setSelectedSubject(subject);
-                                    setShowModal(true);
-                                  }}
-                                />
-                              </td>
-                            </tr>
-                          ))}
+                          {subjectDetails.map((subject) => {
+                            const isAssigned =
+                              subject.faculty_id && subject.faculty_name;
+
+                            return (
+                              <tr
+                                key={`${subject.subject_id}-${subject.subject_type}`}
+                              >
+                                <td>{subject.subject_id}</td>
+                                <td>{subject.subject_name}</td>
+                                <td>{subject.subject_type}</td>
+                                <td>
+                                  {isAssigned
+                                    ? subject.faculty_name
+                                    : "Not Assigned Yet"}
+                                </td>
+                                <td>
+                                  <Button
+                                    text={isAssigned ? "Edit" : "Assign"}
+                                    onClick={() => {
+                                      setSelectedSubject(subject);
+                                      setShowModal(true);
+                                    }}
+                                  />
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
 
                       {showModal && selectedSubject && (
                         <div className="modal-overlay">
                           <div className="modal-content">
-                            <h3>Assign Faculty to Subject</h3>
+                            <h3>
+                              {selectedSubject.faculty_id
+                                ? "Edit Assigned Faculty"
+                                : "Assign Subject to Faculty"}
+                            </h3>
+
                             <p>
                               <strong>Subject:</strong>{" "}
                               {selectedSubject.subject_name}
@@ -285,40 +315,36 @@ const FacultyAllocation = () => {
                               {selectedSubject.subject_type}
                             </p>
 
-                            <select
-                              onChange={(e) => {
-                                const selectedFac = faculties.find(
-                                  (f) => f.faculty_id === e.target.value
-                                );
-                                setAssignments((prev) => ({
-                                  ...prev,
-                                  [selectedSubject.subject_id]: selectedFac,
-                                }));
-                              }}
-                              defaultValue=""
-                            >
-                              <option value="" disabled>
-                                Select Faculty
-                              </option>
+                            <div className="faculty-list">
+                              <h4>Faculties:</h4>
                               {faculties.map((faculty) => (
-                                <option
+                                <div
                                   key={faculty.faculty_id}
-                                  value={faculty.faculty_id}
+                                  className="faculty-item"
+                                  onClick={() =>
+                                    handleAssignment(
+                                      faculty,
+                                      selectedSubject.subject_id,
+                                      selectedSubject.subject_type
+                                    )
+                                  }
                                 >
-                                  {faculty.faculty_name}
-                                </option>
+                                  {faculty.faculty_id} - {faculty.faculty_name}
+                                </div>
                               ))}
-                            </select>
+                            </div>
 
                             <div className="modal-actions">
-                              <button onClick={() => setShowModal(false)}>
-                                Save & Close
+                              <button
+                                className="close-btn"
+                                onClick={() => setShowModal(false)}
+                              >
+                                Close
                               </button>
                             </div>
                           </div>
                         </div>
                       )}
-                      <Button text="Submit Allocation" onClick={handleSubmit} />
                     </>
                   )}
                 </div>

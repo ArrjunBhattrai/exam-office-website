@@ -27,11 +27,7 @@ const Login = () => {
   const location = useLocation();
   const defaultRole = location.state?.role || "admin";
   const [userType, setUserType] = useState(defaultRole);
-  
   const [errors, setErrors] = useState({});
-  const authState = useSelector((state) => state.auth);
-
-  const val = useSelector((state) => state.auth);
 
   const validateEmail = (value) => {
     let error = "";
@@ -66,6 +62,7 @@ const Login = () => {
             userId: data.userId, 
             email,
             role: data.role, 
+            branchId: data.branchId,
             token: data.token,
           })
         );

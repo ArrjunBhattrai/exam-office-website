@@ -5,12 +5,16 @@ import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
-import Dropdown from "../../components/Dropdown";
-import Button from "../../components/Button";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 const FacultyHome = () => {
-  const user = useSelector((state) => state.auth.user);
+  const { userId, isAuthenticated, role, token, branchId } = useSelector(
+     (state) => state.auth
+   );
+ 
+   if (!isAuthenticated || role != "faculty") {
+     return <div>You are not authorized to view this page. Please login to get access to this page.</div>;
+   }
 
   return (
     <div className="home-container">
@@ -25,9 +29,9 @@ const FacultyHome = () => {
                 className="sidebar"
                 title="Faculty Activities"
                 activities={[
-                  { name: "View Assigned Subjects", path: "/fac-view-sub" },
-                  { name: "Marks Feeding Activities", path: "/fac-marks-feed" },
-                  { name: "Make Correction Request", path: "/fac-correction-req" },
+                  { name: "View Assigned Subjects", path: "/faculty/view-subjects" },
+                  { name: "Marks Feeding Activities", path: "/faculty/marks-feed" },
+                  { name: "Make Correction Request", path: "/faculty/correction-request" },
                 ]}
               />
             </div>
@@ -36,7 +40,7 @@ const FacultyHome = () => {
               <div className="user-icons">
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/fac-home")}
+                  onClick={() => (window.location.href = "/faculty/home")}
                 >
                   <FaHome className="icon" />
                   Home
@@ -50,22 +54,15 @@ const FacultyHome = () => {
                 </button>
               </div>
               <div className="user-sec">
-                <p>
+              <p>
                   <span>Welcome: </span>
-                  <span className="user-name">
-                    [{user?.name || "Please Login"}]
-                  </span>
+                  <span className="user-name">{userId && `[${userId}]`}</span>
                 </p>
+
                 <p>
                   <span className="user-role">Role: </span>
                   <span className="user-name">
-                    [{user?.role || "Please Login"}]
-                  </span>
-                </p>
-                <p>
-                  <span className="user-role">Department: </span>
-                  <span className="user-name">
-                    [{user?.department || "Please Login"}]
+                    [{(role && `${role}`)}]
                   </span>
                 </p>
               </div>

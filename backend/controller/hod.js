@@ -1,111 +1,5 @@
 const db = require("../db/db");
 
-//Get distinct Semsesters
-const getDistinctSemester = async (req, res) => {
-  try {
-    const semesters = await db("subject")
-      .distinct("semester")
-      .orderBy("semester");
-
-    res.status(200).json({
-      semesters: semesters.map((row) => row.semester),
-    });
-  } catch (error) {
-    console.error("Error fetching semesters:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
-  }
-};
-
-//Get Department details
-const getdepartmentDetails = async (req, res) => {
-  const { semester } = req.params;
-
-  try {
-    const subjects = await db("subject")
-      .where("semester", semester)
-      .select("subject_id", "subject_type", "subject_name");
-
-    const details = await Promise.all(
-      subjects.map(async (subject) => {
-        const { subject_id, subject_type, subject_name } = subject;
-
-        const faculty = await db("faculty_subject")
-          .join("faculty", "faculty_subject.faculty_id", "faculty.faculty_id")
-          .where({
-            "faculty_subject.subject_id": subject_id,
-            "faculty_subject.subject_type": subject_type,
-          })
-          .select("faculty.faculty_id", "faculty.faculty_name")
-          .first();
-
-          const students = await db("student_subject")
-          .join("student", "student_subject.enrollment_no", "student.enrollment_no")
-          .where({
-            "student_subject.subject_id": subject_id,
-            "student_subject.subject_type": subject_type,
-          })
-          .select("student.enrollment_no", "student.student_name");
-
-        return {
-          subject_id,
-          subject_type,
-          subject_name,
-          faculty_assigned: faculty || null,
-          students_enrolled: students.map((s) => s.enrollment_no),
-        };
-      })
-    );
-
-    res.status(200).json({ details: details });
-  } catch (error) {
-    console.error("Error fetching detailed subjects:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-//Get Subjects of a semester
-const getSubjectBySemester = async (req, res) => {
-  const { semester } = req.params;
-
-  try {
-    const subjects = await db("subject")
-      .where("semester", semester)
-      .select("subject_id", "subject_name", "subject_type", "semester");
-
-    res.status(200).json({ subjects });
-  } catch (error) {
-    console.error("Error fetching subjects by semester:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-// Get Faculties of the branch
-const getFaculties = async (req, res) => {
-  try {
-    const hod_id = req.user.userId;
-
-    const branch = await db("hod")
-      .select("branch_id")
-      .where("hod_id", hod_id)
-      .first();
-
-    if (!branch) {
-      return res
-        .status(403)
-        .json({ message: "Unauthorized: You are not an HOD" });
-    }
-
-    const faculties = await db("faculty")
-      .where("branch_id", branch.branch_id)
-      .select("faculty_id", "faculty_name", "faculty_email");
-
-    return res.json(faculties);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
 // GET all pending faculty registration requests for HOD's branch
 const getPendingFacultyRequests = async (req, res) => {
   try {
@@ -209,8 +103,130 @@ const rejectFacultyRequest = async (req, res) => {
   }
 };
 
-// Assign faculty to a subject
-const assignFaculty = async (req, res) => {
+//Get distinct Semsesters
+const getDistinctSemester = async (req, res) => {
+  try {
+    const semesters = await db("subject")
+      .distinct("semester")
+      .orderBy("semester");
+
+    res.status(200).json({
+      semesters: semesters.map((row) => row.semester),
+    });
+  } catch (error) {
+    console.error("Error fetching semesters:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+//Get Department details(semester wise)
+const getDepartmentDetails = async (req, res) => {
+  const { semester } = req.params;
+
+  try {
+    const subjects = await db("subject")
+      .where("semester", semester)
+      .select("subject_id", "subject_type", "subject_name");
+
+    const details = await Promise.all(
+      subjects.map(async (subject) => {
+        const { subject_id, subject_type, subject_name } = subject;
+
+        const faculty = await db("faculty_subject")
+          .join("faculty", "faculty_subject.faculty_id", "faculty.faculty_id")
+          .where({
+            "faculty_subject.subject_id": subject_id,
+            "faculty_subject.subject_type": subject_type,
+          })
+          .select("faculty.faculty_id", "faculty.faculty_name")
+          .first();
+
+          const students = await db("student_subject")
+          .join("student", "student_subject.enrollment_no", "student.enrollment_no")
+          .where({
+            "student_subject.subject_id": subject_id,
+            "student_subject.subject_type": subject_type,
+          })
+          .select("student.enrollment_no", "student.student_name");
+
+        return {
+          subject_id,
+          subject_type,
+          subject_name,
+          faculty_assigned: faculty || null,
+          students_enrolled: students.map((s) => s.enrollment_no),
+        };
+      })
+    );
+
+    res.status(200).json({ details: details });
+  } catch (error) {
+    console.error("Error fetching detailed subjects:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+//Get subject details (semester wise)
+const getSubjectDetailsBySemester = async (req, res) => {
+  const { semester } = req.params;
+
+  try {
+    const subjects = await db("subject as s")
+      .leftJoin("faculty_subject as fs", function () {
+        this.on("s.subject_id", "=", "fs.subject_id").andOn(
+          "s.subject_type",
+          "=",
+          "fs.subject_type"
+        );
+      })
+      .leftJoin("faculty as f", "fs.faculty_id", "f.faculty_id")
+      .where("s.semester", semester)
+      .select(
+        "s.subject_id",
+        "s.subject_name",
+        "s.subject_type",
+        "s.semester",
+        "f.faculty_id",
+        "f.faculty_name"
+      );
+
+    res.status(200).json({ subjects });
+  } catch (error) {
+    console.error("Error fetching subjects by semester:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+// Get Faculties of the branch
+const getFaculties = async (req, res) => {
+  try {
+    const hod_id = req.user.userId;
+
+    const branch = await db("hod")
+      .select("branch_id")
+      .where("hod_id", hod_id)
+      .first();
+
+    if (!branch) {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized: You are not an HOD" });
+    }
+
+    const faculties = await db("faculty")
+      .where("branch_id", branch.branch_id)
+      .select("faculty_id", "faculty_name", "faculty_email");
+
+    return res.json(faculties);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// Assign or Update Faculty to a Subject
+const assignOrUpdateFaculty = async (req, res) => {
   try {
     const { faculty_id, subject_id, subject_type } = req.body;
     const hod_id = req.user.userId;
@@ -246,115 +262,41 @@ const assignFaculty = async (req, res) => {
         .json({ message: "Faculty not found in department" });
     }
 
+    const existingAssignment = await db("faculty_subject")
+      .where({ subject_id, subject_type })
+      .first();
+
+    if (existingAssignment) {
+      await db("faculty_subject")
+        .where({ subject_id, subject_type })
+        .del();
+    }
+
     await db("faculty_subject").insert({
       faculty_id,
       subject_id,
       subject_type,
     });
 
-    return res.json({ message: "Faculty assigned successfully" });
+    return res.json({
+      message: existingAssignment
+        ? "Faculty updated successfully"
+        : "Faculty assigned successfully",
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-// Update assigned faculty
-const updateAssignedFaculty = async (req, res) => {
-  try {
-    const { old_faculty_id, new_faculty_id, subject_id, subject_type } =
-      req.body;
-    const hod_id = req.user.userId;
-
-    const branch = await db("hod")
-      .select("branch_id")
-      .where("hod_id", hod_id)
-      .first();
-
-    if (!branch) {
-      return res
-        .status(403)
-        .json({ message: "Unauthorized: You are not an HOD" });
-    }
-
-    const faculty = await db("faculty")
-      .where({ faculty_id: new_faculty_id, branch_id: branch.branch_id })
-      .first();
-
-    if (!faculty) {
-      return res
-        .status(404)
-        .json({ message: "New faculty not found in department" });
-    }
-
-    const existingAssignment = await db("faculty_subject")
-      .where({ faculty_id: old_faculty_id, subject_id, subject_type })
-      .first();
-
-    if (!existingAssignment) {
-      return res
-        .status(404)
-        .json({ message: "Old faculty is not assigned to this subject" });
-    }
-
-    await db("faculty_subject")
-      .where({ faculty_id: old_faculty_id, subject_id, subject_type })
-      .update({ faculty_id: new_faculty_id });
-
-    return res.json({ message: "Faculty updated successfully" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
-// Remove assigned faculty
-const removeAssignedFaculty = async (req, res) => {
-  try {
-    const { faculty_id, subject_id, subject_type } = req.body;
-    const hod_id = req.user.userId;
-
-    const branch = await db("hod")
-      .select("branch_id")
-      .where("hod_id", hod_id)
-      .first();
-
-    if (!branch) {
-      return res
-        .status(403)
-        .json({ message: "Unauthorized: You are not an HOD" });
-    }
-
-    const existingAssignment = await db("faculty_subject")
-      .where({ faculty_id, subject_id, subject_type })
-      .first();
-
-    if (!existingAssignment) {
-      return res
-        .status(404)
-        .json({ message: "Faculty is not assigned to this subject" });
-    }
-
-    await db("faculty_subject")
-      .where({ faculty_id, subject_id, subject_type })
-      .del();
-
-    return res.json({ message: "Faculty removed from subject" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
 
 module.exports = {
-  getDistinctSemester,
-  getSubjectBySemester,
-  getdepartmentDetails,
-  getFaculties,
   getPendingFacultyRequests,
   approveFacultyRequest,
   rejectFacultyRequest,
-  assignFaculty,
-  updateAssignedFaculty,
-  removeAssignedFaculty,
+  getDistinctSemester,
+  getSubjectDetailsBySemester,
+  getDepartmentDetails,
+  getFaculties,
+  assignOrUpdateFaculty
 };

@@ -1,74 +1,110 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
-// import "./HODHome.css";
+import { toast } from "react-toastify";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
-import Dropdown from "../../components/Dropdown";
-import Button from "../../components/Button";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
+import { BACKEND_URL } from "../../../config";
 
 const ViewSubjects = () => {
-  const user = useSelector((state) => state.auth.user);
-  const faculty_id = user?.faculty_id;
+  const { userId, isAuthenticated, role, token, branchId } = useSelector(
+    (state) => state.auth
+  );
 
-  const [facultyId, setFacultyId] = useState("");
-  const [subjects, setSubjects] = useState([]);
-  const [coValues, setCoValues] = useState({});
+  if (!isAuthenticated || role != "faculty") {
+    return (
+      <div>
+        You are not authorized to view this page. Please login to get access to
+        this page.
+      </div>
+    );
+  }
 
-  const fetchSubjects = async () => {
-    if (!facultyId.trim()) {
-      // alert("Please enter Faculty ID");
-      // return;
+  const [assignedSubjects, setAssignedSubjects] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedSubject, setSelectedSubject] = useState(null);
+  const [coInput, setCoInput] = useState("");
 
-      // Sample Data when Faculty ID is empty
-      const sampleData = [
+  const openModal = (subject) => {
+    setSelectedSubject(subject);
+    setCoInput("");
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setSelectedSubject(null);
+    setShowModal(false);
+  };
+
+  const fetchAssignedSubjects = async () => {
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/faculty/assignedSubjects/${userId}`,
         {
-          subject_id: "IT58302",
-          subject_name: "Data Structures",
-          year_semester: "2nd Year, Sem 3",
-        },
-        {
-          subject_id: "IT58309",
-          subject_name: "Operating Systems",
-          year_semester: "2nd Year, Sem 3",
-        },
-      ];
-      setSubjects(sampleData);
+          method: "GET",
+          headers: {
+            authorization: token,
+            "Content-Type": "Application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch assigned Subjects");
+      }
+
+      const data = await response.json();
+      setAssignedSubjects(data.subjects);
+    } catch (error) {
+      toast.error(error.message || "Failed to fetch Assigned Subjects");
+    }
+  };
+  useEffect(() => {
+    fetchAssignedSubjects();
+  }, [token]);
+
+  const handleAssignCOs = async () => {
+    const numberOfCOs = parseInt(coInput);
+  
+    if (!numberOfCOs || isNaN(numberOfCOs) || numberOfCOs < 1) {
+      toast.warn("Please enter a valid number of COs");
       return;
     }
+  
+    const co_names = Array.from(
+      { length: numberOfCOs },
+      (_, i) => `CO${i + 1}`
+    );
+  
     try {
-      const response = await axios.get(`/api/faculty/subjects/${facultyId}`);
-      setSubjects(response.data);
+      const response = await fetch(`${BACKEND_URL}/api/faculty/assign-cos`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: token,
+        },
+        body: JSON.stringify({
+          subject_id: selectedSubject.subject_id,
+          subject_type: selectedSubject.subject_type,
+          co_names,
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(result.error || result.message || "Failed to assign COs");
+      }
+      
+      const result = await response.json();
+      toast.success("COs assigned successfully!");
+      await fetchAssignedSubjects(); 
+      closeModal();
     } catch (error) {
-      console.error(error);
-      alert("Failed to fetch subjects");
+      toast.error(error.message || "Failed to assign COs");
     }
   };
-
-  const handleCoChange = (subjectId, value) => {
-    setCoValues((prev) => ({
-      ...prev,
-      [subjectId]: value,
-    }));
-  };
-
-  const submitCOs = async () => {
-    const coData = Object.keys(coValues).map((subjectId) => ({
-      subject_id: subjectId,
-      co_count: coValues[subjectId],
-    }));
-
-    try {
-      await axios.post("/api/faculty/submit-co", facultyId, coData);
-      alert("No. of COs submitted");
-    } catch (error) {
-      console.error("Error submitting CO:", error);
-      alert("Failed to submit COs");
-    }
-  };
+  
 
   return (
     <div className="home-container">
@@ -83,11 +119,17 @@ const ViewSubjects = () => {
                 className="sidebar-1"
                 title="Faculty Activity"
                 activities={[
-                  { name: "View Assigned Subjects", path: "/fac-view-sub" },
-                  { name: "Marks Feeding Activities", path: "/fac-marks-feed" },
+                  {
+                    name: "View Assigned Subjects",
+                    path: "/faculty/view-subjects",
+                  },
+                  {
+                    name: "Marks Feeding Activities",
+                    path: "/faculty/marks-feed",
+                  },
                   {
                     name: "Make Correction Request",
-                    path: "/fac-correction-req",
+                    path: "/faculty/correction-request",
                   },
                 ]}
               />
@@ -97,7 +139,7 @@ const ViewSubjects = () => {
               <div className="user-icons">
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/fac-home")}
+                  onClick={() => (window.location.href = "/faculty/home")}
                 >
                   <FaHome className="icon" /> Home
                 </button>
@@ -111,72 +153,109 @@ const ViewSubjects = () => {
               <div className="user-sec">
                 <p>
                   <span>Welcome: </span>
-                  <span className="user-name">
-                    [{user?.name || "Please Login"}]
-                  </span>
+                  <span className="user-name">{userId && `[${userId}]`}</span>
                 </p>
+
                 <p>
                   <span className="user-role">Role: </span>
-                  <span className="user-name">
-                    [{user?.role || "Please Login"}]
-                  </span>
-                </p>
-                <p>
-                  <span className="user-role">Department: </span>
-                  <span className="user-name">
-                    [{user?.department || "Please Login"}]
-                  </span>
+                  <span className="user-name">[{role && `${role}`}]</span>
                 </p>
               </div>
 
               <div>
-                {/* here */}
                 <div className="fac-alloc">
                   <h3>View Assigned Subjects</h3>
                   <p className="session-text">Current Session: June 2025</p>
 
                   <span className="box-overlay-text">Select to view</span>
-
                   <div className="faculty-box">
-                    <input
-                      type="text"
-                      placeholder="Enter Faculty ID"
-                      value={facultyId}
-                      onChange={(e) => setFacultyId(e.target.value)}
-                      className="fac-input"
-                    />
-                    <button className="fetch-btn" onClick={fetchSubjects}>
-                      Fetch Subjects
-                    </button>
+                    <h4>Assigned Subjects Table</h4>
+                    <table className="subject-table">
+                      <thead>
+                        <tr>
+                          <th>Subject Code</th>
+                          <th>Subject Type</th>
+                          <th>Subject Name</th>
+                          <th>Semester</th>
+                          <th>No. of COs</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {assignedSubjects.map((subject) => {
+                          const key = `${subject.subject_id}-${subject.subject_type}`;
+                          return (
+                            <tr key={key}>
+                              <td>{subject.subject_id}</td>
+                              <td>{subject.subject_type}</td>
+                              <td>{subject.subject_name}</td>
+                              <td>{subject.semester}</td>
+                              <td>
+                                {subject.co_names.length > 0 ? (
+                                  subject.co_names.length
+                                ) : (
+                                  <span style={{ color: "gray" }}>
+                                    COs not assigned
+                                  </span>
+                                )}
+                              </td>
 
-                    {subjects.length > 0 && (
-                      <div className="subject-list">
-                        {subjects.map((subject) => (
-                          <div
-                            key={subject.subject_id}
-                            className="subject-item"
-                          >
-                            <span>
-                              {subject.subject_name} ({subject.subject_id}) -{" "}
-                              {subject.year_semester}
-                            </span>
-                            <input
-                              type="number"
-                              placeholder="Enter COs"
-                              value={coValues[subject.subject_id] || ""}
-                              onChange={(e) =>
-                                handleCoChange(
-                                  subject.subject_id,
-                                  e.target.value
-                                )
-                              }
-                              className="co-input"
-                            />
+                              <td>
+                                {subject.co_names?.length > 0 ? (
+                                  <span
+                                    style={{
+                                      color: "green",
+                                      fontWeight: "bold",
+                                    }}
+                                  >
+                                    COs already assigned
+                                  </span>
+                                ) : (
+                                  <button
+                                    className="assign-btn"
+                                    onClick={() => openModal(subject)}
+                                  >
+                                    Assign COs
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+
+                    {showModal && (
+                      <div className="modal-overlay">
+                        <div className="modal">
+                          <h3>Assign COs</h3>
+                          <p>
+                            <strong>Subject:</strong>{" "}
+                            {selectedSubject.subject_name}
+                          </p>
+                          <p>
+                            <strong>Code:</strong> {selectedSubject.subject_id}
+                          </p>
+                          <p>
+                            <strong>Type:</strong>{" "}
+                            {selectedSubject.subject_type}
+                          </p>
+
+                          <input
+                            type="number"
+                            min="1"
+                            placeholder="Enter number of COs"
+                            value={coInput}
+                            onChange={(e) => setCoInput(e.target.value)}
+                          />
+
+                          <div className="modal-actions">
+                            <button onClick={closeModal}>Cancel</button>
+                            <button onClick={() => handleAssignCOs()}>
+                              Submit
+                            </button>
                           </div>
-                        ))}
-                        <button className="submit-btn" onClick={submitCOs}>
-                          Submit COs
-                        </button>
+                        </div>
                       </div>
                     )}
                   </div>

@@ -1,4 +1,3 @@
-const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const db = require("../db/db");
@@ -10,7 +9,6 @@ const registerUser = async(req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    //Register the admin
     if (role === "admin") {
       await db("admin").insert({
         admin_id: id,
@@ -21,7 +19,6 @@ const registerUser = async(req, res) => {
       return res.status(201).json({ message: "Admin registered successfully!" });
     }
     
-    //Register the HOD
     else if (role === "hod") {
       if (!branch_id) {
         return res.status(400).json({ error: "HOD registration requires a branch_id." });
@@ -42,7 +39,6 @@ const registerUser = async(req, res) => {
       return res.status(201).json({ message: "HOD registered successfully!" });
     }
  
-    //Register the faculty
     else if (role === "faculty") {
 
       if (!branch_id) {
@@ -99,23 +95,26 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ error: "Invalid role" });
     }
 
-    // Validate password
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(400).json({ error: "Invalid credentials" });
 
-    // Generate JWT token with correct ID based on role
     const userId =
     role === "admin" ? user.admin_id :
     role === "faculty" ? user.faculty_id :
     user.hod_id;
+
+    const branchId = 
+    role === "admin" ? null :
+    role === "faculty" ? user.branch_id :
+    user.branch_id;
     
     const token = jwt.sign(
-      { userId, role },
+      { userId, role, branchId },
       process.env.JWT_SECRET,
       { expiresIn: "5h" }
     );
 
-    res.json({ token, role, userId });
+    res.json({ token, role, userId, branchId });
 
   } catch (error) {
     console.error("Login error:", error);

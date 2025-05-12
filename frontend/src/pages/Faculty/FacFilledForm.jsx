@@ -26,12 +26,9 @@ const FacFilledForm = () => {
                 className="sidebar-1"
                 title="Faculty Activity"
                 activities={[
-                  { name: "View Assigned Subjects", path: "/fac-view-sub" },
-                  { name: "Marks Feeding", path: "/fac-marks-feed" },
-                  {
-                    name: "Make Correction Request",
-                    path: "/fac-correction-req",
-                  },
+                  { name: "View Assigned Subjects", path: "/faculty/view-sub" },
+                  { name: "Marks Feeding Activities", path: "/faculty/marks-feed" },
+                  { name: "Make Correction Request", path: "/faculty/correction-req" },
                 ]}
               />
 

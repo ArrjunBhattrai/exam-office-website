@@ -6,8 +6,6 @@ import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
-import Dropdown from "../../components/Dropdown";
-import Button from "../../components/Button";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 import { BACKEND_URL } from "../../../config";
 
@@ -116,7 +114,6 @@ const RegistrationRequest = () => {
                     name: "Registration Requests",
                     path: "/hod/registration-request",
                   },
-
                   {
                     name: "Faculty Allocation",
                     path: "/hod/faculty-allocation",

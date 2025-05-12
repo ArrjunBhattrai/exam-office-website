@@ -121,6 +121,7 @@ body {
   padding: 2rem;
   margin-top: -1rem;
   height: 400px;
+  overflow-x: auto;
  }
 
  .institute-text {
@@ -228,7 +229,10 @@ th, td {
 /* view deptt details */
 
 .subject-table-container {
-  margin-top: 20px;
+  /* margin-top: 20px; */
+  max-height: 400px;
+  overflow-y: auto;
+  position: relative;
 }
 
 .subject-table,
@@ -236,6 +240,12 @@ th, td {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 20px;
+}
+
+.subject-table th {
+  position: scrollable;
+  top: 0;
+  z-index: 10; 
 }
 
 .subject-table th,
@@ -318,13 +328,31 @@ th, td {
   display: flex;
   justify-content: center;
   align-items: center;
+
 }
 
 .modal-content {
+  position: relative;
   background: white;
-  padding: 20px;
-  width: 350px;
-  border-radius: 8px;
+  padding: 25px;
+  width: 400px;
+  border-radius: 5px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 20px;
+  color: #8b0000;
+  border-bottom: 2px solid #8b0000;
+  padding-bottom: 8px;
+}
+
+.modal-content p {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #333;
 }
 
 .modal-buttons {
@@ -347,4 +375,40 @@ th, td {
 .request-table th {
   background-color: #8b0000;
   color: white;
+}
+
+.faculty-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 16px;
+}
+
+.faculty-item {
+  padding: 10px 14px;
+  background-color: #f2f2f2;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.faculty-item:hover {
+  background-color: #dcdcdc;
+  transform: translateY(-1px)
+}
+
+.modal-actions .close-btn {
+  background-color: red;
+  color: white;
+  padding: 5px;
+  font-size: 14px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.faculty-list h4 {
+  font-weight: 600px;
 }

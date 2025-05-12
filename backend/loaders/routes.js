@@ -4,6 +4,8 @@ module.exports = function (app) {
   app.use("/api/user", require("../routes/user.routes"));
   app.use("/api/admin", require("../routes/admin.routes"));
   app.use("/api/hod", require("../routes/hod.routes"));
+  app.use("/api/faculty", require("../routes/faculty.routes"));
+
   
   app.use((_req, _res, next) => {
     const error = new Error();

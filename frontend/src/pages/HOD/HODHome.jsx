@@ -9,7 +9,7 @@ import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 const HODHome = () => {
 
-  const { userId, isAuthenticated, role, token } = useSelector(
+  const { userId, isAuthenticated, role, token, branchId } = useSelector(
     (state) => state.auth
   );
 

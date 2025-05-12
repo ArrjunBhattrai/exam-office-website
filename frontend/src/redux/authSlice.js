@@ -5,6 +5,7 @@ const initialState = {
   role: null,
   token: null,
   isAuthenticated: false,
+  branchId: null,
 };
 
 const authSlice = createSlice({
@@ -12,25 +13,28 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     login: (state, action) => {
-      state.userId = action.payload.userId; // Store userId from the response
-      state.role = action.payload.role; // Store role from the response
-      state.token = action.payload.token; // Store JWT token
-      state.isAuthenticated = true; // Mark the user as authenticated
+      state.userId = action.payload.userId; 
+      state.role = action.payload.role; 
+      state.token = action.payload.token; 
+      state.branchId = action.payload.branchId; 
+      state.isAuthenticated = true; 
+
     },
 
     logout: (state) => {
-      state.userId = null; // Clear userId
-      state.role = null; // Clear role
-      state.token = null; // Clear token
-      state.isAuthenticated = false; // Set authenticated status to false
-
+      state.userId = null; 
+      state.role = null;
+      state.token = null; 
+      state.branchId = null;
+      state.isAuthenticated = false; 
     },
     
     register: (state, action) => {
-      state.userId = action.payload.userId; // Store userId from the registration response
-      state.role = action.payload.role; // Store role from the registration response
-      state.token = action.payload.token; // Store JWT token
-      state.isAuthenticated = true; // Mark the user as authenticated
+      state.userId = action.payload.userId;
+      state.role = action.payload.role; 
+      state.token = action.payload.token; 
+      state.branchId = action.payload.branchId; 
+      state.isAuthenticated = true; 
     },
   },
 });

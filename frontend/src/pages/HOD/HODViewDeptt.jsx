@@ -59,7 +59,7 @@ const HODViewDeptt = () => {
 
   const fetchSemesters = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/hod/semesters`, {
+      const response = await fetch(`${BACKEND_URL}/api/hod/branch/semesters`, {
         method: "GET",
         headers: {
           authorization: token,
@@ -91,7 +91,7 @@ const HODViewDeptt = () => {
 
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/hod/department-details/${selectedSemester}`,
+        `${BACKEND_URL}/api/hod/branch/details/${selectedSemester}`,
         {
           method: "GET",
           headers: {
@@ -141,7 +141,6 @@ const HODViewDeptt = () => {
                     name: "Faculty Allocation",
                     path: "/hod/faculty-allocation",
                   },
-
                   {
                     name: "View Correction Requests",
                     path: "/hod/correction-request",

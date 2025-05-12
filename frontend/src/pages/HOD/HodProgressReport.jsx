@@ -27,10 +27,16 @@ const HodProgressReport = () => {
                 activities={[
                   {
                     name: "View Department Details",
-                    path: "/hod/department/details",
+                    path: "/hod/department-details",
                   },
-                  { name: "Faculty Allocation", path: "/hod/faculcty-allocation" },
-                  { name: "Registration Requests", path: "/hod/registration-request" },
+                  {
+                    name: "Registration Requests",
+                    path: "/hod/registration-request",
+                  },
+                  {
+                    name: "Faculty Allocation",
+                    path: "/hod/faculty-allocation",
+                  },
                   {
                     name: "View Correction Requests",
                     path: "/hod/correction-request",
@@ -82,16 +88,13 @@ const HodProgressReport = () => {
                 <h3>Progress Report</h3>
                 <p className="session-text">Current Session: June 2025</p>
 
-                <span className="box-overlay-text">
-                  View Report
-                </span>
+                <span className="box-overlay-text">View Report</span>
 
                 <div className="faculty-box">
                   <p className="institute-text">
                     <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
                     TECHNOLOGY & SCIENCE
                   </p>
-                                    
                 </div>
               </div>
             </div>
@@ -101,7 +104,7 @@ const HodProgressReport = () => {
         <RedFooter />
       </div>
     </div>
-  )
+  );
 };
 
 export default HodProgressReport;

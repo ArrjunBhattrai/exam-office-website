@@ -25,19 +25,10 @@ import HodProgressReport from "./pages/HOD/HodProgressReport";
 
 import FacultyHome from "./pages/Faculty/FacultyHome";
 import ViewSubjects from "./pages/Faculty/ViewSubjects";
+import MarksFeed from "./pages/Faculty/MarksFeed";
 import FacCorrectionReq from "./pages/Faculty/FacCorrectionReq";
 import FacFilledForm from "./pages/Faculty/FacFilledForm";
-import MarksFeed from "./pages/Faculty/MarksFeed";
 import MarksEntry from "./pages/Faculty/MarksEntry";
-
-
-//Faculty imports
-// import FacultyHome from "./pages/Faculty/FacultyHome";
-// import ViewSubjects from "./pages/Faculty/ViewSubjects";
-// import FacCorrectionReq from "./pages/Faculty/FacCorrectionReq";
-// import FacFilledForm from "./pages/Faculty/FacFilledForm";
-// import MarksFeed from "./pages/Faculty/MarksFeed";
-// import MarksEntry from "./pages/Faculty/MarksEntry";
 
 function App() {
   return (
@@ -64,12 +55,12 @@ function App() {
           <Route path="/hod/progress-report" element={<HodProgressReport />} />
           <Route path="/hod/registration-request" element={<RegistrationRequest />} />
 
-          <Route path="/fac-view-sub" element={<ViewSubjects />} />
-          <Route path="/fac-home" element={<FacultyHome />} />
-          <Route path="/fac-correction-req" element={<FacCorrectionReq />} />
-          <Route path="/fac-filled-form" element={<FacFilledForm />} />
-          <Route path="/fac-marks-feed" element={<MarksFeed />} />
-          <Route path="/fac-marks-entry" element={<MarksEntry />} />
+          <Route path="/faculty/home" element={<FacultyHome />} />
+          <Route path="/faculty/view-subjects" element={<ViewSubjects />} />
+          <Route path="/faculty/marks-feed" element={<MarksFeed />} />
+          <Route path="/faculty/correction-request" element={<FacCorrectionReq />} />
+          <Route path="/faculty/filled-form" element={<FacFilledForm />} />
+          <Route path="/faculty/marks-entry" element={<MarksEntry />} />
            
         </Routes>
       </div>
