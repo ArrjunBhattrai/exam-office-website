@@ -16,12 +16,16 @@ const BranchManagement = () => {
   );
 
   if (!isAuthenticated || role != "admin") {
-    return <div>You are not authorized to view this page. Please login to get access to this page.</div>;
+    return (
+      <div>
+        You are not authorized to view this page. Please login to get access to
+        this page.
+      </div>
+    );
   }
 
   const [branches, setBranches] = useState([]);
   const [formData, setFormData] = useState({
-    course_id: "",
     branch_id: "",
     branch_name: "",
   });
@@ -29,7 +33,7 @@ const BranchManagement = () => {
   // Fetch all branches
   const fetchBranches = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/admin/branches`, {
+      const response = await fetch(`${BACKEND_URL}/api/branch/get-branches`, {
         method: "GET",
         headers: {
           authorization: token,
@@ -38,7 +42,8 @@ const BranchManagement = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch branches");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch branches");
       }
 
       const data = await response.json();
@@ -59,7 +64,7 @@ const BranchManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${BACKEND_URL}/api/admin/branch/create`, {
+      const response = await fetch(`${BACKEND_URL}/api/branch/create-branch`, {
         method: "POST",
         headers: {
           authorization: token,
@@ -70,26 +75,29 @@ const BranchManagement = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to add course");
+        throw new Error(errorData.message || "Failed to add branch");
       }
 
       toast.success("Course added successfully");
       fetchBranches();
-      setFormData({ course_id: "", branch_id: "", branch_name: "" });
+      setFormData({ branch_id: "", branch_name: "" });
     } catch (error) {
-      toast.error(error.message || "Operation failed");
+      toast.error(error.message || "Failed to add branch");
     }
   };
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/admin/branch/${id}`, {
-        method: "DELETE",
-        headers: {
-          authorization: token,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${BACKEND_URL}/api/branch/delete-branch/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -115,13 +123,27 @@ const BranchManagement = () => {
                 className="sidebar"
                 title="Admin Activities"
                 activities={[
-                  { name: "Course Management", path: "/admin/course-management" },
-                  { name: "Branch Management", path: "/admin/branch-management" },
-                  { name: "Session Management", path: "/admin/session-management" },
-                  { name: "Upload Academic Scheme", path: "/admin/academic-scheme-upload" },
-                  { name: "Upload Student Data", path: "/admin/student-data-upload" },
+                  {
+                    name: "Session Management",
+                    path: "/admin/session-management",
+                  },
+                  {
+                    name: "Branch Management",
+                    path: "/admin/branch-management",
+                  },
+                  {
+                    name: "Course Management",
+                    path: "/admin/course-management",
+                  },
+                  {
+                    name: "Upload Academic Scheme",
+                    path: "/admin/academic-scheme-upload",
+                  },
+                  {
+                    name: "Upload Student Data",
+                    path: "/admin/student-data-upload",
+                  },
                   { name: "Address Requests", path: "/admin/req" },
-                  { name: "Progress Report", path: "/admin/progress-report" },
                 ]}
               />
             </div>
@@ -174,15 +196,6 @@ const BranchManagement = () => {
                     >
                       <input
                         type="text"
-                        name="course_id"
-                        value={formData.course_id}
-                        onChange={handleChange}
-                        placeholder="Course ID"
-                        className="input-fac w-full px-3 py-2 border rounded-lg"
-                        required
-                      />
-                      <input
-                        type="text"
                         name="branch_id"
                         value={formData.branch_id}
                         onChange={handleChange}
@@ -212,9 +225,7 @@ const BranchManagement = () => {
                         <table className="subject-table">
                           <thead>
                             <tr>
-                              <th>Course Id</th>
                               <th>Branch Id</th>
-
                               <th>Branch Name</th>
                               <th>Actions</th>
                             </tr>
@@ -222,7 +233,6 @@ const BranchManagement = () => {
                           <tbody>
                             {branches.map((branch) => (
                               <tr key={branch.branch_id}>
-                                <td>{branch.course_id}</td>
                                 <td>{branch.branch_id}</td>
                                 <td>{branch.branch_name}</td>
                                 <td>

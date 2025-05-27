@@ -11,11 +11,15 @@ const AdminHome = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
     (state) => state.auth
   );
-  
-  
+
   if (!isAuthenticated || role != "admin") {
-    return <div>You are not authorized to view this page. Please login to get access to this page.</div>;
-  } 
+    return (
+      <div>
+        You are not authorized to view this page. Please login to get access to
+        this page.
+      </div>
+    );
+  }
 
   return (
     <div className="home-container">
@@ -30,13 +34,27 @@ const AdminHome = () => {
                 className="sidebar"
                 title="Admin Activities"
                 activities={[
-                  { name: "Course Management", path: "/admin/course-management" },
-                  { name: "Branch Management", path: "/admin/branch-management" },
-                  { name: "Session Management", path: "/admin/session-management" },
-                  { name: "Upload Academic Scheme", path: "/admin/academic-scheme-upload" },
-                  { name: "Upload Student Data", path: "/admin/student-data-upload" },
+                  {
+                    name: "Session Management",
+                    path: "/admin/session-management",
+                  },
+                  {
+                    name: "Branch Management",
+                    path: "/admin/branch-management",
+                  },
+                  {
+                    name: "Course Management",
+                    path: "/admin/course-management",
+                  },
+                  {
+                    name: "Upload Academic Scheme",
+                    path: "/admin/academic-scheme-upload",
+                  },
+                  {
+                    name: "Upload Student Data",
+                    path: "/admin/student-data-upload",
+                  },
                   { name: "Address Requests", path: "/admin/req" },
-                  { name: "Progress Report", path: "/admin/progress-report" },
                 ]}
               />
             </div>
@@ -61,15 +79,11 @@ const AdminHome = () => {
               <div className="user-sec">
                 <p>
                   <span>Welcome: </span>
-                  <span className="user-name">
-                    {userId && `[${userId}]`}
-                  </span>
+                  <span className="user-name">{userId && `[${userId}]`}</span>
                 </p>
                 <p>
                   <span className="user-role">Role: </span>
-                  <span className="user-name">
-                    [{(role && `${role}`)}]
-                  </span>
+                  <span className="user-name">[{role && `${role}`}]</span>
                 </p>
               </div>
             </div>

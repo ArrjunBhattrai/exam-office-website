@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { toast } from "react-toastify";
+import { Toaster, toast } from "react-hot-toast";
+import 'react-toastify/dist/ReactToastify.css';
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
@@ -35,6 +36,7 @@ function MarksFeed() {
   const [students, setStudents] = useState([]);
   const [showMarksTable, setShowMarksTable] = useState(false);
   const [marks, setMarks] = useState({});
+  const [inputWarnings, setInputWarnings] = useState({});
 
   const subjectOptions = assignedSubjects.length
     ? assignedSubjects.map((subject) => ({
@@ -92,6 +94,36 @@ function MarksFeed() {
     fetchAssignedSubjects();
   }, [token]);
 
+  const checkTestDetails = async () => {
+    try {
+      const checkRes = await fetch(`${BACKEND_URL}/api/faculty/check-test-details`, {
+        method: "POST",
+        headers: {
+          authorization: token,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          subject_id: selectedSubject.subject_id,
+          subject_type: selectedSubject.subject_type,
+          component_name: component,
+          sub_component_name: subComponent,
+        }),
+      });
+  
+      const checkData = await checkRes.json();
+  
+      if (checkRes.ok) {
+        return checkData.exists; 
+      } else {
+        return false; 
+      }
+    } catch (err) {
+      toast.error("Error checking existing test details.");
+      return false; 
+    }
+  };
+  
+
   const fetchCos = async () => {
     try {
       const response = await fetch(
@@ -116,6 +148,12 @@ function MarksFeed() {
 
   const handleProceed = async () => {
     if (selectedSubject.subject_id && component && subComponent) {
+      
+      const check = await checkTestDetails();
+      if(check){
+        toast.error("Test details already exist ! Kindly go to saved forms");
+        return;
+      }
       const data = await fetchCos();
 
       setCos(data);
@@ -209,20 +247,73 @@ function MarksFeed() {
 
   const handleMarksChange = (e) => {
     const { name, value } = e.target;
-  
     const [enrollment_no, co_name] = name.split("-");
     const maxMarks = Number(selectedCos[co_name]);
-  
+
     if (value === "" || (!isNaN(value) && Number(value) <= maxMarks)) {
-      setMarks((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+      setMarks((prev) => ({ ...prev, [name]: value }));
+      setInputWarnings((prev) => ({ ...prev, [name]: "" }));
     } else {
-      toast.error(`Marks for ${co_name} cannot exceed ${maxMarks}`);
+      setInputWarnings((prev) => ({
+        ...prev,
+        [name]: `! Marks can't exceed ${maxMarks}`,
+      }));
     }
   };
-  
+
+  const calculateTotal = (enrollment_no) => {
+    return Object.keys(selectedCos).reduce((total, coName) => {
+      const value = marks[`${enrollment_no}-${coName}`];
+      return total + (value ? Number(value) : 0);
+    }, 0);
+  };
+
+  const handleSave = async () => {
+    try {
+      const payload = [];
+
+      for (const student of students) {
+        const entry = {
+          enrollment_no: student.enrollment_no,
+          subject_id: selectedSubject.subject_id,
+          subject_type: selectedSubject.subject_type,
+          component_name: component,
+          sub_component_name: subComponent,
+          co_marks: {},
+        };
+
+        for (const co of Object.keys(selectedCos)) {
+          const key = `${student.enrollment_no}-${co}`;
+          entry.co_marks[co] = marks[key] || "0";
+        }
+
+        payload.push(entry);
+      }
+      console.log(payload);
+      const response = await fetch(`${BACKEND_URL}/api/faculty/saveMarks`, {
+        method: "POST",
+        headers: {
+          authorization: token,
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({ data: payload }),
+      });
+
+      if (!response.ok) throw new Error("Failed to save marks");
+
+      toast.success("Marks saved successfully!");
+    } catch (err) {
+      toast.error(err.message || "Something went wrong while saving");
+    }
+  };
+
+  const handleCancel = () => {
+    
+  }
+  const handleSubmit = () => {
+    toast.info("Submit logic not implemented yet.");
+  };
 
   return (
     <div className="home-container">
@@ -290,6 +381,7 @@ function MarksFeed() {
                   <span className="box-overlay-text">Enter details</span>
 
                   <div className="faculty-box">
+                  <Toaster position="top-right" />
                     <div className="marks-feeding-dropdown-container">
                       <Dropdown
                         label="Subject"
@@ -326,8 +418,94 @@ function MarksFeed() {
                         onChange={setSubComponent}
                       />
                     </div>
-
-                    <Button text="Proceed" onClick={handleProceed} />
+                    {!showMarksTable && (
+                      <Button text="Proceed" onClick={handleProceed} />
+                    )}
+                    {showMarksTable && (
+                      <div className="overflow-auto border rounded-xl mt-4">
+                        <table className="min-w-full table-auto border-collapse">
+                          <thead className="bg-gray-100">
+                            <tr>
+                              <th className="border px-4 py-2 text-left">
+                                Enrollment No
+                              </th>
+                              <th className="border px-4 py-2 text-left">
+                                Student Name
+                              </th>
+                              {Object.keys(selectedCos).map(
+                                (coName) =>
+                                  selectedCos[coName] && (
+                                    <th
+                                      key={coName}
+                                      className="border px-4 py-2 text-left"
+                                    >
+                                      {coName}
+                                    </th>
+                                  )
+                              )}
+                              <th className="border px-4 py-2 text-left">
+                                Total Marks Obtained
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {students.map((student, idx) => (
+                              <tr key={idx} className="hover:bg-gray-50">
+                                <td className="border px-4 py-2">
+                                  {student.enrollment_no}
+                                </td>
+                                <td className="border px-4 py-2">
+                                  {student.student_name}
+                                </td>
+                                {Object.keys(selectedCos).map(
+                                  (coName) =>
+                                    selectedCos[coName] && (
+                                      <td
+                                        key={coName}
+                                        className="border px-4 py-2"
+                                      >
+                                        <input
+                                          type="number"
+                                          className="w-full px-2 py-1 border rounded-md"
+                                          name={`${student.enrollment_no}-${coName}`}
+                                          value={
+                                            marks[
+                                              `${student.enrollment_no}-${coName}`
+                                            ] || ""
+                                          }
+                                          onChange={handleMarksChange}
+                                        />
+                                        {inputWarnings[
+                                          `${student.enrollment_no}-${coName}`
+                                        ] && (
+                                          <p className="text-red-600 text-sm mt-1">
+                                            {
+                                              inputWarnings[
+                                                `${student.enrollment_no}-${coName}`
+                                              ]
+                                            }
+                                          </p>
+                                        )}
+                                      </td>
+                                    )
+                                )}
+                                <td className="border px-4 py-2 font-semibold">
+                                  {calculateTotal(student.enrollment_no)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        <div className="flex gap-4 mt-4">
+                          <Button text="Save" onClick={handleSave} />
+                          <Button text="Submit" onClick={handleSubmit} />
+                          <Button
+                            text="Cancel"
+                            onClick={handleCancel}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -385,57 +563,6 @@ function MarksFeed() {
                   </button>
                 </div>
               </div>
-            </div>
-          )}
-
-          {showMarksTable && (
-            <div className="overflow-auto border rounded-xl mt-4">
-              <table className="min-w-full table-auto border-collapse">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="border px-4 py-2 text-left">
-                      Enrollment No
-                    </th>
-                    <th className="border px-4 py-2 text-left">Student Name</th>
-                    {Object.keys(selectedCos).map(
-                      (coName) =>
-                        selectedCos[coName] && (
-                          <th
-                            key={coName}
-                            className="border px-4 py-2 text-left"
-                          >
-                            {coName}
-                          </th>
-                        )
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {students.map((student, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50">
-                      <td className="border px-4 py-2">
-                        {student.enrollment_no}
-                      </td>
-                      <td className="border px-4 py-2">
-                        {student.student_name}
-                      </td>
-                      {Object.keys(selectedCos).map(
-                        (coName) =>
-                          selectedCos[coName] && (
-                            <td key={coName} className="border px-4 py-2">
-                              <input
-                                type="number"
-                                className="w-full px-2 py-1 border rounded-md"
-                                name={`${student.enrollment_no}-${coName}`}
-                                onChange={handleMarksChange}
-                              />
-                            </td>
-                          )
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           )}
 

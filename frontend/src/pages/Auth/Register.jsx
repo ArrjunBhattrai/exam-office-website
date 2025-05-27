@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import BlueHeader from "../../components/BlueHeader";
 import BlueFooter from "../../components/BlueFooter";
 import { BACKEND_URL } from "../../../config";
 import "./Auth.css";
-import { RollerCoaster } from "lucide-react";
 
 const generateCaptcha = () => {
   const chars =
@@ -29,11 +28,17 @@ const Register = () => {
 
   const validateEmail = (value) => {
     let error = "";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
+    if (!emailRegex.test(value)) {
       error = "❌ Invalid email format.";
+    } else if (!value.endsWith("@sgsits.ac.in")) {
+      error = "❌ Email must be an institutional ID (sgsits.ac.in).";
     }
+  
     setErrors((prev) => ({ ...prev, email: error }));
   };
+  
 
   const validateCaptcha = (value) => {
     let error = value !== captcha ? "❌ Incorrect Captcha!" : "";
@@ -86,32 +91,6 @@ const Register = () => {
       }
       
   };
-/*
-  const handleFacultyRequest = async (e) => {
-    e.preventDefault();
-    if (!email || !password) return alert("Please fill all required fields.");
-
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/user/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: "Faculty Placeholder", // or fetch from DB if login-only page
-          email,
-          password,
-          role: "FACULTY",
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Request failed!");
-
-      alert("Request submitted! Please wait for HOD/Admin approval.");
-    } catch (error) {
-      alert(error.message);
-    }
-  };
-  */
 
   return (
     <div className="container">

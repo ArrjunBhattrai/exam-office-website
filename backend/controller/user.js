@@ -3,12 +3,17 @@ const jwt = require("jsonwebtoken");
 const db = require("../db/db");
 
 // Register a user
-const registerUser = async(req, res) => {
+const registerUser = async (req, res) => {
   const { id, name, email, password, role, branch_id } = req.body;
+
+  // Basic required fields check
+  if (!id || !name || !email || !password || !role) {
+    return res.status(400).json({ error: "Please fill all the fields." });
+  }
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     if (role === "admin") {
       await db("admin").insert({
         admin_id: id,
@@ -16,12 +21,14 @@ const registerUser = async(req, res) => {
         admin_email: email,
         password: hashedPassword,
       });
-      return res.status(201).json({ message: "Admin registered successfully!" });
-    }
-    
-    else if (role === "hod") {
+      return res
+        .status(201)
+        .json({ message: "Admin registered successfully!" });
+    } else if (role === "hod") {
       if (!branch_id) {
-        return res.status(400).json({ error: "HOD registration requires a branch_id." });
+        return res
+          .status(400)
+          .json({ error: "HOD registration requires a branch_id." });
       }
 
       const branchExists = await db("branch").where({ branch_id }).first();
@@ -37,12 +44,11 @@ const registerUser = async(req, res) => {
       });
 
       return res.status(201).json({ message: "HOD registered successfully!" });
-    }
- 
-    else if (role === "faculty") {
-
+    } else if (role === "faculty") {
       if (!branch_id) {
-        return res.status(400).json({ error: "Faculty registration requires a branch_id." });
+        return res
+          .status(400)
+          .json({ error: "Faculty registration requires a branch_id." });
       }
 
       const branchExists = await db("branch").where({ branch_id }).first();
@@ -58,22 +64,25 @@ const registerUser = async(req, res) => {
         branch_id,
       });
 
-      return res.status(201).json({ message: "Registration request sent successfully!" });
-    }
-    
-    else {
+      return res
+        .status(201)
+        .json({ message: "Registration request sent successfully!" });
+    } else {
       return res.status(400).json({ error: "Invalid role" });
     }
-   
   } catch (error) {
     res.status(500).json({ error: "Error registering user" });
   }
 };
 
-
 //Login a user
 const loginUser = async (req, res) => {
   const { email, password, role } = req.body;
+
+  // Check if all fields are provided
+  if (!email || !password || !role) {
+    return res.status(400).json({ error: "Please fill all the fields." });
+  }
 
   try {
     let user;
@@ -81,41 +90,39 @@ const loginUser = async (req, res) => {
     if (role === "admin") {
       user = await db("admin").where({ admin_email: email }).first();
       if (!user) return res.status(400).json({ error: "Invalid email" });
-
-    } 
-    else if (role === "hod") {
+    } else if (role === "hod") {
       user = await db("hod").where({ hod_email: email }).first();
       if (!user) return res.status(400).json({ error: "Invalid email" });
-    }
-    else if (role === "faculty") {
+    } else if (role === "faculty") {
       user = await db("faculty").where({ faculty_email: email }).first();
       if (!user) return res.status(400).json({ error: "Invalid email" });
-
     } else {
       return res.status(400).json({ error: "Invalid role" });
     }
 
     const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) return res.status(400).json({ error: "Invalid credentials" });
+    if (!validPassword)
+      return res.status(400).json({ error: "Invalid credentials" });
 
     const userId =
-    role === "admin" ? user.admin_id :
-    role === "faculty" ? user.faculty_id :
-    user.hod_id;
+      role === "admin"
+        ? user.admin_id
+        : role === "faculty"
+        ? user.faculty_id
+        : user.hod_id;
 
-    const branchId = 
-    role === "admin" ? null :
-    role === "faculty" ? user.branch_id :
-    user.branch_id;
-    
-    const token = jwt.sign(
-      { userId, role, branchId },
-      process.env.JWT_SECRET,
-      { expiresIn: "5h" }
-    );
+    const branchId =
+      role === "admin"
+        ? null
+        : role === "faculty"
+        ? user.branch_id
+        : user.branch_id;
 
-    res.json({ token, role, userId, branchId });
+    const token = jwt.sign({ userId, role, branchId }, process.env.JWT_SECRET, {
+      expiresIn: "5h",
+    });
 
+    res.status(200).json({ token, role, userId, branchId });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ error: "Login failed" });
@@ -138,9 +145,8 @@ const verifyToken = (req, res) => {
   }
 };
 
-
 module.exports = {
   registerUser,
   loginUser,
-  verifyToken
+  verifyToken,
 };

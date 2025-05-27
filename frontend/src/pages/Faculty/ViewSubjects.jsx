@@ -7,6 +7,8 @@ import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 import { BACKEND_URL } from "../../../config";
+import "./faculty.css";
+
 
 const ViewSubjects = () => {
   const { userId, isAuthenticated, role, token, branchId } = useSelector(
