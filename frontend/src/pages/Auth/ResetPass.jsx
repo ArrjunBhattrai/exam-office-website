@@ -1,27 +1,30 @@
 import React, {useState} from 'react';
+import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import BlueHeader from '../../components/BlueHeader';
 import BlueFooter from '../../components/BlueFooter';
 import { BACKEND_URL } from '../../../config';
 import Button from '../../components/Button';
 
-const ForgotPass = () => {
+const ResetPass = () => {
 
-  const [email, setEmail] = useState("");
+ const {token} = useParams();
+ const [newPassword, setNewPassword] = useState("");
 
-  const handleSubmit = async() => {
-    if(!email) return toast.error("Please enter your email.");
+
+  const handleReset = async() => {
+    if(!newPassword) return toast.error("Enter a new password.");
 
     try {
-      const res = await fetch(`${BACKEND_URL}/forgot-password`, {
+      const res = await fetch(`${BACKEND_URL}/reset-password/${token}`, {
         method: "POST",
         headers: {"Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ newPassword }),
       });
 
       const data = await res.json();
       if(!res.ok) throw new Error(data.message);
-      toast.success("Reset link sent to your email.");
+      toast.success("Password reset successful.");
     } catch(err) {
       toast.error(err.message);
     }
@@ -31,15 +34,15 @@ const ForgotPass = () => {
     <div className='container'>
       <BlueHeader/>
       <div className='forgot-pass'>
-       <h2>Forgot Password</h2>
+       <h2>Reset Password</h2>
         <input
-        type="email"
-        placeholder="Enter your registered email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        type="password"
+        placeholder="Enter new password"
+        value={newPassword}
+        onChange={(e) => setNewPassword(e.target.value)}
       />
 
-      <Button text="Send Link" onClick={handleSubmit}/>
+      <Button text="Reset Password" onClick={handleReset}/>
       </div>
         
       <BlueFooter/>
@@ -47,4 +50,4 @@ const ForgotPass = () => {
   )
 }
 
-export default ForgotPass;
+export default ResetPass;

@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import BlueHeader from "../../components/BlueHeader";
 import BlueFooter from "../../components/BlueFooter";
 import { BACKEND_URL } from "../../../config";
 import "./Auth.css";
-import { RollerCoaster } from "lucide-react";
 
-const generateCaptcha = () => {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  return Array.from(
-    { length: 6 },
-    () => chars[Math.floor(Math.random() * chars.length)]
-  ).join("");
-};
+function generateCaptcha(length = 6) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Omitted confusing characters
+  let captcha = "";
+  for (let i = 0; i < length; i++) {
+    captcha += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return captcha;
+}
+
 
 const Register = () => {
   const navigate = useNavigate();
@@ -26,66 +26,104 @@ const Register = () => {
   const [userType, setUserType] = useState("admin");
   const [branchId, setBranchId] = useState("");
   const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({
+      email: false,
+      captcha: false,
+    });
 
   const validateEmail = (value) => {
-    let error = "";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      error = "❌ Invalid email format.";
-    }
-    setErrors((prev) => ({ ...prev, email: error }));
-  };
+      if (!touched.email) return;
+  
+      let error = "";
+      if (!value) {
+        error = "";
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        error = "❌ Invalid email format.";
+      }
+      setErrors((prev) => ({ ...prev, email: error }));
+    };
+    useEffect(() => {
+      if (touched.email) validateEmail(email);
+    }, [email, touched.email]);
 
-  const validateCaptcha = (value) => {
-    let error = value !== captcha ? "❌ Incorrect Captcha!" : "";
-    setErrors((prev) => ({ ...prev, captcha: error }));
-  };
+ const validateCaptcha = (value) => {
+     if (!touched.captcha) return;
 
-  const refreshCaptcha = () => {
-    setCaptcha(generateCaptcha());
-    setEnteredCaptcha("");
-  };
+     let error = "";
+     if (!value) {
+       error = "";
+     } else if (value !== captcha) {
+       error = "❌ Incorrect Captcha!";
+     }
+     setErrors((prev) => ({ ...prev, captcha: error }));
+   };
+   useEffect(() => {
+     if (touched.captcha) validateCaptcha(enteredCaptcha);
+   }, [enteredCaptcha, captcha, touched.captcha]);
+
+  // const refreshCaptcha = () => {
+  //   setCaptcha(generateCaptcha());
+  //   setEnteredCaptcha("");
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!userId || !name || !email || !password || !enteredCaptcha) {
-      return alert("Please fill in all required fields.");
+    setTouched({ email: true, captcha: true });
+
+    const localEmailError =
+      !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+        ? "❌ Invalid email format."
+        : "";
+    const localCaptchaError =
+      !enteredCaptcha || enteredCaptcha !== captcha
+        ? "❌ Incorrect Captcha!"
+        : "";
+
+    setErrors({
+      email: localEmailError,
+      captcha: localCaptchaError,
+    });
+
+    if (
+      localEmailError ||
+      localCaptchaError ||
+      !userId ||
+      !name ||
+      !password ||
+      (["hod", "faculty"].includes(userType) && !branchId)
+    ) {
+      return;
     }
 
-    if ((userType === "hod" || userType === "faculty") && !branchId) {
-      return alert("Branch ID is required for HOD and Faculty.");
-    }
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/user/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: userId,
+          name,
+          email,
+          password,
+          role: userType,
+          branch_id: branchId,
+        }),
+      });
 
-    if (errors.email || errors.captcha) return;
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Registration failed!");
 
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/user/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: userId,
-            name,
-            email,
-            password,
-            role: userType,
-            branch_id: branchId,
-          }),
-        });
-
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || "Registration failed!");
-
-        if (userType === "faculty") {
-          alert("Request submitted! Please wait for HOD/Admin approval.");
-        } else {
-          alert("Registration Successful! Please login.");
-          navigate("/login");
-        }
-      }catch (error) {
-        alert(error.message);
+      if (userType === "faculty") {
+        alert("Request submitted! Please wait for HOD/Admin approval.");
+      } else {
+        alert("Registration Successful! Please login.");
+        navigate("/login");
       }
-      
+    } catch (error) {
+      alert(error.message);
+    }
   };
+
 /*
   const handleFacultyRequest = async (e) => {
     e.preventDefault();
@@ -112,6 +150,38 @@ const Register = () => {
     }
   };
   */
+
+  const captchaCanvasRef = useRef(null);
+  
+    useEffect(() => {
+      const canvas = captchaCanvasRef.current;
+      const ctx = canvas.getContext("2d");
+  
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+      ctx.fillStyle = "#f0f0f0";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+      for (let i = 0; i < 10; i++) {
+        ctx.beginPath();
+        ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+        ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+        ctx.strokeStyle = `rgba(0, 0, 0, ${Math.random()})`;
+        ctx.stroke();
+      }
+  
+      ctx.font = "25px Arial";
+      ctx.fillStyle = "#000";
+      ctx.Baseline = "middle";
+      ctx.textAlign = "center";
+      ctx.fillText(captcha, canvas.width / 2, canvas.height / 2);
+    }, [captcha]);
+
+    const refreshCaptcha = () => {
+    setCaptcha(generateCaptcha());
+    setEnteredCaptcha("");
+  };
+
 
   return (
     <div className="container">
@@ -142,6 +212,7 @@ const Register = () => {
                 required
               />
             </div>
+
             {/* Name Field */}
             <div className="input-group-auth">
               <label>Name:</label>
@@ -163,11 +234,15 @@ const Register = () => {
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  validateEmail(e.target.value);
+                  if (touched.email) validateEmail(e.target.value);
+                }}
+                onBlur={() => {
+                  setTouched((prev) => ({ ...prev, email: true }));
+                  validateEmail(email);
                 }}
                 required
               />
-              {errors.email && <span className="error">{errors.email}</span>}
+              {touched.email && errors.email && <span className="error">{errors.email}</span>}
             </div>
 
             {/* Password Field */}
@@ -197,14 +272,10 @@ const Register = () => {
 
             {/* Captcha Field */}
             <div className="captcha-box">
-              <span className="captcha-text">{captcha}</span>
-              <button
-                type="button"
-                className="refresh-btn"
-                onClick={refreshCaptcha}
-              >
+              <canvas ref={captchaCanvasRef} width={150} height={50} />
+              {/* <button onClick={generateCaptcha} style={{ marginLeft: "8px" }}>
                 🔄
-              </button>
+              </button> */}
             </div>
             <input
               type="text"
@@ -212,11 +283,15 @@ const Register = () => {
               value={enteredCaptcha}
               onChange={(e) => {
                 setEnteredCaptcha(e.target.value);
-                validateCaptcha(e.target.value);
+                if (touched.captcha) validateCaptcha(e.target.value);
+              }}
+              onBlur={() => {
+                setTouched((prev) => ({ ...prev, captcha: true }));
+                validateCaptcha(enteredCaptcha);
               }}
               required
             />
-            {errors.captcha && <span className="error">{errors.captcha}</span>}
+            {touched.captcha && errors.captcha && <span className="error">{errors.captcha}</span>}
 
             {userType === "faculty" ? (
               <button type="submit" className="auth-btn">

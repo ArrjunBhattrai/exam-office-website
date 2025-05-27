@@ -4,6 +4,8 @@ import "./App.css";
 import Home from "./pages/Home/Home";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
+import ForgotPass from "./pages/Auth/ForgotPass";
+import ResetPass from "./pages/Auth/ResetPass";
 
 import AdminHome from "./pages/Admin/AdminHome";
 import CourseManagement from "./pages/Admin/Course";
@@ -28,7 +30,7 @@ import ViewSubjects from "./pages/Faculty/ViewSubjects";
 import MarksFeed from "./pages/Faculty/MarksFeed";
 import FacCorrectionReq from "./pages/Faculty/FacCorrectionReq";
 import FacFilledForm from "./pages/Faculty/FacFilledForm";
-import MarksEntry from "./pages/Faculty/MarksEntry";
+import FacEditInfo from "./pages/Faculty/FacEditInfo";
 
 function App() {
   return (
@@ -38,6 +40,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPass />} />
+          <Route path="/reset-password" element={<ResetPass />} />
           
           <Route path="/admin/home" element={<AdminHome />} />
           <Route path="/admin/course-management" element={<CourseManagement />} />
@@ -60,7 +64,8 @@ function App() {
           <Route path="/faculty/marks-feed" element={<MarksFeed />} />
           <Route path="/faculty/correction-request" element={<FacCorrectionReq />} />
           <Route path="/faculty/filled-form" element={<FacFilledForm />} />
-          <Route path="/faculty/marks-entry" element={<MarksEntry />} />
+          <Route path="/faculty/edit-info" element={<FacEditInfo />} />
+          
            
         </Routes>
       </div>

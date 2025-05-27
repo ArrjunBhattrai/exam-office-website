@@ -296,3 +296,16 @@
     gap: 10px;
   }
   
+  .edit-info-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .entries {
+    display: flex;
+  }
+  .edit-info-form label{
+    color: #333;
+    margin-right: 10px;
+  }
