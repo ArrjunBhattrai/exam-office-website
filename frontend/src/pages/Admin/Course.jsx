@@ -12,23 +12,30 @@ import "./admin.css";
 
 const CourseManagement = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
-      (state) => state.auth
-    );
+    (state) => state.auth
+  );
 
-    if (!isAuthenticated || role != "admin") {
-      return <div>You are not authorized to view this page. Please login to get access to this page.</div>;
-    } 
+  if (!isAuthenticated || role != "admin") {
+    return (
+      <div>
+        You are not authorized to view this page. Please login to get access to
+        this page.
+      </div>
+    );
+  }
   const [courses, setCourses] = useState([]);
   const [formData, setFormData] = useState({
+    branch_id: "",
     course_id: "",
     course_name: "",
+    specialization: "",
     no_of_semester: "",
   });
 
   // Fetch all courses
   const fetchCourses = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/admin/courses`, {
+      const response = await fetch(`${BACKEND_URL}/api/course/get-courses`, {
         method: "GET",
         headers: {
           authorization: token,
@@ -41,7 +48,7 @@ const CourseManagement = () => {
       }
 
       const data = await response.json();
-      setCourses(data);
+      setCourses(data.courses);
     } catch (error) {
       toast.error(error.message || "Failed to fetch courses");
     }
@@ -58,7 +65,7 @@ const CourseManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${BACKEND_URL}/api/admin/course/create`, {
+      const response = await fetch(`${BACKEND_URL}/api/course/create-course`, {
         method: "POST",
         headers: {
           authorization: token,
@@ -74,21 +81,34 @@ const CourseManagement = () => {
 
       toast.success("Course added successfully");
       fetchCourses();
-      setFormData({ course_id: "", course_name: "", no_of_semester: "" });
+      setFormData({
+        branch_id: "",
+        course_id: "",
+        course_name: "",
+        specialization: "",
+        no_of_semester: "",
+      });
     } catch (error) {
       toast.error(error.message || "Operation failed");
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (branch_id, course_id, specialization) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/admin/course/${id}`, {
-        method: "DELETE",
-        headers: {
-          authorization: token,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${BACKEND_URL}/api/course/delete-course?branch_id=${encodeURIComponent(
+          branch_id
+        )}&course_id=${encodeURIComponent(
+          course_id
+        )}&specialization=${encodeURIComponent(specialization)}`,
+        {
+          method: "DELETE",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -114,13 +134,27 @@ const CourseManagement = () => {
                 className="sidebar"
                 title="Admin Activities"
                 activities={[
-                  { name: "Course Management", path: "/admin/course-management" },
-                  { name: "Branch Management", path: "/admin/branch-management" },
-                  { name: "Session Management", path: "/admin/session-management" },
-                  { name: "Upload Academic Scheme", path: "/admin/academic-scheme-upload" },
-                  { name: "Upload Student Data", path: "/admin/student-data-upload" },
+                  {
+                    name: "Session Management",
+                    path: "/admin/session-management",
+                  },
+                  {
+                    name: "Branch Management",
+                    path: "/admin/branch-management",
+                  },
+                  {
+                    name: "Course Management",
+                    path: "/admin/course-management",
+                  },
+                  {
+                    name: "Upload Academic Scheme",
+                    path: "/admin/academic-scheme-upload",
+                  },
+                  {
+                    name: "Upload Student Data",
+                    path: "/admin/student-data-upload",
+                  },
                   { name: "Address Requests", path: "/admin/req" },
-                  { name: "Progress Report", path: "/admin/progress-report" },
                 ]}
               />
             </div>
@@ -144,9 +178,7 @@ const CourseManagement = () => {
               <div className="user-sec">
                 <p>
                   <span>Welcome: </span>
-                  <span className="user-name">
-                    {userId && `[${userId}]`}
-                  </span>
+                  <span className="user-name">{userId && `[${userId}]`}</span>
                 </p>
                 <p>
                   <span className="user-role">Role: </span>
@@ -167,7 +199,15 @@ const CourseManagement = () => {
                       className="space-y-4 p-4 bg-white rounded-lg shadow"
                     >
                       <input
-                   
+                        type="text"
+                        name="branch_id"
+                        value={formData.branch_id}
+                        onChange={handleChange}
+                        placeholder="Branch Id"
+                        className="input-fac w-full px-3 py-2 border rounded-lg"
+                        required
+                      />
+                      <input
                         type="text"
                         name="course_id"
                         value={formData.course_id}
@@ -186,11 +226,11 @@ const CourseManagement = () => {
                         required
                       />
                       <input
-                        type="number"
-                        name="no_of_semester"
-                        value={formData.no_of_semester}
+                        type="text"
+                        name="specialization"
+                        value={formData.specialization}
                         onChange={handleChange}
-                        placeholder="Semester in the Course"
+                        placeholder="Specialization"
                         className="input-fac w-full px-3 py-2 border rounded-lg"
                         required
                       />
@@ -206,22 +246,32 @@ const CourseManagement = () => {
                         <table className="subject-table">
                           <thead>
                             <tr>
+                              <th>Branch Id</th>
+                              <th>Branch Name</th>
                               <th>Course Id</th>
                               <th>Course Name</th>
-                              <th>Semester in the course</th>
+                              <th>Specialization</th>
                               <th>Actions</th>
                             </tr>
                           </thead>
                           <tbody>
                             {courses.map((course) => (
-                              <tr key={course.course_id}>
+                              <tr
+                                key={`${course.branch_id}-${course.course_id}-${course.specialization}`}
+                              >
+                                <td>{course.branch_id}</td>
+                                <td>{course.branch_name}</td>
                                 <td>{course.course_id}</td>
                                 <td>{course.course_name}</td>
-                                <td>{course.no_of_semester}</td>
+                                <td>{course.specialization}</td>
                                 <td>
                                   <button
                                     onClick={() =>
-                                      handleDelete(course.course_id)
+                                      handleDelete(
+                                        course.branch_id,
+                                        course.course_id,
+                                        course.specialization
+                                      )
                                     }
                                     className="text-red-600 hover:text-red-800"
                                   >

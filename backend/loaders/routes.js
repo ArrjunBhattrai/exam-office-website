@@ -1,12 +1,13 @@
 module.exports = function (app) {
   console.log("============");
-  
+
   app.use("/api/user", require("../routes/user.routes"));
-  app.use("/api/admin", require("../routes/admin.routes"));
-  app.use("/api/hod", require("../routes/hod.routes"));
+  app.use("/api/branch", require("../routes/branch.routes"));
+  app.use("/api/course", require("../routes/course.routes"));
+  app.use("/api/student", require("../routes/student.routes"));
+  app.use("/api/subject", require("../routes/subject.routes"));
   app.use("/api/faculty", require("../routes/faculty.routes"));
 
-  
   app.use((_req, _res, next) => {
     const error = new Error();
     error.status = 404;

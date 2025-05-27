@@ -26,13 +26,29 @@ const AdminProgressReport = () => {
                 className="sidebar"
                 title="Admin Activities"
                 activities={[
-                  { name: "Course Management", path: "/admin/course-management" },
-                  { name: "Branch Management", path: "/admin/branch-management" },
-                  { name: "Session Management", path: "/admin/session-management" },
-                  { name: "Upload Academic Scheme", path: "/admin/academic-scheme-upload" },
-                  { name: "Upload Student Data", path: "/admin/student-data-upload" },
+                  {
+                    name: "Session Management",
+                    path: "/admin/session-management",
+                  },
+                  {
+                    name: "Branch Management",
+                    path: "/admin/branch-management",
+                  },
+                  {
+                    name: "Course Management",
+                    path: "/admin/course-management",
+                  },
+
+                  {
+                    name: "Upload Academic Scheme",
+                    path: "/admin/academic-scheme-upload",
+                  },
+                  {
+                    name: "Upload Student Data",
+                    path: "/admin/student-data-upload",
+                  },
                   { name: "Address Requests", path: "/admin/req" },
-                  { name: "Progress Report", path: "/admin/progress-report" },
+                  { name: "Progress Report", path: "/admin/prog-report" },
                 ]}
               />
             </div>

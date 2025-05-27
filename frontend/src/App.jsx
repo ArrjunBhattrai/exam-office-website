@@ -30,7 +30,6 @@ import ViewSubjects from "./pages/Faculty/ViewSubjects";
 import MarksFeed from "./pages/Faculty/MarksFeed";
 import FacCorrectionReq from "./pages/Faculty/FacCorrectionReq";
 import FacFilledForm from "./pages/Faculty/FacFilledForm";
-import FacEditInfo from "./pages/Faculty/FacEditInfo";
 
 function App() {
   return (
@@ -64,8 +63,6 @@ function App() {
           <Route path="/faculty/marks-feed" element={<MarksFeed />} />
           <Route path="/faculty/correction-request" element={<FacCorrectionReq />} />
           <Route path="/faculty/filled-form" element={<FacFilledForm />} />
-          <Route path="/faculty/edit-info" element={<FacEditInfo />} />
-          
            
         </Routes>
       </div>
