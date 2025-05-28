@@ -113,7 +113,7 @@ const BranchManagement = () => {
 
   return (
     <div className="home-container">
-      <div className="user--bg">
+      <div className="user-bg">
         <RedHeader />
         <div className="user-content">
           <ActivityHeader />
