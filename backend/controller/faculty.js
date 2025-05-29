@@ -108,9 +108,14 @@ const getFaculties = async (req, res) => {
   }
 };
 
+const assignFaculties = async(req, res) => {
+
+};
+
 module.exports = {
   getPendingFacultyRequests,
   approveFacultyRequest,
   rejectFacultyRequest,
   getFaculties,
+  assignFaculties
 };

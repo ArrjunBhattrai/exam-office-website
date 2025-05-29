@@ -1,3 +1,4 @@
+const { error } = require("console");
 const db = require("../db/db");
 const csv = require("csv-parser");
 const fs = require("fs");
@@ -234,10 +235,42 @@ const assignCO = async (req, res) => {
   }
 };
 
+
+const getAllSubjectsForCourse = async (req, res) => {
+  
+  const { branch_id, course_id, specialization } = req.query;
+
+  if(!branch_id || !course_id || !specialization) {
+    
+    return res.status(400).json({
+      error: "branch_id, course_id and specialization are required",
+    });
+  }
+
+  try {
+    const subjects = await db("subject")
+    .where({
+      branch_id, course_id, specialization
+    })
+    .select(
+      "subject_id",
+      "subject_name",
+      "subject_type",
+      "semester"
+    ).orderBy("semester");
+
+    return res.status(200).json({ subjects });
+  } catch(error) {
+    console.error("Error fetching subjects:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   subjectDataUpload,
   getSubjectsForCourse,
   getAssignedSubject,
   getCourseOutcomes,
   assignCO,
+  getAllSubjectsForCourse,
 };

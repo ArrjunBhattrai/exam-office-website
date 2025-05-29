@@ -487,3 +487,9 @@ th, td {
     width: 100%;
   }
 }
+
+.faculty-item.selected {
+  background-color: #dbeafe; /* light blue */
+  font-weight: bold;
+  border-left: 4px solid #3b82f6;
+}

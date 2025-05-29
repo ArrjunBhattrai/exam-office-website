@@ -11,7 +11,7 @@ import Dropdown from "../../components/Dropdown";
 import Button from "../../components/Button";
 import { BACKEND_URL } from "../../../config";
 
-const FacultyAllocation = () => {
+ const FacultyAllocation = () => {
   const { userId, isAuthenticated, role, token, branchId } = useSelector(
     (state) => state.auth
   );
@@ -25,12 +25,13 @@ const FacultyAllocation = () => {
     );
   }
 
-  const [semesterOptions, setSemesterOptions] = useState([]);
-  const [selectedSemester, setSelectedSemester] = useState("");
   const [subjectDetails, setSubjectDetails] = useState([]);
   const [faculties, setFaculties] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [courses, setCourses] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [selectedFacultyIds, setSelectedFacultyIds] = useState([]);
 
   const toRoman = (num) => {
     const romanMap = {
@@ -46,38 +47,20 @@ const FacultyAllocation = () => {
     return romanMap[num] || num;
   };
 
-  const fetchSemesters = async () => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/hod/branch/semesters`, {
-        method: "GET",
-        headers: {
-          authorization: token,
-          "Content-Type": "application/json",
-        },
-      });
+  const fetchSubjectDetails = async () => {
+    if (!selectedCourse) return;
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch semesters");
-      }
-      const responseData = await response.json();
-      const semesters = responseData.semesters;
-      const formatted = semesters.map((s) => ({
-        label: toRoman(s),
-        value: s,
-      }));
-      setSemesterOptions(formatted);
-    } catch (error) {
-      toast.error(error.message || "Failed to fetch semesters");
-    }
-  };
-  useEffect(() => {
-    fetchSemesters();
-  }, [token]);
+    const selected = courses.find((c) => c.value === selectedCourse);
+    if (!selected) return;
 
-  const fetchSubjectDetailsBySemester = async () => {
+    const [course_id, specialization] = selectedCourse.split("|");
+
+    const query = `?branch_id=${branchId}&course_id=${course_id}&specialization=${specialization}`
+
+
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/hod/branch/subjects/${selectedSemester}`,
+        `${BACKEND_URL}/api/subject/get-subjects-by-course${query}`,
         {
           method: "GET",
           headers: {
@@ -90,27 +73,30 @@ const FacultyAllocation = () => {
       if (!response.ok) {
         throw new Error("Failed to fetch subjects");
       }
+
       const data = await response.json();
       setSubjectDetails(data.subjects);
     } catch (error) {
       toast.error(error.message || "Failed to fetch subjects");
     }
   };
+
   useEffect(() => {
-    if (selectedSemester) {
-      fetchSubjectDetailsBySemester();
-    }
-  }, [selectedSemester, token]);
+    if (selectedCourse) fetchSubjectDetails();
+  }, [selectedCourse, token]);
 
   const fetchFaculties = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/hod/branch/faculties`, {
-        method: "GET",
-        headers: {
-          authorization: token,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${BACKEND_URL}/api/faculty/get-faculties?branch_id=${branchId}`,
+        {
+          method: "GET",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch faculties");
@@ -123,23 +109,56 @@ const FacultyAllocation = () => {
     }
   };
   useEffect(() => {
-    if (selectedSemester) {
+    if (selectedSubject) {
       fetchFaculties();
     }
-  }, [selectedSemester, token]);
+  }, [selectedSubject, token]);
 
-  const handleAssignment = async (faculty, subject_id, subject_type) => {
+  const fetchCourses = async () => {
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/course/get-courses-byBranch?branch_id=${branchId}`,
+        {
+          method: "GET",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch courses");
+      }
+
+      const data = await response.json();
+      const formatted = data.courses.map((c) => ({
+        label: `${c.course_name} (${c.specialization})`,
+        value: `${c.course_id}|${c.specialization}`,
+      }));
+
+      setCourses(formatted);
+    } catch (error) {
+      toast.error(error.message || "Failed to fetch courses");
+    }
+  };
+
+  useEffect(() => {
+    fetchCourses();
+  }, [token]);
+
+  const handleAssignment = async (facultyIds, subject_id, subject_type) => {
     if (!selectedSubject) return;
 
     const body = {
-      faculty_id: faculty.faculty_id,
+      faculty_ids: facultyIds,
       subject_id,
       subject_type,
     };
 
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/hod/faculty-assignment`,
+        `${BACKEND_URL}/api/faculty/assign-faculty`,
         {
           method: "POST",
           headers: {
@@ -154,11 +173,10 @@ const FacultyAllocation = () => {
         throw new Error("Failed to assign faculty");
       }
 
-      toast.success(
-        `${faculty.faculty_name} assigned to ${selectedSubject.subject_name}`
-      );
-
-      fetchSubjectDetailsBySemester();
+      toast.success(`Assigned to ${selectedSubject.subject_name} successfully`);
+      setSelectedFacultyIds([]);
+      await fetchSubjectDetails();
+      await fetchFaculties();
       setShowModal(false);
     } catch (error) {
       toast.error(error.message || "Assignment failed");
@@ -243,13 +261,13 @@ const FacultyAllocation = () => {
                   </p>
 
                   <Dropdown
-                    label="Semester"
-                    options={semesterOptions}
-                    selectedValue={selectedSemester}
-                    onChange={setSelectedSemester}
+                    label="Course"
+                    options={courses}
+                    selectedValue={selectedCourse}
+                    onChange={setSelectedCourse}
                   />
 
-                  {selectedSemester && (
+                  {selectedCourse && (
                     <>
                       <table className="subject-table">
                         <thead>
@@ -257,14 +275,14 @@ const FacultyAllocation = () => {
                             <th>Subject Code</th>
                             <th>Subject Name</th>
                             <th>Subject Type</th>
-                            <th>Faculty Assigned</th>
+                            <th>Semester</th>
+                            <th>Faculties Assigned</th>
                             <th>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
                           {subjectDetails.map((subject) => {
-                            const isAssigned =
-                              subject.faculty_id && subject.faculty_name;
+                             const isAssigned = subject.faculty_names?.length > 0;
 
                             return (
                               <tr
@@ -273,9 +291,10 @@ const FacultyAllocation = () => {
                                 <td>{subject.subject_id}</td>
                                 <td>{subject.subject_name}</td>
                                 <td>{subject.subject_type}</td>
+                                <td>{toRoman(subject.semester)}</td>
                                 <td>
-                                  {isAssigned
-                                    ? subject.faculty_name
+                                  {subject.faculty_names?.length > 0
+                                    ? subject.faculty_names.join(", ")
                                     : "Not Assigned Yet"}
                                 </td>
                                 <td>
@@ -314,30 +333,61 @@ const FacultyAllocation = () => {
                               <strong>Type:</strong>{" "}
                               {selectedSubject.subject_type}
                             </p>
-
+                                
                             <div className="faculty-list">
                               <h4>Faculties:</h4>
-                              {faculties.map((faculty) => (
-                                <div
-                                  key={faculty.faculty_id}
-                                  className="faculty-item"
-                                  onClick={() =>
-                                    handleAssignment(
-                                      faculty,
-                                      selectedSubject.subject_id,
-                                      selectedSubject.subject_type
-                                    )
-                                  }
-                                >
-                                  {faculty.faculty_id} - {faculty.faculty_name}
-                                </div>
-                              ))}
+                              {faculties.map((faculty) => {
+                                const isSelected = selectedFacultyIds.includes(
+                                  faculty.faculty_id
+                                );
+
+                                return (
+                                  <div
+                                    key={faculty.faculty_id}
+                                    className={`faculty-item ${
+                                      isSelected ? "selected" : ""
+                                    }`}
+                                    onClick={() => {
+                                      setSelectedFacultyIds((prev) =>
+                                        isSelected
+                                          ? prev.filter(
+                                              (id) => id !== faculty.faculty_id
+                                            )
+                                          : prev.length < 2
+                                          ? [...prev, faculty.faculty_id]
+                                          : prev
+                                      );
+                                    }}
+                                  >
+                                    {faculty.faculty_id} -{" "}
+                                    {faculty.faculty_name}
+                                  </div>
+                                );
+                              })}
                             </div>
+
+                            <button
+                              className="confirm-btn"
+                              onClick={() =>
+                                handleAssignment(
+                                  selectedFacultyIds,
+                                  selectedSubject.subject_id,
+                                  selectedSubject.subject_type
+                                )
+                              }
+                              disabled={selectedFacultyIds.length !== 2}
+                            >
+                              Confirm Assignment
+                            </button>
 
                             <div className="modal-actions">
                               <button
                                 className="close-btn"
-                                onClick={() => setShowModal(false)}
+                                onClick={() => {
+                                  setShowModal(false);
+                                  setSelectedSubject(null);
+                                  setSelectedFacultyIds([]);
+                                }}
                               >
                                 Close
                               </button>

@@ -60,13 +60,17 @@ const HODViewDeptt = () => {
   const [assignedSubjects, setAssignedSubjects] = useState([]);
 
   const openModal = async (faculty) => {
-    selectedFaculty(faculty);
+    setSelectedFaculty(faculty);
     setModalIsOpen(true);
     setSelectedCourseId("");
     setAssignedSubjects([]);
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/course/get-courses-byBranch`);
+      const res = await fetch(`${BACKEND_URL}/api/course/get-courses-byBranch?branch_id=${branchId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const data = await res.json();
       const options = data.courses.map((course) => ({
         value: course.course_id,
@@ -74,7 +78,7 @@ const HODViewDeptt = () => {
       }));
       setCourses(options);
     } catch (err) {
-      console.error("Failed tp fetch courses", err);
+      console.error("Failed to fetch courses", err);
       toast.error("Failed to load courses");
     }
   };
@@ -84,7 +88,11 @@ const HODViewDeptt = () => {
 
     try {
       const res = await fetch(
-        `${BACKEND_URL}/api/subject/assignedSubjects/${selectedFaculty.faculty_id}`
+        `${BACKEND_URL}/api/subject/assignedSubjects/${selectedFaculty.faculty_id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        }
       );
       const data = await res.json();
 

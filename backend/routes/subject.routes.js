@@ -20,7 +20,7 @@ router.get(
 router.get(
   "/assignedSubjects/:facultyId",
   authenticateUser,
-  authorizeRole(["faculty"]),
+  authorizeRole(["faculty", "hod"]),
   subjectController.getAssignedSubject
 );
 router.post(
@@ -34,6 +34,12 @@ router.get(
   authenticateUser,
   authorizeRole(["faculty"]),
   subjectController.getCourseOutcomes
+);
+router.get(
+  "/get-subjects-by-course",
+  authenticateUser,
+  authorizeRole(["hod"]),
+  subjectController.getAllSubjectsForCourse
 );
 
 module.exports = router;
