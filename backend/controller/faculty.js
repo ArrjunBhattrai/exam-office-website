@@ -108,9 +108,57 @@ const getFaculties = async (req, res) => {
   }
 };
 
+const assignFaculties = async(req, res) => {
+  try {
+    const branch_id = req.user.branchId;
+    const {faculty_ids, subject_id, subject_type} = req.body;
+
+    if(!branch_id) {
+      return res.status(403).json({ message: "Unauthorized"});
+    }
+
+    if(
+      !Array.isArray(faculty_ids) ||
+      faculty_ids.length === 0 ||
+      faculty_ids.length > 2
+    ) {
+      return res.status(400).json({ message: "Please provide 1 or 2 faculty IDs" });
+    }
+
+    const subject = await db("subject")
+    .where({ subject_id, subject_type, branch_id })
+    .first();
+
+    if(!subject) {
+      return res.status(404).json({ message: "Subject not found in your branch" })
+    }
+
+    await db.transaction(async (trx) => {
+      await trx("faculty_subject")
+      .where({ subject_id, subject_type })
+      .del();
+
+      const assignments = faculty_ids.map((faculty_id, index) => ({
+        faculty_id,
+        subject_id,
+        subject_type,
+        assignment_type: index == 0 ? "primary" : "secondary",
+      }));
+
+      await trx("faculty_subject").insert(assignments);
+    });
+
+    return res.status(200).json({ message: "Faculty assigned successfully" });
+  } catch (err) {
+    console.error("Error assigning faculties:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   getPendingFacultyRequests,
   approveFacultyRequest,
   rejectFacultyRequest,
   getFaculties,
+  assignFaculties
 };
