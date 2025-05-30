@@ -144,7 +144,7 @@ exports.up = function (knex) {
         .inTable("subject")
         .onDelete("CASCADE");
 
-      table.primary(["co_name", "subject_id", "subject_type"]);
+      table.primary(["subject_id", "subject_type", "co_name"]);
     })
     .createTable("test_details", function (table) {
       table.string("subject_id").notNullable();
@@ -155,8 +155,8 @@ exports.up = function (knex) {
       table.integer("max_marks").notNullable();
 
       table
-        .foreign(["co_name", "subject_id", "subject_type"])
-        .references(["co_name", "subject_id", "subject_type"])
+        .foreign(["subject_id", "subject_type", "co_name"])
+        .references(["subject_id", "subject_type", "co_name"])
         .inTable("course_outcome")
         .onDelete("CASCADE");
     })
@@ -232,7 +232,7 @@ exports.down = async function (knex) {
   });
 
   await knex.schema.alterTable("test_details", (table) => {
-    table.dropForeign(["co_name", "subject_id", "subject_type"]);
+    table.dropForeign(["subject_id", "subject_type", "co_name"]);
   });
 
   await knex.schema.alterTable("course_outcome", (table) => {
