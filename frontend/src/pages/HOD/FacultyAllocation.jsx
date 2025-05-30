@@ -80,7 +80,6 @@ import { BACKEND_URL } from "../../../config";
       toast.error(error.message || "Failed to fetch subjects");
     }
   };
-
   useEffect(() => {
     if (selectedCourse) fetchSubjectDetails();
   }, [selectedCourse, token]);
@@ -142,7 +141,6 @@ import { BACKEND_URL } from "../../../config";
       toast.error(error.message || "Failed to fetch courses");
     }
   };
-
   useEffect(() => {
     fetchCourses();
   }, [token]);
@@ -158,12 +156,13 @@ import { BACKEND_URL } from "../../../config";
 
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/faculty/assign-faculty`,
+        `${BACKEND_URL}/api/faculty/assign-faculties`,
         {
           method: "POST",
           headers: {
             authorization: token,
             "Content-Type": "application/json",
+            'Cache-Control': 'no-cache'
           },
           body: JSON.stringify(body),
         }
@@ -302,6 +301,7 @@ import { BACKEND_URL } from "../../../config";
                                     text={isAssigned ? "Edit" : "Assign"}
                                     onClick={() => {
                                       setSelectedSubject(subject);
+                                      setSelectedFacultyIds(subject.faculty_ids || []);
                                       setShowModal(true);
                                     }}
                                   />
@@ -375,7 +375,7 @@ import { BACKEND_URL } from "../../../config";
                                   selectedSubject.subject_type
                                 )
                               }
-                              disabled={selectedFacultyIds.length !== 2}
+                              disabled={selectedFacultyIds.length === 0 || selectedFacultyIds.length > 2}
                             >
                               Confirm Assignment
                             </button>
