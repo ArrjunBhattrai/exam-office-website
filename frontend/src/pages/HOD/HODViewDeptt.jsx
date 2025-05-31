@@ -13,7 +13,7 @@ import { FaHome, FaSignOutAlt } from "react-icons/fa";
 import { Toaster, toast } from "react-hot-toast";
 
 const HODViewDeptt = () => {
-  const { userId, isAuthenticated, role, token } = useSelector(
+  const { userId, isAuthenticated, role, token, branchId } = useSelector(
     (state) => state.auth
   );
 
@@ -25,99 +25,119 @@ const HODViewDeptt = () => {
       </div>
     );
   }
-  const [semesterOptions, setSemesterOptions] = useState([]);
-  const [selectedSemester, setSelectedSemester] = useState("");
-  const [subjects, setSubjects] = useState([]);
-  const [selectedSubject, setSelectedSubject] = useState(null);
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [students, setStudents] = useState([]);
 
-  const openModal = (subject) => {
-    setSelectedSubject(subject);
-    setStudents(subject.students_enrolled);
-    setModalIsOpen(true);
-  };
+  const [faculties, setFaculties] = useState([]);
 
-  const closeModal = () => {
-    setModalIsOpen(false);
-    setSelectedSubject(null);
-  };
+  useEffect(() => {
+    const fetchFaculties = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/faculty/get-faculties?branch_id=${branchId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) {
+          throw new Error("Failed to fetch faculties");
+        }
 
-  const toRoman = (num) => {
-    const romanMap = {
-      1: "I",
-      2: "II",
-      3: "III",
-      4: "IV",
-      5: "V",
-      6: "VI",
-      7: "VII",
-      8: "VIII",
+        const data = await res.json();
+        setFaculties(data);
+      } catch (error) {
+        console.error("Error fetching faculties: ", error);
+        toast.error("Failed to fetch faculties");
+      }
     };
-    return romanMap[num] || num;
-  };
 
-  const fetchSemesters = async () => {
+    if (branchId) {
+      fetchFaculties();
+    }
+  }, [branchId, token]);
+
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [selectedFaculty, setSelectedFaculty] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [selectedCourseId, setSelectedCourseId] = useState("");
+  const [assignedSubjects, setAssignedSubjects] = useState([]);
+
+  const openModal = async (faculty) => {
+    setSelectedFaculty(faculty);
+    setModalIsOpen(true);
+    setSelectedCourseId("");
+    setAssignedSubjects([]);
+
     try {
-      const response = await fetch(`${BACKEND_URL}/api/hod/branch/semesters`, {
-        method: "GET",
+      const res = await fetch(`${BACKEND_URL}/api/course/get-courses-byBranch?branch_id=${branchId}`, {
         headers: {
-          authorization: token,
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch semesters");
-      }
-      const responseData = await response.json();
-      const semesters = responseData.semesters;
-      const formatted = semesters.map((s) => ({
-        label: toRoman(s),
-        value: s,
+      const data = await res.json();
+      const options = data.courses.map((course) => ({
+        value: course.course_id,
+        label: course.course_name,
       }));
-      setSemesterOptions(formatted);
-    } catch (error) {
-      toast.error(error.message || "Failed to fetch semesters");
+      setCourses(options);
+    } catch (err) {
+      console.error("Failed to fetch courses", err);
+      toast.error("Failed to load courses");
     }
   };
 
-  useEffect(() => {
-    fetchSemesters();
-  }, [token]);
-
-  const fetchDepartmentDetails = async () => {
-    if (!selectedSemester) return;
+  const handleCourseChange = async (courseId) => {
+    setSelectedCourseId(courseId);
 
     try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/hod/branch/details/${selectedSemester}`,
-        {
-          method: "GET",
+      const res = await fetch(
+        `${BACKEND_URL}/api/subject/assignedSubjects/${selectedFaculty.faculty_id}`, {
           headers: {
-            authorization: token,
-            "Content-Type": "application/json",
-          },
+            Authorization: `Bearer ${token}`,
+          }
         }
       );
+      const data = await res.json();
 
-      if (!response.ok) throw new Error("Failed to fetch department details");
-
-      const data = await response.json();
-      setSubjects(data.details);
-    } catch (error) {
-      toast.error(
-        error.message || "Something went wrong while fetching subjects"
+      const filtered = data.subjects.filter(
+        (subj) => subj.course_id === courseId
       );
+
+      setAssignedSubjects(filtered);
+    } catch (err) {
+      console.error("Error fetching subjects:", err);
+      toast.error("Failed to load assigned subjects");
     }
   };
 
-  useEffect(() => {
-    fetchDepartmentDetails();
-  }, [selectedSemester, token]);
+  const [enrolledStudents, setEnrolledStudents] = useState([]);
+  const [studentsModalOpen, setStudentsModalOpen] = useState(false);
+
+
+  const handleViewStudents = async (subjectId, subjectType) => {
+  try {
+    const res = await fetch(
+      `${BACKEND_URL}/api/student/getStudents/${subjectId}/${subjectType}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const data = await res.json();
+    if (res.ok) {
+      setEnrolledStudents(data.students);
+      setStudentsModalOpen(true);
+    } else {
+      toast.error(data.error || "Failed to fetch students");
+    }
+  } catch (err) {
+    console.error("Error fetching students:", err);
+    toast.error("Failed to load students");
+  }
+};
+
 
   return (
     <div className="home-container">
+      <Toaster />
       <div className="user-bg">
         <RedHeader />
         <div className="user-content">
@@ -188,92 +208,23 @@ const HODViewDeptt = () => {
                 </span>
 
                 <div className="faculty-box">
-                  <p className="institute-text">
-                    <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
-                    TECHNOLOGY & SCIENCE
-                  </p>
-
-                  <div className="dropdown-container">
-                    <Dropdown
-                      label="Semester"
-                      options={semesterOptions}
-                      selectedValue={selectedSemester}
-                      onChange={setSelectedSemester}
-                    />
-                  </div>
-
-                  <div>
-                    {selectedSemester && (
-                      <>
-                        <div className="details-table-container">
-                          <table className="subject-table">
-                            <thead>
-                              <tr>
-                                <th>Subject Code</th>
-                                <th>Subject Type</th>
-                                <th>Subject Name</th>
-                                <th>Faculty Assigned</th>
-                                <th>Students Enrolled</th>
-                              </tr>
-                            </thead>
-
-                            <tbody>
-                              {subjects.map((subject, index) => (
-                                <tr
-                                  key={`${subject.subject_id}_${subject.subject_type}`}
-                                >
-                                  <td>{subject.subject_id}</td>
-                                  <td>{subject.subject_type}</td>
-                                  <td>{subject.subject_name}</td>
-                                  <td>
-                                    {subject.faculty_assigned?.faculty_name ||
-                                      "No faculty assigned yet"}
-                                  </td>{" "}
-                                  <td>
-                                    <Button
-                                      text="View Students"
-                                      onClick={() => openModal(subject)}
-                                    />
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-
-                        <ReactModal
-                          isOpen={modalIsOpen}
-                          onRequestClose={closeModal}
-                          contentLabel="Student List Modal"
-                          className="custom-modal"
-                          overlayClassName="custom-overlay"
+                  {faculties.length > 0 ? (
+                    <ul className="faculty-list">
+                      {faculties.map((faculty) => (
+                        <li
+                          key={faculty.faculty_id}
+                          className="faculty-item"
+                          onClick={() => openModal(faculty)}
+                          style={{ cursor: "pointer" }}
                         >
-                          <h2>
-                            Students Enrolled in:{" "}
-                            {selectedSubject?.subject_name ||
-                              "Selected Subject"}
-                          </h2>
-                          <table className="student-table">
-                            <thead>
-                              <tr>
-                                <th>Enrollment No</th>
-                                <th>Student Name</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {students.map((student) => (
-                                <tr key={student.enrollment_no}>
-                                  <td>{student.enrollment_no}</td>
-                                  <td>{student.student_name}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                          <Button text="Close" onClick={closeModal} />
-                        </ReactModal>
-                      </>
-                    )}
-                  </div>
+                          <strong>{faculty.faculty_name}</strong> <br />
+                          <span>ID: {faculty.faculty_id}</span> <br />
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>No faculty found for this branch.</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -282,6 +233,102 @@ const HODViewDeptt = () => {
 
         <RedFooter />
       </div>
+
+      <ReactModal
+        isOpen={modalIsOpen}
+        onRequestClose={() => setModalIsOpen(false)}
+        contentLabel="Faculty Details"
+        className="custom-modal"
+        overlayClassName="custom-overlay"
+      >
+        <h2>Faculty: {selectedFaculty?.faculty_name}</h2>
+
+        <Dropdown
+          label="Select Course"
+          options={courses}
+          selectedValue={selectedCourseId}
+          onChange={handleCourseChange}
+        />
+
+        {selectedCourseId && (
+          <>
+            {assignedSubjects.length > 0 ? (
+              <table className="subject-table">
+                <thead>
+                  <tr>
+                    <th>Subject ID</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Semester</th>
+                    <th>COs</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {assignedSubjects.map((subject) => (
+                    <tr key={subject.subject_id + subject.subject_type}>
+                      <td>{subject.subject_id}</td>
+                      <td>{subject.subject_name}</td>
+                      <td>{subject.subject_type}</td>
+                      <td>{subject.semester}</td>
+                      <td>{subject.co_names.length}</td>
+                      <td>
+                        <button
+                          onClick={() =>
+                            handleViewStudents(
+                              subject.subject_id,
+                              subject.subject_type
+                            )
+                          }
+                          className="view-btn"
+                        >
+                          View Students
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p>No subjects assigned in this course.</p>
+            )}
+          </>
+        )}
+
+        <Button text="Close" onClick={() => setModalIsOpen(false)} />
+      </ReactModal>
+
+      <ReactModal
+  isOpen={studentsModalOpen}
+  onRequestClose={() => setStudentsModalOpen(false)}
+  contentLabel="Enrolled Students"
+  className="custom-modal"
+  overlayClassName="custom-overlay"
+>
+  <h3>Enrolled Students</h3>
+  {enrolledStudents.length > 0 ? (
+    <table className="student-table">
+      <thead>
+        <tr>
+          <th>Enrollment No</th>
+          <th>Student Name</th>
+        </tr>
+      </thead>
+      <tbody>
+        {enrolledStudents.map((student) => (
+          <tr key={student.enrollment_no}>
+            <td>{student.enrollment_no}</td>
+            <td>{student.student_name}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  ) : (
+    <p>No students enrolled.</p>
+  )}
+  <Button text="Close" onClick={() => setStudentsModalOpen(false)} />
+</ReactModal>
+
     </div>
   );
 };

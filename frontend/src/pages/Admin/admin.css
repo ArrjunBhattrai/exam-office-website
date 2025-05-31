@@ -33,7 +33,8 @@ body {
   width: 80%;
   max-width: 1200px;
   min-width: 1000px;
-  height: calc(100vh-80);
+  height: 80%;
+  min-height: 700px;
   background: white;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
@@ -169,7 +170,8 @@ body {
   border: 1px solid #8b0000;
   padding: 2rem;
   margin-top: -1rem;
-  height: 400px;
+  min-height: 300px;
+  height: auto;
 }
 
 
@@ -189,8 +191,8 @@ body {
 }
 
 .dropdown-container {
-  flex-grow: 1;
   width: 70%;
+  z-index: 0;
 }
 
 .subject-table td, .subject-table th {
@@ -308,14 +310,7 @@ body {
   display: flex;
 }
 
-.user-box {
-  .faculty-box {
-    border: 1px solid #8b0000;
-    padding: 2rem;
-    margin-top: -1rem;
-    height: 400px;
-   }
-}
+
 
 .user-input {
   width: 80%;
@@ -388,4 +383,14 @@ td {
 
 .input-fac {
   margin-right: 20px;
+}
+
+@media (max-width: 1024px){
+  .faculty-box{
+    min-height: 350px;
+    height: auto;
+    font-size: 12px;
+  }
+
+  
 }

@@ -1,9 +1,10 @@
 *{
     padding: 0;
     margin: 0;
+    box-sizing: border-box;
 }
 
-.home-container {
+.home-container-landing {
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -11,7 +12,7 @@
 
 .background {
     position: relative;
-    background: url("../../../public/images/gs-photo.jpg") no-repeat center center/cover;
+    background: url("/images/gs-photo.jpg") no-repeat center center/cover;
     height: 100vh;
     display: flex;
     justify-content: center;
@@ -29,7 +30,7 @@
 
 .login-card {
     position: absolute;
-    top: 50%;
+    top: 40%;
     left: 50%;
     transform: translate(-50%, -50%);
     padding: 20px;

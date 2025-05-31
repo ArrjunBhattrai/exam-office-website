@@ -24,7 +24,7 @@ router.get(
 router.get(
   "/get-courses-byBranch",
   authenticateUser,
-  authorizeRole(["admin"]),
+  authorizeRole(["admin", "hod"]),
   courseController.getCourseByBranch
 )
 

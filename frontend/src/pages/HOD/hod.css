@@ -29,9 +29,9 @@ body {
   }
 
   .user-content {
-    width: 100%;
+    width: 95%;
     max-width: 1200px;
-    min-width: 1000px;
+    min-width: 320px;
     height: auto;
     min-height: 700px;
     background: white;
@@ -120,7 +120,8 @@ body {
   border: 1px solid #8b0000;
   padding: 2rem;
   margin-top: -1rem;
-  height: 300px;
+  height: auto;
+  max-height: 300px;
   overflow-x: auto;
  }
 
@@ -203,7 +204,8 @@ th, td {
   display: flex;
   gap: 1rem;
   align-items: center;
-  width: 600px;
+  width: 100%;
+  max-width: 600px;
 }
 
 .input-group label {
@@ -411,4 +413,83 @@ th, td {
 
 .faculty-list h4 {
   font-weight: 600px;
+}
+
+/* Tablets (768px to 1024px) */
+@media (max-width: 1024px) {
+  .user-main {
+    flex-direction: column;
+  }
+
+  .input-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .input-group input {
+    width: 100%;
+  }
+
+  .user-sec {
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+  }
+
+  .faculty-box {
+    height: auto;
+    padding: 1rem;
+  }
+}
+
+/* Mobile (below 768px) */
+@media (max-width: 768px) {
+  .user-content {
+    padding: 10px;
+  }
+
+  .icon-btn {
+    font-size: 0.9rem;
+    padding: 6px;
+  }
+
+  .user-sec {
+    font-size: 0.9rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .input-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .input-group input {
+    width: 100%;
+  }
+
+  .subject-table-container,
+  .faculty-box {
+    overflow-x: auto;
+  }
+
+  .modal-content {
+    width: 90%;
+    padding: 1rem;
+  }
+
+  .custom-modal {
+    width: 90%;
+  }
+
+  .view-btn,
+  .submit-btn {
+    width: 100%;
+  }
+}
+
+.faculty-item.selected {
+  background-color: #dbeafe; /* light blue */
+  font-weight: bold;
+  border-left: 4px solid #3b82f6;
 }

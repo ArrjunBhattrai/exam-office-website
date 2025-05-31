@@ -4,6 +4,8 @@ import "./App.css";
 import Home from "./pages/Home/Home";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
+import ForgotPass from "./pages/Auth/ForgotPass";
+import ResetPass from "./pages/Auth/ResetPass";
 
 import AdminHome from "./pages/Admin/AdminHome";
 import CourseManagement from "./pages/Admin/Course";
@@ -37,6 +39,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPass />} />
+          <Route path="/reset-password" element={<ResetPass />} />
           
           <Route path="/admin/home" element={<AdminHome />} />
           <Route path="/admin/course-management" element={<CourseManagement />} />

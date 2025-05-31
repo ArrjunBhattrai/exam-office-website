@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const db = require("../db/db");
+const nodemailer = require("nodemailer");
 
 // Register a user
 const registerUser = async (req, res) => {
@@ -145,8 +146,76 @@ const verifyToken = (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  const { email, role } = req.body;
+  try {
+    const user = await findUserByEmail({ role, email });
+    if(!user) return res.status(404).json({ error: "No user found "});
+
+    const userId = 
+    role === "admin" ? user.admin_id :
+    role === "hod" ? user.hod_id :
+    user.faculty_id;
+
+    const token = jwt.sign({ userId, role }, process.env.JWT_SECRET, {expiresIn: "15m"});
+
+    const resetLink = `http://localhost:5137/reset-password/${token}`;
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    await transporter.sendMail({
+      from: process.nextTick.EMAIL,
+      to: email, 
+      subject: "Password Reset",
+      text: `Click the link to reset your password: ${resetLink}`,
+    });
+
+    res.json({ message: "Reset link sent to your email" });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const {newPassword} = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { userId, role } = decoded;
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    if(role === "admin") {
+       await db("admin").where({ admin_id: userId }).update({ password: hashedPassword });
+    } else if (role === "hod") {
+       await db("hod").where({ hod_id: userId }).update({ password: hashedPassword });
+    } else if (role === "faculty") {
+      await db("faculty").where({ faculty_id: userId }).update({ password: hashedPassword });
+    } else {
+      return res.status(400).json({ error: "Invalid role" });
+    }
+
+    res.json({ message: "Password reset successful" });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: "Invalid or expired token" });
+  }
+};
+
+
 module.exports = {
   registerUser,
   loginUser,
   verifyToken,
+  verifyToken,
+  forgotPassword, 
+  resetPassword
 };

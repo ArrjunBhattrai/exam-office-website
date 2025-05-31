@@ -163,3 +163,24 @@
   .sidebar {
     max-width: 270px;
   }
+
+  .forgot-pass h2 {
+    padding: 1rem;
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .forgot-pass input {
+    min-width: 300px;
+    text-align: center;
+  }
+
+  .forgot-pass {
+    display: flex;
+    flex-direction: column;
+    gap: 2REM;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+  }

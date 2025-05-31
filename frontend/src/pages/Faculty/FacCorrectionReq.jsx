@@ -1,20 +1,100 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-// import "./HODHome.css";
+import { toast } from "react-toastify";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
 import Button from "../../components/Button";
+import "./faculty.css";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
+import { BACKEND_URL } from "../../../config";
 
 const FacCorrectionReq = () => {
-  const user = useSelector((state) => state.auth.user);
+  const { userId, isAuthenticated, role, token } = useSelector(
+    (state) => state.auth
+  );
 
-  const [course, setCourse] = useState("");
-  const [branch, setBranch] = useState("");
-  const [semester, setSemester] = useState("");
+  if (!isAuthenticated || role !== "faculty") {
+    return (
+      <div>
+        You are not authorized to view this page. Please login to get access to
+        this page.
+      </div>
+    );
+  }
+
+  const [assignedSubjects, setAssignedSubjects] = useState([]);
+  const [selectedSubject, setSelectedSubject] = useState({});
+  const [component, setComponent] = useState("");
+  const [subComponent, setSubComponent] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
+
+  const subjectOptions = assignedSubjects.length
+    ? assignedSubjects.map((subject) => ({
+        value: JSON.stringify({
+          subject_id: subject.subject_id,
+          subject_type: subject.subject_type,
+          subject_name: subject.subject_name,
+        }),
+        label: `${subject.subject_name} - ${subject.subject_type}`,
+      }))
+    : [{ value: "", label: "No subjects assigned" }];
+
+  const componentMap = {
+    Theory: ["CW", "Theory"],
+    Practical: ["SW", "Practical"],
+  };
+
+  const subComponentMap = {
+    CW: ["MST 1", "MST 2", "Assignment 1", "Assignment 2"],
+    Theory: ["Theory Exam"],
+    SW: ["Viva 1", "Viva 2"],
+    Practical: ["External Viva", "External Submission"],
+  };
+
+  const componentOptions = selectedSubject?.subject_type
+    ? componentMap[selectedSubject.subject_type] || []
+    : [];
+
+  const subComponentOptions = component ? subComponentMap[component] || [] : [];
+
+  const fetchAssignedSubjects = async () => {
+      try {
+        const response = await fetch(
+          `${BACKEND_URL}/api/faculty/assignedSubjects/${userId}`,
+          {
+            method: "GET",
+            headers: {
+              authorization: token,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+  
+        if (!response.ok) {
+          throw new Error("Failed to fetch assigned Subjects");
+        }
+  
+        const data = await response.json();
+        setAssignedSubjects(data.subjects);
+      } catch (error) {
+        toast.error(error.message || "Failed to fetch Assigned Subjects");
+      }
+    };
+    useEffect(() => {
+        fetchAssignedSubjects();
+      }, [token]);
+
+  const handleProceed = async () => {
+    if (selectedSubject.subject_id && component && subComponent) {
+      setShowOptions(true);
+    } else {
+      toast.error("Please select all fields");
+    }
+  };
 
   return (
     <div className="home-container">
@@ -37,13 +117,20 @@ const FacCorrectionReq = () => {
                     name: "Marks Feeding Activities",
                     path: "/faculty/marks-feed",
                   },
+
                   {
                     name: "ATKT Marks Feeding",
                     path: "/faculty/atkt-marks-feed",
                   },
+                  
                   {
                     name: "Make Correction Request",
                     path: "/faculty/correction-request",
+                  },
+                  {
+                    name: "Edit Personal Info",
+                    path: "/faculty/edit-info",
+
                   },
                 ]}
               />
@@ -69,21 +156,11 @@ const FacCorrectionReq = () => {
               <div className="user-sec">
                 <p>
                   <span>Welcome: </span>
-                  <span className="user-name">
-                    [{user?.name || "Please Login"}]
-                  </span>
+                  <span className="user-name">{userId && `[${userId}]`}</span>
                 </p>
                 <p>
                   <span className="user-role">Role: </span>
-                  <span className="user-name">
-                    [{user?.role || "Please Login"}]
-                  </span>
-                </p>
-                <p>
-                  <span className="user-role">Department: </span>
-                  <span className="user-name">
-                    [{user?.department || "Please Login"}]
-                  </span>
+                  <span className="user-name">[{role && `${role}`}]</span>
                 </p>
               </div>
 
@@ -96,52 +173,87 @@ const FacCorrectionReq = () => {
                   <span className="box-overlay-text">Draft a request</span>
 
                   <div className="faculty-box">
-                    <p className="institute-text">
+                    {/* <p className="institute-text">
                       <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
                       TECHNOLOGY & SCIENCE
-                    </p>
+                    </p> */}
 
                     <div className="dropdown-container">
                       <Dropdown
-                        label="Course"
-                        options={["BE", "ME", "B.Pharma"]}
-                        selectedValue={course}
-                        onChange={setCourse}
+                        label="Subject"
+                        options={subjectOptions}
+                        selectedValue={JSON.stringify(selectedSubject)}
+                        onChange={(value) => {
+                          const parsedValue = JSON.parse(value);
+                          setSelectedSubject(parsedValue);
+                          setComponent("");
+                          setSubComponent("");
+                        }}
                       />
 
                       <Dropdown
-                        label="Branch"
-                        options={["CSE", "IT", "ECE", "EI"]}
-                        selectedValue={branch}
-                        onChange={setBranch}
+                        label="Component"
+                        options={componentOptions.map((comp) => ({
+                          value: comp,
+                          label: comp,
+                        }))}
+                        selectedValue={component}
+                        onChange={(value) => {
+                          setComponent(value);
+                          setSubComponent("");
+                        }}
                       />
 
                       <Dropdown
-                        label="Semester"
-                        options={[
-                          "I",
-                          "II",
-                          "III",
-                          "IV",
-                          "V",
-                          "VI",
-                          "VII",
-                          "VIII",
-                        ]}
-                        selectedValue={semester}
-                        onChange={setSemester}
+                        label="Sub Component"
+                        options={subComponentOptions.map((sub) => ({
+                          value: sub,
+                          label: sub,
+                        }))}
+                        selectedValue={subComponent}
+                        onChange={setSubComponent}
                       />
                     </div>
-                    <Button
-                      className="btn"
-                      text="Show"
-                      navigateTo="/" //--> to set path
-                    />
+
+
+                    {!showOptions ? (
+                      <Button text="Proceed" onClick={handleProceed} />
+                    ) : (
+                      <div className="req-options">
+                        <Button
+                          text="See Past Requests"
+                          //   onClick={async () => {
+
+                          // }}
+                        />
+
+                        <Button
+                          text="Draft New Request"
+                          // onClick={async () => {
+
+                          // }}
+                        />
+
+                        <Button
+                          text="Withdraw Waiting Requests"
+                          // onClick={async () => {
+                            
+                          // }}
+                        />
+                      </div>
+                    )}
+
                   </div>
                 </div>
               </div>
             </div>
           </div>
+
+          {showModal && (
+            <div className="modal-overlay">
+              <div className="modal-content"></div>
+            </div>
+          )}
 
           <RedFooter />
         </div>

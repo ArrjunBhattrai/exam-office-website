@@ -8,6 +8,7 @@ module.exports = function (app) {
   app.use("/api/subject", require("../routes/subject.routes"));
   app.use("/api/faculty", require("../routes/faculty.routes"));
   app.use("/api/assesment", require("../routes/assesment.routes"));
+  app.use("/api/semester", require("../routes/semester.routes"));
 
   app.use((_req, _res, next) => {
     const error = new Error();

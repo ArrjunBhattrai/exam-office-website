@@ -1,3 +1,4 @@
+const { error } = require("console");
 const db = require("../db/db");
 const csv = require("csv-parser");
 const fs = require("fs");
@@ -265,6 +266,70 @@ const assignCO = async (req, res) => {
   }
 };
 
+const getAllSubjectsForCourse = async (req, res) => {
+  const { branch_id, course_id, specialization } = req.query;
+
+  if (!branch_id || !course_id || !specialization) {
+    return res.status(400).json({
+      error: "branch_id, course_id and specialization are required",
+    });
+  }
+
+  try {
+    const rows = await db("subject as s")
+      .leftJoin("faculty_subject as fs", function () {
+        this.on("s.subject_id", "=", "fs.subject_id").andOn(
+          "s.subject_type",
+          "=",
+          "fs.subject_type"
+        );
+      })
+      .leftJoin("faculty as f", "fs.faculty_id", "f.faculty_id")
+      .where({
+        "s.branch_id": branch_id,
+        "s.course_id": course_id,
+        "s.specialization": specialization,
+      })
+      .select(
+        "s.subject_id",
+        "s.subject_name",
+        "s.subject_type",
+        "s.semester",
+        "fs.faculty_id",
+        "f.faculty_name"
+      )
+      .orderBy("s.semester");
+
+    // Group by subject and accumulate faculty info
+    const subjectsMap = new Map();
+
+    for (const row of rows) {
+      const key = `${row.subject_id}-${row.subject_type}`;
+      if (!subjectsMap.has(key)) {
+        subjectsMap.set(key, {
+          subject_id: row.subject_id,
+          subject_name: row.subject_name,
+          subject_type: row.subject_type,
+          semester: row.semester,
+          faculty_ids: [],
+          faculty_names: [],
+        });
+      }
+
+      const subject = subjectsMap.get(key);
+      if (row.faculty_id && !subject.faculty_ids.includes(row.faculty_id)) {
+        subject.faculty_ids.push(row.faculty_id);
+        subject.faculty_names.push(row.faculty_name);
+      }
+    }
+
+    return res.status(200).json({ subjects: Array.from(subjectsMap.values()) });
+  } catch (error) {
+    console.error("Error fetching subjects:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   subjectDataUpload,
   getSubjectsForCourse,
@@ -272,4 +337,5 @@ module.exports = {
   getAssignedSubjectDetails,
   getCourseOutcomes,
   assignCO,
+  getAllSubjectsForCourse,
 };
