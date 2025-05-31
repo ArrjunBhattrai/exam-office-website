@@ -117,6 +117,12 @@ const FacCorrectionReq = () => {
                     name: "Marks Feeding Activities",
                     path: "/faculty/marks-feed",
                   },
+
+                  {
+                    name: "ATKT Marks Feeding",
+                    path: "/faculty/atkt-marks-feed",
+                  },
+                  
                   {
                     name: "Make Correction Request",
                     path: "/faculty/correction-request",
@@ -124,6 +130,7 @@ const FacCorrectionReq = () => {
                   {
                     name: "Edit Personal Info",
                     path: "/faculty/edit-info",
+
                   },
                 ]}
               />
@@ -208,6 +215,7 @@ const FacCorrectionReq = () => {
                       />
                     </div>
 
+
                     {!showOptions ? (
                       <Button text="Proceed" onClick={handleProceed} />
                     ) : (
@@ -234,6 +242,7 @@ const FacCorrectionReq = () => {
                         />
                       </div>
                     )}
+
                   </div>
                 </div>
               </div>

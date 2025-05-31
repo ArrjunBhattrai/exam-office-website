@@ -18,7 +18,7 @@ router.get(
   studentController.getStudentsForCourse
 );
 router.get(
-  "/getStudents/:subject_id/:subject_type",
+  "/getStudents",
   authenticateUser,
   authorizeRole(["faculty"]),
   studentController.studentBySubject

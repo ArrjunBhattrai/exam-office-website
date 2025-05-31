@@ -21,8 +21,6 @@ const createBranch = async (req, res) => {
   }
 };
 
-
-
 // Deleting a branch
 const deleteBranch = async (req, res) => {
   const { branch_id } = req.params;
@@ -44,8 +42,6 @@ const deleteBranch = async (req, res) => {
   }
 };
 
-
-
 // Get all existing branches
 const getBranches = async (req, res) => {
   try {
@@ -57,8 +53,6 @@ const getBranches = async (req, res) => {
     res.status(500).json({ error: "Error fetching branches" });
   }
 };
-
-
 
 // Update branch name
 const updateBranch = async (req, res) => {
@@ -81,8 +75,6 @@ const updateBranch = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
-
-
 
 // Get branch details
 const getBranchDetails = async (req, res) => {
@@ -154,11 +146,10 @@ const getBranchDetails = async (req, res) => {
   }
 };
 
-
 module.exports = {
   createBranch,
   deleteBranch,
   getBranches,
   updateBranch,
-  getBranchDetails
+  getBranchDetails,
 };

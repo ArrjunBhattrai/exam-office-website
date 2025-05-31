@@ -129,47 +129,78 @@ const getSubjectsForCourse = async (req, res) => {
   }
 };
 
-// Get assigned subject data
-const getAssignedSubject = async (req, res) => {
-  try {
-    const { facultyId } = req.params;
+// Get subjects assigned to a faculty
+const getFacultySubjects = async (req, res) => {
+  const { faculty_id } = req.params;
 
-    if (!facultyId) {
+  try {
+    if (!faculty_id) {
       return res.status(400).json({ error: "Faculty ID is required" });
     }
 
-    const subjects = await db("faculty_subject")
-      .join("subject", function () {
-        this.on("faculty_subject.subject_id", "=", "subject.subject_id").andOn(
-          "faculty_subject.subject_type",
+    const subjects = await db("faculty_subject as fs")
+      .join("subject as s", function () {
+        this.on("fs.subject_id", "=", "s.subject_id").andOn(
+          "fs.subject_type",
           "=",
-          "subject.subject_type"
+          "s.subject_type"
         );
       })
-      .leftJoin("course_outcome", function () {
-        this.on(
-          "faculty_subject.subject_id",
+      .where("fs.faculty_id", faculty_id)
+      .select("fs.subject_id", "fs.subject_type", "s.subject_name");
+
+    return res.status(200).json({ subjects });
+  } catch (error) {
+    console.error("Error fetching faculty subjects:", error.message);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// Get assigned subject data with COs and assignment type
+const getAssignedSubjectDetails = async (req, res) => {
+  try {
+    const { faculty_id } = req.params;
+
+    if (!faculty_id) {
+      return res.status(400).json({ error: "Faculty ID is required" });
+    }
+
+    const subjects = await db("faculty_subject as fs")
+      .join("subject as s", function () {
+        this.on("fs.subject_id", "=", "s.subject_id").andOn(
+          "fs.subject_type",
           "=",
-          "course_outcome.subject_id"
-        ).andOn(
-          "faculty_subject.subject_type",
-          "=",
-          "course_outcome.subject_type"
+          "s.subject_type"
         );
       })
-      .where("faculty_subject.faculty_id", facultyId)
+      .leftJoin("course_outcome as co", function () {
+        this.on("fs.subject_id", "=", "co.subject_id").andOn(
+          "fs.subject_type",
+          "=",
+          "co.subject_type"
+        );
+      })
+      .where("fs.faculty_id", faculty_id)
       .groupBy(
-        "subject.subject_id",
-        "subject.subject_type",
-        "subject.subject_name",
-        "subject.semester"
+        "fs.subject_id",
+        "fs.subject_type",
+        "s.subject_name",
+        "s.semester",
+        "s.branch_id",
+        "s.course_id",
+        "s.specialization",
+        "fs.assignment_type"
       )
       .select(
-        "subject.subject_id",
-        "subject.subject_type",
-        "subject.subject_name",
-        "subject.semester",
-        db.raw("GROUP_CONCAT(course_outcome.co_name) as co_names")
+        "fs.subject_id",
+        "fs.subject_type",
+        "s.subject_name",
+        "s.semester",
+        "s.branch_id",
+        "s.course_id",
+        "s.specialization",
+        "fs.assignment_type",
+        db.raw("GROUP_CONCAT(co.co_name ORDER BY co.co_name) as co_names")
       );
 
     const formattedSubjects = subjects.map((subject) => ({
@@ -179,7 +210,7 @@ const getAssignedSubject = async (req, res) => {
 
     res.status(200).json({ subjects: formattedSubjects });
   } catch (error) {
-    console.error("Error fetching subjects:", error);
+    console.error("Error fetching assigned subjects:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -302,7 +333,8 @@ const getAllSubjectsForCourse = async (req, res) => {
 module.exports = {
   subjectDataUpload,
   getSubjectsForCourse,
-  getAssignedSubject,
+  getFacultySubjects,
+  getAssignedSubjectDetails,
   getCourseOutcomes,
   assignCO,
   getAllSubjectsForCourse,

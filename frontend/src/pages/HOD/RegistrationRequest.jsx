@@ -59,6 +59,7 @@ const RegistrationRequest = () => {
         endpoint = "/api/faculty/approve-request";
         method = "POST";
       } else if (action === "reject") {
+
         endpoint = "/api/faculty/reject-request";
         method = "DELETE";
       } else {
