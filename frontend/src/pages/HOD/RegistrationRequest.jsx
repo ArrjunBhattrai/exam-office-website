@@ -27,7 +27,7 @@ const RegistrationRequest = () => {
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/hod/faculty/requests`, {
+      const response = await fetch(`${BACKEND_URL}/api/faculty/registration-requests`, {
         method: "GET",
         headers: {
           authorization: token,
@@ -41,7 +41,6 @@ const RegistrationRequest = () => {
 
       const data = await response.json();
       setPendingRequests(data);
-      console.log(pendingRequests);
     } catch (error) {
       toast.error(error.message || "Failed to fetch courses");
     }
@@ -57,10 +56,10 @@ const RegistrationRequest = () => {
       let method = "";
 
       if (action === "approve") {
-        endpoint = "/api/hod/faculty/requests/approve";
+        endpoint = "/api/faculty/approve-request";
         method = "POST";
       } else if (action === "reject") {
-        endpoint = "/api/hod/faculty/requests/reject";
+        endpoint = "/api/faculty/approve-request";
         method = "DELETE";
       } else {
         throw new Error("Invalid action type");
@@ -95,6 +94,7 @@ const RegistrationRequest = () => {
 
   return (
     <div className="home-container">
+      <Toaster position="top-right" />
       <div className="user-bg">
         <RedHeader />
         <div className="user-content">

@@ -29,11 +29,21 @@ const FacCorrectionReq = () => {
                 className="sidebar-1"
                 title="Faculty Activity"
                 activities={[
-                  { name: "View Assigned Subjects", path: "/fac-view-sub" },
-                  { name: "Marks Feeding Activities", path: "/fac-marks-feed" },
+                  {
+                    name: "View Assigned Subjects",
+                    path: "/faculty/view-subjects",
+                  },
+                  {
+                    name: "Marks Feeding Activities",
+                    path: "/faculty/marks-feed",
+                  },
+                  {
+                    name: "ATKT Marks Feeding",
+                    path: "/faculty/atkt-marks-feed",
+                  },
                   {
                     name: "Make Correction Request",
-                    path: "/fac-correction-req",
+                    path: "/faculty/correction-request",
                   },
                 ]}
               />
@@ -127,7 +137,6 @@ const FacCorrectionReq = () => {
                       text="Show"
                       navigateTo="/" //--> to set path
                     />
-                    
                   </div>
                 </div>
               </div>

@@ -3,21 +3,16 @@ const db = require("../db/db");
 // GET all pending faculty registration requests for branch
 const getPendingFacultyRequests = async (req, res) => {
   try {
-    const hod_id = req.user.userId;
+    const branch_id = req.user.branchId;
 
-    const branch = await db("hod")
-      .select("branch_id")
-      .where("hod_id", hod_id)
-      .first();
-
-    if (!branch) {
+    if (!branch_id) {
       return res
         .status(403)
         .json({ message: "Unauthorized: You are not an HOD" });
     }
 
     const pendingRequests = await db("faculty_registration_request")
-      .where("branch_id", branch.branch_id)
+      .where("branch_id", branch_id)
       .select("faculty_id", "faculty_name", "faculty_email");
 
     return res.status(200).json(pendingRequests);
@@ -30,22 +25,17 @@ const getPendingFacultyRequests = async (req, res) => {
 //Approving request of faculty registration
 const approveFacultyRequest = async (req, res) => {
   try {
-    const hod_id = req.user.userId;
+    const branch_id = req.user.branchId;
     const { faculty_id } = req.body;
 
-    const branch = await db("hod")
-      .select("branch_id")
-      .where("hod_id", hod_id)
-      .first();
-
-    if (!branch) {
+    if (!branch_id) {
       return res
         .status(403)
         .json({ message: "Unauthorized: You are not an HOD" });
     }
 
     const request = await db("faculty_registration_request")
-      .where({ faculty_id, branch_id: branch.branch_id })
+      .where({ faculty_id, branch_id: branch_id })
       .first();
 
     if (!request) {
@@ -72,22 +62,17 @@ const approveFacultyRequest = async (req, res) => {
 //Rejecting a registration request
 const rejectFacultyRequest = async (req, res) => {
   try {
-    const hod_id = req.user.userId;
+    const branch_id = req.user.branchId;
     const { faculty_id } = req.body;
 
-    const branch = await db("hod")
-      .select("branch_id")
-      .where("hod_id", hod_id)
-      .first();
-
-    if (!branch) {
+    if (!branch_id) {
       return res
         .status(403)
         .json({ message: "Unauthorized: You are not an HOD" });
     }
 
     const deleted = await db("faculty_registration_request")
-      .where({ faculty_id, branch_id: branch.branch_id })
+      .where({ faculty_id, branch_id: branch_id })
       .del();
 
     if (deleted === 0) {
