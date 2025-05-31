@@ -132,9 +132,9 @@ const getSubjectsForCourse = async (req, res) => {
 // Get assigned subject data
 const getAssignedSubject = async (req, res) => {
   try {
-    const { facultyId } = req.params;
+    const { faculty_id } = req.query;
 
-    if (!facultyId) {
+    if (!faculty_id) {
       return res.status(400).json({ error: "Faculty ID is required" });
     }
 
@@ -157,7 +157,7 @@ const getAssignedSubject = async (req, res) => {
           "course_outcome.subject_type"
         );
       })
-      .where("faculty_subject.faculty_id", facultyId)
+      .where("faculty_subject.faculty_id", faculty_id)
       .groupBy(
         "subject.subject_id",
         "subject.subject_type",
@@ -169,6 +169,8 @@ const getAssignedSubject = async (req, res) => {
         "subject.subject_type",
         "subject.subject_name",
         "subject.semester",
+        "subject.course_id",
+        "subject.specialization",
         db.raw("GROUP_CONCAT(course_outcome.co_name) as co_names")
       );
 
@@ -176,6 +178,8 @@ const getAssignedSubject = async (req, res) => {
       ...subject,
       co_names: subject.co_names ? subject.co_names.split(",") : [],
     }));
+
+    console.log(formattedSubjects);
 
     res.status(200).json({ subjects: formattedSubjects });
   } catch (error) {

@@ -33,5 +33,4 @@ router.post(
   authorizeRole(["hod"]),
   facultyController.assignFaculties
 );
-
-module.exports = router;
+module.exports = router

@@ -18,7 +18,7 @@ router.get(
   subjectController.getSubjectsForCourse
 );
 router.get(
-  "/assignedSubjects/:facultyId",
+  "/assignedSubjects",
   authenticateUser,
   authorizeRole(["faculty", "hod"]),
   subjectController.getAssignedSubject
