@@ -26,16 +26,25 @@ const HODViewDeptt = () => {
     );
   }
 
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [selectedFaculty, setSelectedFaculty] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState({});
+  const [assignedSubjects, setAssignedSubjects] = useState([]);
+  const [filteredSubjects, setFilteredSujects] = useState([]);
   const [faculties, setFaculties] = useState([]);
 
   useEffect(() => {
     const fetchFaculties = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/faculty/get-faculties?branch_id=${branchId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await fetch(
+          `${BACKEND_URL}/api/faculty/get-faculties?branch_id=${branchId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         if (!res.ok) {
           throw new Error("Failed to fetch faculties");
         }
@@ -53,87 +62,86 @@ const HODViewDeptt = () => {
     }
   }, [branchId, token]);
 
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [selectedFaculty, setSelectedFaculty] = useState(null);
-  const [courses, setCourses] = useState([]);
-  const [selectedCourseId, setSelectedCourseId] = useState("");
-  const [assignedSubjects, setAssignedSubjects] = useState([]);
-
   const openModal = async (faculty) => {
     setSelectedFaculty(faculty);
     setModalIsOpen(true);
-    setSelectedCourseId("");
+    setSelectedCourse("");
     setAssignedSubjects([]);
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/course/get-courses-byBranch?branch_id=${branchId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(
+        `${BACKEND_URL}/api/course/get-courses-byBranch?branch_id=${branchId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       const data = await res.json();
       const options = data.courses.map((course) => ({
-        value: course.course_id,
-        label: course.course_name,
+        value: JSON.stringify({
+          course_id: course.course_id,
+          specialization: course.specialization,
+        }),
+        label: `${course.course_name} (${course.specialization})`,
       }));
       setCourses(options);
+
+      const subjectRes = await fetch(
+        `${BACKEND_URL}/api/subject/assignedSubjects?faculty_id=${faculty.faculty_id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        }
+      );
+
+      const subjectData = await subjectRes.json();
+setAssignedSubjects(subjectData.subjects || []);
     } catch (err) {
       console.error("Failed to fetch courses", err);
       toast.error("Failed to load courses");
     }
   };
 
-  const handleCourseChange = async (courseId) => {
-    setSelectedCourseId(courseId);
+  const handleCourseChange = async (value) => {
+    const { course_id, specialization } = JSON.parse(value);
 
-    try {
-      const res = await fetch(
-        `${BACKEND_URL}/api/subject/assignedSubjects/${selectedFaculty.faculty_id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          }
-        }
-      );
-      const data = await res.json();
+  setSelectedCourse({ course_id, specialization });
 
-      const filtered = data.subjects.filter(
-        (subj) => subj.course_id === courseId
-      );
+  const filtered = assignedSubjects.filter(
+    (subj) =>
+      String(subj.course_id) === String(course_id) &&
+      String(subj.specialization) === String(specialization)
+  );
 
-      setAssignedSubjects(filtered);
-    } catch (err) {
-      console.error("Error fetching subjects:", err);
-      toast.error("Failed to load assigned subjects");
-    }
+  setFilteredSujects(filtered);
   };
 
   const [enrolledStudents, setEnrolledStudents] = useState([]);
   const [studentsModalOpen, setStudentsModalOpen] = useState(false);
 
-
   const handleViewStudents = async (subjectId, subjectType) => {
-  try {
-    const res = await fetch(
-      `${BACKEND_URL}/api/student/getStudents/${subjectId}/${subjectType}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    try {
+      const res = await fetch(
+        `${BACKEND_URL}/api/student/getStudents/${subjectId}/${subjectType}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        setEnrolledStudents(data.students);
+        setStudentsModalOpen(true);
+      } else {
+        toast.error(data.error || "Failed to fetch students");
       }
-    );
-    const data = await res.json();
-    if (res.ok) {
-      setEnrolledStudents(data.students);
-      setStudentsModalOpen(true);
-    } else {
-      toast.error(data.error || "Failed to fetch students");
+    } catch (err) {
+      console.error("Error fetching students:", err);
+      toast.error("Failed to load students");
     }
-  } catch (err) {
-    console.error("Error fetching students:", err);
-    toast.error("Failed to load students");
-  }
-};
-
+  };
 
   return (
     <div className="home-container">
@@ -246,11 +254,11 @@ const HODViewDeptt = () => {
         <Dropdown
           label="Select Course"
           options={courses}
-          selectedValue={selectedCourseId}
+          selectedValue={JSON.stringify(selectedCourse)}
           onChange={handleCourseChange}
         />
 
-        {selectedCourseId && (
+        {selectedCourse && (
           <>
             {assignedSubjects.length > 0 ? (
               <table className="subject-table">
@@ -265,7 +273,7 @@ const HODViewDeptt = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {assignedSubjects.map((subject) => (
+                  {filteredSubjects.map((subject) => (
                     <tr key={subject.subject_id + subject.subject_type}>
                       <td>{subject.subject_id}</td>
                       <td>{subject.subject_name}</td>
@@ -299,36 +307,35 @@ const HODViewDeptt = () => {
       </ReactModal>
 
       <ReactModal
-  isOpen={studentsModalOpen}
-  onRequestClose={() => setStudentsModalOpen(false)}
-  contentLabel="Enrolled Students"
-  className="custom-modal"
-  overlayClassName="custom-overlay"
->
-  <h3>Enrolled Students</h3>
-  {enrolledStudents.length > 0 ? (
-    <table className="student-table">
-      <thead>
-        <tr>
-          <th>Enrollment No</th>
-          <th>Student Name</th>
-        </tr>
-      </thead>
-      <tbody>
-        {enrolledStudents.map((student) => (
-          <tr key={student.enrollment_no}>
-            <td>{student.enrollment_no}</td>
-            <td>{student.student_name}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  ) : (
-    <p>No students enrolled.</p>
-  )}
-  <Button text="Close" onClick={() => setStudentsModalOpen(false)} />
-</ReactModal>
-
+        isOpen={studentsModalOpen}
+        onRequestClose={() => setStudentsModalOpen(false)}
+        contentLabel="Enrolled Students"
+        className="custom-modal"
+        overlayClassName="custom-overlay"
+      >
+        <h3>Enrolled Students</h3>
+        {enrolledStudents.length > 0 ? (
+          <table className="student-table">
+            <thead>
+              <tr>
+                <th>Enrollment No</th>
+                <th>Student Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              {enrolledStudents.map((student) => (
+                <tr key={student.enrollment_no}>
+                  <td>{student.enrollment_no}</td>
+                  <td>{student.student_name}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p>No students enrolled.</p>
+        )}
+        <Button text="Close" onClick={() => setStudentsModalOpen(false)} />
+      </ReactModal>
     </div>
   );
 };

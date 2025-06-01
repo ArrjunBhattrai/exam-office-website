@@ -23,8 +23,6 @@ import FacultyAllocation from "./pages/HOD/FacultyAllocation";
 import HODCorrectionReq from "./pages/HOD/HODCorrectionReq";
 import HodProgressReport from "./pages/HOD/HodProgressReport";
 
-
-
 import FacultyHome from "./pages/Faculty/FacultyHome";
 import ViewSubjects from "./pages/Faculty/ViewSubjects";
 import MarksFeed from "./pages/Faculty/MarksFeed";

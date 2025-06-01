@@ -417,6 +417,13 @@ th, td {
 
 /* Tablets (768px to 1024px) */
 @media (max-width: 1024px) {
+  .subject-table {
+    font-size: 10px;
+  }
+
+  .custom-modal{
+    width: 95%;
+  }
   .user-main {
     flex-direction: column;
   }
@@ -439,6 +446,18 @@ th, td {
   .faculty-box {
     height: auto;
     padding: 1rem;
+  }
+
+  .view-btn {
+    border-radius: 5px;
+    background-color: #8b0000;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .view-btn:hover {
+    background-color: #5a0000;
+    transition: transform 0.3s ease-in-out;
   }
 }
 

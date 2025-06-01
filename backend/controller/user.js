@@ -154,16 +154,13 @@ const forgotPassword = async (req, res) => {
     let userId;
 
     if (role === "admin") {
-      const [rows] = await db.query("SELECT * FROM admin WHERE admin_email = ?", [email]);
-      user = rows[0];
+      user = await db("admin").where("admin_email", email).first();
       if (user) userId = user.admin_id;
     } else if (role === "hod") {
-      const [rows] = await db.query("SELECT * FROM hod WHERE hod_email = ?", [email]);
-      user = rows[0];
+      user = await db("hod").where("hod_email", email).first();
       if (user) userId = user.hod_id;
     } else if (role === "faculty") {
-      const [rows] = await db.query("SELECT * FROM faculty WHERE faculty_email = ?", [email]);
-      user = rows[0];
+      user = await db("faculty").where("faculty_email", email).first();
       if (user) userId = user.faculty_id;
     } else {
       return res.status(400).json({ error: "Invalid role" });
@@ -200,7 +197,6 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-
 const resetPassword = async (req, res) => {
   const { token } = req.params;
   const {newPassword} = req.body;
@@ -211,15 +207,21 @@ const resetPassword = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    if(role === "admin") {
-       await db("admin").where({ admin_id: userId }).update({ password: hashedPassword });
+    let tableName, idField;
+    if (role === "admin") {
+      tableName = "admin";
+      idField = "admin_id";
     } else if (role === "hod") {
-       await db("hod").where({ hod_id: userId }).update({ password: hashedPassword });
+      tableName = "hod";
+      idField = "hod_id";
     } else if (role === "faculty") {
-      await db("faculty").where({ faculty_id: userId }).update({ password: hashedPassword });
+      tableName = "faculty";
+      idField = "faculty_id";
     } else {
-      return res.status(400).json({ error: "Invalid role" });
+      return res.status(400).json({ message: "Invalid role" });
     }
+
+    await db(tableName).where({ [idField]: userId }).update({ password: hashedPassword });
 
     res.json({ message: "Password reset successful" });
   } catch (err) {
