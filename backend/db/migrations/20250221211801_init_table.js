@@ -183,6 +183,15 @@ exports.up = function (knex) {
         .references(["subject_id", "subject_type", "co_name"])
         .inTable("course_outcome")
         .onDelete("CASCADE");
+
+      table.unique([
+        "enrollment_no",
+        "subject_id",
+        "subject_type",
+        "component_name",
+        "sub_component_name",
+        "co_name",
+      ]);
     })
     .createTable("marks_update_request", (table) => {
       table.increments("request_id").primary();

@@ -9,12 +9,17 @@ import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 const FacultyHome = () => {
   const { userId, isAuthenticated, role, token, branchId } = useSelector(
-     (state) => state.auth
-   );
- 
-   if (!isAuthenticated || role != "faculty") {
-     return <div>You are not authorized to view this page. Please login to get access to this page.</div>;
-   }
+    (state) => state.auth
+  );
+
+  if (!isAuthenticated || role != "faculty") {
+    return (
+      <div>
+        You are not authorized to view this page. Please login to get access to
+        this page.
+      </div>
+    );
+  }
 
   return (
     <div className="home-container">
@@ -29,9 +34,22 @@ const FacultyHome = () => {
                 className="sidebar"
                 title="Faculty Activities"
                 activities={[
-                  { name: "View Assigned Subjects", path: "/faculty/view-subjects" },
-                  { name: "Marks Feeding Activities", path: "/faculty/marks-feed" },
-                  { name: "Make Correction Request", path: "/faculty/correction-request" },
+                  {
+                    name: "View Assigned Subjects",
+                    path: "/faculty/view-subjects",
+                  },
+                  {
+                    name: "Marks Feeding Activities",
+                    path: "/faculty/marks-feed",
+                  },
+                  {
+                    name: "ATKT Marks Feeding",
+                    path: "/faculty/atkt-marks-feed",
+                  },
+                  {
+                    name: "Make Correction Request",
+                    path: "/faculty/correction-request",
+                  },
                 ]}
               />
             </div>
@@ -54,16 +72,14 @@ const FacultyHome = () => {
                 </button>
               </div>
               <div className="user-sec">
-              <p>
+                <p>
                   <span>Welcome: </span>
                   <span className="user-name">{userId && `[${userId}]`}</span>
                 </p>
 
                 <p>
                   <span className="user-role">Role: </span>
-                  <span className="user-name">
-                    [{(role && `${role}`)}]
-                  </span>
+                  <span className="user-name">[{role && `${role}`}]</span>
                 </p>
               </div>
             </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { toast } from "react-toastify";
+import { Toaster, toast } from "react-hot-toast";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
@@ -8,7 +8,6 @@ import RedHeader from "../../components/RedHeader";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 import { BACKEND_URL } from "../../../config";
 import "./faculty.css";
-
 
 const ViewSubjects = () => {
   const { userId, isAuthenticated, role, token, branchId } = useSelector(
@@ -43,7 +42,7 @@ const ViewSubjects = () => {
   const fetchAssignedSubjects = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/faculty/assignedSubjects/${userId}`,
+        `${BACKEND_URL}/api/subject/assignedSubject-details/${userId}`,
         {
           method: "GET",
           headers: {
@@ -69,19 +68,19 @@ const ViewSubjects = () => {
 
   const handleAssignCOs = async () => {
     const numberOfCOs = parseInt(coInput);
-  
+
     if (!numberOfCOs || isNaN(numberOfCOs) || numberOfCOs < 1) {
       toast.warn("Please enter a valid number of COs");
       return;
     }
-  
+
     const co_names = Array.from(
       { length: numberOfCOs },
       (_, i) => `CO${i + 1}`
     );
-  
+
     try {
-      const response = await fetch(`${BACKEND_URL}/api/faculty/assign-cos`, {
+      const response = await fetch(`${BACKEND_URL}/api/subject/assign-cos`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -93,23 +92,27 @@ const ViewSubjects = () => {
           co_names,
         }),
       });
-  
-      if (!response.ok) {
-        throw new Error(result.error || result.message || "Failed to assign COs");
-      }
-      
+
       const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.error || result.message || "Failed to assign COs"
+        );
+      }
+
       toast.success("COs assigned successfully!");
-      await fetchAssignedSubjects(); 
-      closeModal();
+      await fetchAssignedSubjects();
+      setShowModal(false);
+      setTimeout(() => setSelectedSubject(null), 300);
     } catch (error) {
       toast.error(error.message || "Failed to assign COs");
     }
   };
-  
 
   return (
     <div className="home-container">
+      <Toaster position="top-right" />
       <div className="user-bg">
         <RedHeader />
         <div className="user-content">
@@ -128,6 +131,10 @@ const ViewSubjects = () => {
                   {
                     name: "Marks Feeding Activities",
                     path: "/faculty/marks-feed",
+                  },
+                  {
+                    name: "ATKT Marks Feeding",
+                    path: "/faculty/atkt-marks-feed",
                   },
                   {
                     name: "Make Correction Request",
@@ -175,8 +182,8 @@ const ViewSubjects = () => {
                     <table className="subject-table">
                       <thead>
                         <tr>
-                          <th>Subject Code</th>
-                          <th>Subject Type</th>
+                          <th>Course</th>
+                          <th>Subject</th>
                           <th>Subject Name</th>
                           <th>Semester</th>
                           <th>No. of COs</th>
@@ -186,10 +193,20 @@ const ViewSubjects = () => {
                       <tbody>
                         {assignedSubjects.map((subject) => {
                           const key = `${subject.subject_id}-${subject.subject_type}`;
+
+                          // Build course name
+                          const courseDisplay =
+                            subject.specialization?.toLowerCase() !== "none"
+                              ? `${subject.course_id} - ${subject.specialization}`
+                              : subject.course_id;
+
+                          // Build subject code display
+                          const subjectDisplay = `${subject.subject_id} - ${subject.subject_type}`;
+
                           return (
                             <tr key={key}>
-                              <td>{subject.subject_id}</td>
-                              <td>{subject.subject_type}</td>
+                              <td>{courseDisplay}</td>
+                              <td>{subjectDisplay}</td>
                               <td>{subject.subject_name}</td>
                               <td>{subject.semester}</td>
                               <td>
@@ -201,7 +218,6 @@ const ViewSubjects = () => {
                                   </span>
                                 )}
                               </td>
-
                               <td>
                                 {subject.co_names?.length > 0 ? (
                                   <span
@@ -227,7 +243,7 @@ const ViewSubjects = () => {
                       </tbody>
                     </table>
 
-                    {showModal && (
+                    {showModal && selectedSubject && (
                       <div className="modal-overlay">
                         <div className="modal">
                           <h3>Assign COs</h3>
