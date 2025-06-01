@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Toaster, toast } from "react-hot-toast";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
@@ -35,7 +35,8 @@ function MarksFeed() {
   const [selectedCos, setSelectedCos] = useState({});
   const [students, setStudents] = useState([]);
   const [showMarksTable, setShowMarksTable] = useState(false);
-  const [marks, setMarks] = useState({});
+  const [inputMarks, setInputMarks] = useState({});
+  const [savedMarks, setSavedMarks] = useState({});
   const [inputWarnings, setInputWarnings] = useState({});
 
   const subjectOptions = assignedSubjects.length
@@ -70,7 +71,7 @@ function MarksFeed() {
   const fetchAssignedSubjects = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/faculty/assignedSubjects/${userId}`,
+        `${BACKEND_URL}/api/subject/faculty-subjects/${userId}`,
         {
           method: "GET",
           headers: {
@@ -94,40 +95,10 @@ function MarksFeed() {
     fetchAssignedSubjects();
   }, [token]);
 
-  const checkTestDetails = async () => {
-    try {
-      const checkRes = await fetch(`${BACKEND_URL}/api/faculty/check-test-details`, {
-        method: "POST",
-        headers: {
-          authorization: token,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          subject_id: selectedSubject.subject_id,
-          subject_type: selectedSubject.subject_type,
-          component_name: component,
-          sub_component_name: subComponent,
-        }),
-      });
-  
-      const checkData = await checkRes.json();
-  
-      if (checkRes.ok) {
-        return checkData.exists; 
-      } else {
-        return false; 
-      }
-    } catch (err) {
-      toast.error("Error checking existing test details.");
-      return false; 
-    }
-  };
-  
-
   const fetchCos = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/faculty/get-co/${selectedSubject.subject_id}/${selectedSubject.subject_type}`,
+        `${BACKEND_URL}/api/subject/get-co/${selectedSubject.subject_id}/${selectedSubject.subject_type}`,
         {
           method: "GET",
           headers: {
@@ -146,25 +117,136 @@ function MarksFeed() {
     }
   };
 
+  const fetchStudents = async (selectedSubject, token) => {
+    if (!selectedSubject?.subject_id || !selectedSubject?.subject_type) {
+      return [];
+    }
+
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/student/getStudents?subject_id=${selectedSubject.subject_id}&subject_type=${selectedSubject.subject_type}`,
+        {
+          method: "GET",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch students");
+
+      const data = await response.json();
+      return data;
+    } catch (err) {
+      toast.error(err.message || "Failed to fetch students");
+      return [];
+    }
+  };
+
   const handleProceed = async () => {
-    if (selectedSubject.subject_id && component && subComponent) {
-      
-      const check = await checkTestDetails();
-      if(check){
-        toast.error("Test details already exist ! Kindly go to saved forms");
+    if (!selectedSubject.subject_id || !component || !subComponent) {
+      toast.error("Please select all fields");
+      return;
+    }
+
+    try {
+      const queryParams = new URLSearchParams({
+        subject_id: selectedSubject.subject_id,
+        subject_type: selectedSubject.subject_type,
+        component_name: component,
+        sub_component_name: subComponent,
+      }).toString();
+
+      const marksRes = await fetch(
+        `${BACKEND_URL}/api/assesment/fetchMarksData?${queryParams}`,
+        {
+          method: "GET",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const marksData = await marksRes.json();
+
+      if (!marksRes.ok) {
+        throw new Error(marksData.message || "Failed to check marks status");
+      }
+
+      if (marksData.status === "submitted") {
+        toast("Marks already submitted. Cannot edit.");
+        setSelectedSubject({});
+        setComponent("");
+        setSubComponent("");
         return;
       }
+
+      if (marksData.status === "saved") {
+        const savedMarks = marksData.saved_marks;
+        const testDetails = marksData.test_details;
+
+        const cosMap = {};
+        testDetails.forEach(({ co_name, max_marks }) => {
+          cosMap[co_name] = max_marks;
+        });
+        setSelectedCos(cosMap);
+
+        const marksObj = {};
+        savedMarks.forEach(({ enrollment_no, co_name, marks_obtained }) => {
+          if (!marksObj[enrollment_no]) {
+            marksObj[enrollment_no] = {};
+          }
+          marksObj[enrollment_no][co_name] = marks_obtained;
+        });
+        setSavedMarks(marksObj);
+        const studentData = await fetchStudents(selectedSubject, token);
+        setStudents(studentData);
+        setShowMarksTable(true);
+        return;
+      }
+
+      const testDetailsRes = await fetch(
+        `${BACKEND_URL}/api/assesment/fetchTestDetails?${queryParams}`,
+        {
+          method: "GET",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const testDetailsData = await testDetailsRes.json();
+
+      if (!testDetailsRes.ok) {
+        throw new Error(
+          testDetailsData.message || "Failed to check test details"
+        );
+      }
+
+      if (testDetailsData.exists) {
+        const cosMap = {};
+        testDetailsData.co_marks.forEach(({ co_name, max_marks }) => {
+          cosMap[co_name] = max_marks;
+        });
+        setSelectedCos(cosMap);
+        const studentData = await fetchStudents(selectedSubject, token);
+        setStudents(studentData);
+        setShowMarksTable(true);
+        return;
+      }
+
       const data = await fetchCos();
-
-      setCos(data);
-
-      if (data.length > 0) {
+      if (data?.length > 0) {
+        setCos(data);
         setShowModal(true);
       } else {
         toast.error("No COs found for the selected subject.");
       }
-    } else {
-      toast.error("Please select all fields");
+    } catch (err) {
+      toast.error(err.message || "An error occurred in proceeding");
     }
   };
 
@@ -202,7 +284,7 @@ function MarksFeed() {
 
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/faculty/insert-test-details`,
+        `${BACKEND_URL}/api/assesment/insert-test-details`,
         {
           method: "POST",
           headers: {
@@ -223,58 +305,87 @@ function MarksFeed() {
 
       toast.success("CO marks saved successfully!");
       setShowModal(false);
-
-      const fetchStudents = await fetch(
-        `${BACKEND_URL}/api/faculty/getStudents/${selectedSubject.subject_id}/${selectedSubject.subject_type}`,
-        {
-          method: "GET",
-          headers: {
-            authorization: token,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!fetchStudents.ok) throw new Error("Failed to fetch students");
-
-      const studentData = await fetchStudents.json();
-      setStudents(studentData.students);
+      const studentData = await fetchStudents(selectedSubject, token);
+      setStudents(studentData);
       setShowMarksTable(true);
     } catch (error) {
       toast.error(error.message || "Something went wrong");
     }
   };
 
-  const handleMarksChange = (e) => {
-    const { name, value } = e.target;
-    const [enrollment_no, co_name] = name.split("-");
-    const maxMarks = Number(selectedCos[co_name]);
+  const handleMarksChange = (enrollment_no, coName, value) => {
+    const numericValue = value === "" ? "" : Number(value);
+    const maxMark = selectedCos[coName];
 
-    if (value === "" || (!isNaN(value) && Number(value) <= maxMarks)) {
-      setMarks((prev) => ({ ...prev, [name]: value }));
-      setInputWarnings((prev) => ({ ...prev, [name]: "" }));
-    } else {
-      setInputWarnings((prev) => ({
-        ...prev,
-        [name]: `! Marks can't exceed ${maxMarks}`,
-      }));
+    const savedValue = savedMarks[enrollment_no]?.[coName];
+
+    let warning = "";
+
+    if (numericValue !== "" && (isNaN(numericValue) || numericValue < 0)) {
+      warning = "Invalid input";
+    } else if (numericValue > maxMark) {
+      warning = `Cannot exceed max marks (${maxMark})`;
+    }
+
+    setInputWarnings((prevWarnings) => ({
+      ...prevWarnings,
+      [enrollment_no]: {
+        ...prevWarnings[enrollment_no],
+        [coName]: warning,
+      },
+    }));
+
+    if (!warning) {
+      setInputMarks((prevInputMarks) => {
+        if (numericValue === savedValue || numericValue === "") {
+          if (prevInputMarks[enrollment_no]) {
+            const { [coName]: _, ...restCos } = prevInputMarks[enrollment_no];
+            const newInputMarks = { ...prevInputMarks };
+
+            if (Object.keys(restCos).length === 0) {
+              delete newInputMarks[enrollment_no];
+            } else {
+              newInputMarks[enrollment_no] = restCos;
+            }
+
+            return newInputMarks;
+          }
+          return prevInputMarks;
+        } else {
+          return {
+            ...prevInputMarks,
+            [enrollment_no]: {
+              ...prevInputMarks[enrollment_no],
+              [coName]: numericValue,
+            },
+          };
+        }
+      });
     }
   };
 
   const calculateTotal = (enrollment_no) => {
     return Object.keys(selectedCos).reduce((total, coName) => {
-      const value = marks[`${enrollment_no}-${coName}`];
+      const inputValue = inputMarks[enrollment_no]?.[coName];
+      const savedValue = savedMarks[enrollment_no]?.[coName];
+      const value = inputValue !== undefined ? inputValue : savedValue;
       return total + (value ? Number(value) : 0);
     }, 0);
-  };
+  };  
 
   const handleSave = async () => {
     try {
       const payload = [];
 
       for (const student of students) {
+        const enrollment_no = student.enrollment_no;
+
+        if (Object.keys(savedMarks).length > 0 && !inputMarks[enrollment_no]) {
+          continue;
+        }
+
         const entry = {
-          enrollment_no: student.enrollment_no,
+          enrollment_no,
           subject_id: selectedSubject.subject_id,
           subject_type: selectedSubject.subject_type,
           component_name: component,
@@ -282,38 +393,181 @@ function MarksFeed() {
           co_marks: {},
         };
 
-        for (const co of Object.keys(selectedCos)) {
-          const key = `${student.enrollment_no}-${co}`;
-          entry.co_marks[co] = marks[key] || "0";
+        if (inputMarks[enrollment_no]) {
+          for (const co of Object.keys(inputMarks[enrollment_no])) {
+            const value = inputMarks[enrollment_no][co];
+
+            if (value !== "" && value !== null && value !== undefined) {
+              entry.co_marks[co] = value;
+            }
+          }
         }
 
-        payload.push(entry);
+        if (Object.keys(entry.co_marks).length > 0) {
+          payload.push(entry);
+        }
       }
-      console.log(payload);
-      const response = await fetch(`${BACKEND_URL}/api/faculty/saveMarks`, {
+
+      if (payload.length === 0) {
+        toast("No changes to save.");
+        return;
+      }
+
+      console.log("Payload to save:", payload);
+
+      const response = await fetch(`${BACKEND_URL}/api/assesment/saveMarks`, {
         method: "POST",
         headers: {
           authorization: token,
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify({ data: payload }),
       });
 
       if (!response.ok) throw new Error("Failed to save marks");
 
       toast.success("Marks saved successfully!");
+      setShowMarksTable(false);
     } catch (err) {
       toast.error(err.message || "Something went wrong while saving");
     }
   };
 
-  const handleCancel = () => {
-    
-  }
-  const handleSubmit = () => {
-    toast.info("Submit logic not implemented yet.");
+  const handleCancel = async () => {
+    const hasInput = Object.keys(inputMarks).length > 0;
+    const hasSaved = Object.keys(savedMarks).length > 0;
+  
+    const resetForm = () => {
+      setSelectedSubject({});
+      setComponent("");
+      setSubComponent("");
+      setStudents([]);
+      setSelectedCos({});
+      setSavedMarks({});
+      setInputMarks({});
+      setShowMarksTable(false);
+    };
+  
+    if (hasSaved) {
+      if (hasInput) {
+        const confirmCancel = window.confirm("You have unsaved changes. Are you sure you want to cancel? Changes will be lost.");
+        if (!confirmCancel) return;
+      }
+      resetForm();
+    } else {
+      if (hasInput) {
+        const confirmCancel = window.confirm("You have unsaved changes.Changes will be lost and test details will be deleted. Proceed?");
+        if (!confirmCancel) return;
+      }
+  
+      try {
+        const queryParams = new URLSearchParams({
+          subject_id: selectedSubject.subject_id,
+          subject_type: selectedSubject.subject_type,
+          component_name: component,
+          sub_component_name: subComponent,
+        }).toString();
+  
+        const deleteRes = await fetch(`${BACKEND_URL}/api/assesment/deleteTestDetails?${queryParams}`, {
+          method: "DELETE",
+          headers: {
+            authorization: token,
+          },
+        });
+  
+        if (!deleteRes.ok) {
+          const errData = await deleteRes.json();
+          throw new Error(errData.message || "Failed to delete test details");
+        }
+  
+        toast.success("Test details deleted successfully.");
+      } catch (err) {
+        toast.error(err.message || "Error while deleting test details");
+      }
+  
+      resetForm();
+    }
   };
+  
+  const handleSubmit = async () => {
+    try {
+      const coNames = Object.keys(selectedCos);
+      const isNewForm = Object.keys(savedMarks).length === 0;
+  
+      const combinedData = {};
+  
+      for (const student of students) {
+        const enrollment = student.enrollment_no;
+        const combinedCOs = {};
+  
+        if (!isNewForm && savedMarks[enrollment]) {
+          for (const co of coNames) {
+            combinedCOs[co] = savedMarks[enrollment][co] ?? "";
+          }
+        }
+  
+        if (inputMarks[enrollment]) {
+          for (const co of coNames) {
+            if (
+              inputMarks[enrollment][co] !== null &&
+              inputMarks[enrollment][co] !== undefined &&
+              inputMarks[enrollment][co] !== ""
+            ) {
+              combinedCOs[co] = inputMarks[enrollment][co];
+            }
+          }
+        }
+  
+        combinedData[enrollment] = combinedCOs;
+      }
+  
+      for (const student of students) {
+        const enrollment = student.enrollment_no;
+  
+        if (!combinedData[enrollment]) {
+          toast.error(`Missing marks for ${enrollment}`);
+          return;
+        }
+  
+        for (const co of coNames) {
+          const mark = combinedData[enrollment][co];
+          if (mark === undefined || mark === null || mark === "") {
+            toast.error(`Missing marks for ${enrollment} under ${co}`);
+            return;
+          }
+        }
+      }
+  
+      const payload = students.map((student) => ({
+        enrollment_no: student.enrollment_no,
+        subject_id: selectedSubject.subject_id,
+        subject_type: selectedSubject.subject_type,
+        component_name: component,
+        sub_component_name: subComponent,
+        co_marks: combinedData[student.enrollment_no],
+      }));
+  
+
+      const response = await fetch(`${BACKEND_URL}/api/assesment/submitMarks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: token,
+        },
+        body: JSON.stringify({ data: payload }),
+      });
+  
+      if (!response.ok) throw new Error("Failed to submit marks");
+  
+      toast.success("Marks submitted successfully!");
+      setShowMarksTable(false);
+      setInputMarks({});
+      setSavedMarks({});
+    } catch (err) {
+      toast.error(err.message || "Error during submission");
+    }
+  };
+  
 
   return (
     <div className="home-container">
@@ -335,6 +589,10 @@ function MarksFeed() {
                   {
                     name: "Marks Feeding Activities",
                     path: "/faculty/marks-feed",
+                  },
+                  {
+                    name: "ATKT Marks Feeding",
+                    path: "/faculty/atkt-marks-feed",
                   },
                   {
                     name: "Make Correction Request",
@@ -381,7 +639,7 @@ function MarksFeed() {
                   <span className="box-overlay-text">Enter details</span>
 
                   <div className="faculty-box">
-                  <Toaster position="top-right" />
+                    <Toaster position="top-right" />
                     <div className="marks-feeding-dropdown-container">
                       <Dropdown
                         label="Subject"
@@ -457,6 +715,7 @@ function MarksFeed() {
                                 <td className="border px-4 py-2">
                                   {student.student_name}
                                 </td>
+
                                 {Object.keys(selectedCos).map(
                                   (coName) =>
                                     selectedCos[coName] && (
@@ -467,28 +726,38 @@ function MarksFeed() {
                                         <input
                                           type="number"
                                           className="w-full px-2 py-1 border rounded-md"
-                                          name={`${student.enrollment_no}-${coName}`}
                                           value={
-                                            marks[
-                                              `${student.enrollment_no}-${coName}`
-                                            ] || ""
+                                            inputMarks[student.enrollment_no]?.[
+                                              coName
+                                            ] ??
+                                            savedMarks[student.enrollment_no]?.[
+                                              coName
+                                            ] ??
+                                            ""
                                           }
-                                          onChange={handleMarksChange}
+                                          onChange={(e) =>
+                                            handleMarksChange(
+                                              student.enrollment_no,
+                                              coName,
+                                              e.target.value
+                                            )
+                                          }
                                         />
-                                        {inputWarnings[
-                                          `${student.enrollment_no}-${coName}`
-                                        ] && (
+                                        {inputWarnings?.[
+                                          student.enrollment_no
+                                        ]?.[coName] && (
                                           <p className="text-red-600 text-sm mt-1">
                                             {
                                               inputWarnings[
-                                                `${student.enrollment_no}-${coName}`
-                                              ]
+                                                student.enrollment_no
+                                              ][coName]
                                             }
                                           </p>
                                         )}
                                       </td>
                                     )
                                 )}
+
                                 <td className="border px-4 py-2 font-semibold">
                                   {calculateTotal(student.enrollment_no)}
                                 </td>
@@ -499,10 +768,7 @@ function MarksFeed() {
                         <div className="flex gap-4 mt-4">
                           <Button text="Save" onClick={handleSave} />
                           <Button text="Submit" onClick={handleSubmit} />
-                          <Button
-                            text="Cancel"
-                            onClick={handleCancel}
-                          />
+                          <Button text="Cancel" onClick={handleCancel} />
                         </div>
                       </div>
                     )}

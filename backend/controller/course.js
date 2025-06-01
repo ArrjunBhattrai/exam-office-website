@@ -55,11 +55,9 @@ const deleteCourse = async (req, res) => {
       .del();
 
     if (deleted === 0) {
-      return res
-        .status(404)
-        .json({
-          error: `Course with ID '${course_id}' for branch '${branch_id}' and specialization '${specialization}' does not exist`,
-        });
+      return res.status(404).json({
+        error: `Course with ID '${course_id}' for branch '${branch_id}' and specialization '${specialization}' does not exist`,
+      });
     }
 
     res.status(200).json({ message: "Course deleted successfully" });
@@ -93,15 +91,11 @@ const getCourseByBranch = async (req, res) => {
   const { branch_id } = req.query;
 
   if (!branch_id) {
-    return res
-      .status(400)
-      .json({ error: "branch_id is required" });
+    return res.status(400).json({ error: "branch_id is required" });
   }
 
   try {
-    const courses = await db("course")
-      .select("*")
-      .where({ branch_id });
+    const courses = await db("course").select("*").where({ branch_id });
 
     res.status(200).json({ courses });
   } catch (error) {
@@ -110,10 +104,9 @@ const getCourseByBranch = async (req, res) => {
   }
 };
 
-
 module.exports = {
   createCourse,
   deleteCourse,
   getCourses,
-  getCourseByBranch
+  getCourseByBranch,
 };

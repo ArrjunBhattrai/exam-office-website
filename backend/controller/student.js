@@ -147,15 +147,11 @@ const getStudentsForCourse = async (req, res) => {
 // Get students enrolled in a subject
 const studentBySubject = async (req, res) => {
   try {
-    const { subject_id, subject_type } = req.params;
-
+    const { subject_id, subject_type } = req.query;
     if (!subject_id || !subject_type) {
-      return res
-        .status(400)
-        .json({ error: "Subject ID and type are required" });
+      return res.status(400).json({ error: "Subject ID and type are required" });
     }
 
-    // Get subject details (branch_id and semester)
     const subject = await db("subject")
       .where({ subject_id, subject_type })
       .first();
@@ -164,24 +160,22 @@ const studentBySubject = async (req, res) => {
       return res.status(404).json({ error: "Subject not found" });
     }
 
-    // Fetch students with matching branch_id and semester
     const students = await db("student")
       .where({
         branch_id: subject.branch_id,
+        course_id: subject.course_id,
+        specialization: subject.specialization,
         semester: subject.semester,
       })
       .select("enrollment_no", "student_name");
-
-    res.json({
-      subject_id,
-      subject_type,
-      students,
-    });
-  } catch (error) {
-    console.error("Error fetching students:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.log("students :" , students);
+    return res.json(students);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 module.exports = {
   studentDataUpload,

@@ -277,7 +277,7 @@ const getAllSubjectsForCourse = async (req, res) => {
     const subjectsMap = new Map();
 
     for (const row of rows) {
-      const key = `${row.subject_id}-${row.subject_type}`;
+      const key = ${row.subject_id}-${row.subject_type};
       if (!subjectsMap.has(key)) {
         subjectsMap.set(key, {
           subject_id: row.subject_id,
