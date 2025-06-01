@@ -160,5 +160,5 @@ module.exports = {
   approveFacultyRequest,
   rejectFacultyRequest,
   getFaculties,
-  assignFaculties
+  assignFaculties,
 };

@@ -18,17 +18,11 @@ router.get(
   subjectController.getSubjectsForCourse
 );
 router.get(
-  "/faculty-subjects/:faculty_id",
+  "/assignedSubjects",
   authenticateUser,
-  authorizeRole(["faculty"]),
-  subjectController.getFacultySubjects
+  authorizeRole(["faculty", "hod"]),
+  subjectController.getAssignedSubject
 );
-router.get(
-  "/assignedSubject-details/:faculty_id",
-  authenticateUser,
-  authorizeRole(["faculty","hod"]),
-  subjectController.getAssignedSubjectDetails
- );
 router.post(
   "/assign-cos",
   authenticateUser,

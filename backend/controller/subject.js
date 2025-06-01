@@ -129,78 +129,49 @@ const getSubjectsForCourse = async (req, res) => {
   }
 };
 
-// Get subjects assigned to a faculty
-const getFacultySubjects = async (req, res) => {
-  const { faculty_id } = req.params;
-
+// Get assigned subject data
+const getAssignedSubject = async (req, res) => {
   try {
-    if (!faculty_id) {
-      return res.status(400).json({ error: "Faculty ID is required" });
-    }
-
-    const subjects = await db("faculty_subject as fs")
-      .join("subject as s", function () {
-        this.on("fs.subject_id", "=", "s.subject_id").andOn(
-          "fs.subject_type",
-          "=",
-          "s.subject_type"
-        );
-      })
-      .where("fs.faculty_id", faculty_id)
-      .select("fs.subject_id", "fs.subject_type", "s.subject_name");
-
-    return res.status(200).json({ subjects });
-  } catch (error) {
-    console.error("Error fetching faculty subjects:", error.message);
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
-// Get assigned subject data with COs and assignment type
-const getAssignedSubjectDetails = async (req, res) => {
-  try {
-    const { faculty_id } = req.params;
+    const { faculty_id } = req.query;
 
     if (!faculty_id) {
       return res.status(400).json({ error: "Faculty ID is required" });
     }
 
-    const subjects = await db("faculty_subject as fs")
-      .join("subject as s", function () {
-        this.on("fs.subject_id", "=", "s.subject_id").andOn(
-          "fs.subject_type",
+    const subjects = await db("faculty_subject")
+      .join("subject", function () {
+        this.on("faculty_subject.subject_id", "=", "subject.subject_id").andOn(
+          "faculty_subject.subject_type",
           "=",
-          "s.subject_type"
+          "subject.subject_type"
         );
       })
-      .leftJoin("course_outcome as co", function () {
-        this.on("fs.subject_id", "=", "co.subject_id").andOn(
-          "fs.subject_type",
+      .leftJoin("course_outcome", function () {
+        this.on(
+          "faculty_subject.subject_id",
           "=",
-          "co.subject_type"
+          "course_outcome.subject_id"
+        ).andOn(
+          "faculty_subject.subject_type",
+          "=",
+          "course_outcome.subject_type"
         );
       })
-      .where("fs.faculty_id", faculty_id)
+      .where("faculty_subject.faculty_id", faculty_id)
       .groupBy(
-        "fs.subject_id",
-        "fs.subject_type",
-        "s.subject_name",
-        "s.semester",
-        "s.branch_id",
-        "s.course_id",
-        "s.specialization",
-        "fs.assignment_type"
+        "subject.subject_id",
+        "subject.subject_type",
+        "subject.subject_name",
+        "subject.semester"
       )
       .select(
-        "fs.subject_id",
-        "fs.subject_type",
-        "s.subject_name",
-        "s.semester",
-        "s.branch_id",
-        "s.course_id",
-        "s.specialization",
-        "fs.assignment_type",
-        db.raw("GROUP_CONCAT(co.co_name ORDER BY co.co_name) as co_names")
+        "subject.subject_id",
+        "subject.subject_type",
+        "subject.subject_name",
+        "subject.semester",
+        "subject.course_id",
+        "subject.specialization",
+        db.raw("GROUP_CONCAT(course_outcome.co_name) as co_names")
       );
 
     const formattedSubjects = subjects.map((subject) => ({
@@ -208,9 +179,11 @@ const getAssignedSubjectDetails = async (req, res) => {
       co_names: subject.co_names ? subject.co_names.split(",") : [],
     }));
 
+    console.log(formattedSubjects);
+
     res.status(200).json({ subjects: formattedSubjects });
   } catch (error) {
-    console.error("Error fetching assigned subjects:", error);
+    console.error("Error fetching subjects:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -304,7 +277,7 @@ const getAllSubjectsForCourse = async (req, res) => {
     const subjectsMap = new Map();
 
     for (const row of rows) {
-      const key = `${row.subject_id}-${row.subject_type}`;
+      const key = ${row.subject_id}-${row.subject_type};
       if (!subjectsMap.has(key)) {
         subjectsMap.set(key, {
           subject_id: row.subject_id,
@@ -333,8 +306,7 @@ const getAllSubjectsForCourse = async (req, res) => {
 module.exports = {
   subjectDataUpload,
   getSubjectsForCourse,
-  getFacultySubjects,
-  getAssignedSubjectDetails,
+  getAssignedSubject,
   getCourseOutcomes,
   assignCO,
   getAllSubjectsForCourse,
