@@ -34,13 +34,31 @@ const AdminRequest = () => {
                 className="sidebar"
                 title="Admin Activities"
                 activities={[
-                  { name: "Course Management", path: "/admin/course-management" },
-                  { name: "Branch Management", path: "/admin/branch-management" },
-                  { name: "Session Management", path: "/admin/session-management" },
-                  { name: "Upload Academic Scheme", path: "/admin/academic-scheme-upload" },
-                  { name: "Upload Student Data", path: "/admin/student-data-upload" },
+                  {
+                    name: "Session Management",
+                    path: "/admin/session-management",
+                  },
+                  {
+                    name: "Branch Management",
+                    path: "/admin/branch-management",
+                  },
+                  {
+                    name: "Course Management",
+                    path: "/admin/course-management",
+                  },
+                  {
+                    name: "Upload Subject Data",
+                    path: "/admin/subject-data-upload",
+                  },
+                  {
+                    name: "Upload Student Data",
+                    path: "/admin/student-data-upload",
+                  },
+                  {
+                    name: "Upload Data for ATKT",
+                    path: "/admin/atkt-data-upload",
+                  },
                   { name: "Address Requests", path: "/admin/req" },
-                  { name: "Progress Report", path: "/admin/progress-report" },
                 ]}
               />
 

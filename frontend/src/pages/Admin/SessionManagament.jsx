@@ -24,7 +24,7 @@ const SessionManagement = () => {
       </div>
     );
   }
-
+  /*
   // const [branches, setBranches] = useState([]);
   const [formData, setFormData] = useState({
     branch_name: "",
@@ -39,7 +39,7 @@ const SessionManagement = () => {
   // Fetch all branches
   const fetchBranches = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/department/branch`, {
+      const response = await fetch(`${BACKEND_URL}/api/branch`, {
         method: "GET",
         headers: {
           authorization: token,
@@ -161,7 +161,7 @@ const SessionManagement = () => {
       toast.error(error.message || "Failed to assign HOD");
     }
   };
-
+*/
   return (
     <div className="home-container">
       <div className="user-bg">
@@ -186,17 +186,19 @@ const SessionManagement = () => {
                     name: "Course Management",
                     path: "/admin/course-management",
                   },
-
                   {
-                    name: "Upload Academic Scheme",
-                    path: "/admin/academic-scheme-upload",
+                    name: "Upload Subject Data",
+                    path: "/admin/subject-data-upload",
                   },
                   {
                     name: "Upload Student Data",
                     path: "/admin/student-data-upload",
                   },
+                  {
+                    name: "Upload Data for ATKT",
+                    path: "/admin/atkt-data-upload",
+                  },
                   { name: "Address Requests", path: "/admin/req" },
-                  { name: "Progress Report", path: "/admin/prog-report" },
                 ]}
               />
             </div>
@@ -239,7 +241,7 @@ const SessionManagement = () => {
                     <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
                     TECHNOLOGY & SCIENCE
                   </p>
-
+                  {/*
                   <div className="bg-white p-4 rounded shadow mt-4">
                     <form
                       onSubmit={async (e) => {
@@ -343,6 +345,7 @@ const SessionManagement = () => {
                       </button>
                     </form>
                   </div>
+                  */}
                 </div>
               </div>
             </div>

@@ -132,7 +132,7 @@ const getSubjectsForCourse = async (req, res) => {
 // Get assigned subject data
 const getAssignedSubject = async (req, res) => {
   try {
-    const { faculty_id } = req.query;
+    const { faculty_id } = req.params;
 
     if (!faculty_id) {
       return res.status(400).json({ error: "Faculty ID is required" });
@@ -277,7 +277,7 @@ const getAllSubjectsForCourse = async (req, res) => {
     const subjectsMap = new Map();
 
     for (const row of rows) {
-      const key = ${row.subject_id}-${row.subject_type};
+      const key = `${row.subject_id}-${row.subject_type}`;
       if (!subjectsMap.has(key)) {
         subjectsMap.set(key, {
           subject_id: row.subject_id,

@@ -22,7 +22,7 @@ router.get(
   courseController.getCourses
 );
 router.get(
-  "/get-courses-byBranch",
+  "/get-courses-by-branch",
   authenticateUser,
   authorizeRole(["admin", "hod"]),
   courseController.getCourseByBranch

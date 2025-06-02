@@ -116,7 +116,7 @@ import { BACKEND_URL } from "../../../config";
   const fetchCourses = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/course/get-courses-byBranch?branch_id=${branchId}`,
+        `${BACKEND_URL}/api/course/get-courses-by-branch?branch_id=${branchId}`,
         {
           method: "GET",
           headers: {

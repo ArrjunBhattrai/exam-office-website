@@ -41,9 +41,9 @@ const studentDataUpload = async (req, res) => {
       const studentName = row["Student Name"]?.trim();
       const semester = parseInt(row["Semester"]);
       const status = row["Status"]?.trim()?.toLowerCase();
-    
+
       const validStatuses = ["regular", "sem-back", "year-back"];
-    
+
       if (
         !enrollmentNo ||
         !studentName ||
@@ -58,7 +58,7 @@ const studentDataUpload = async (req, res) => {
         });
         return;
       }
-    
+
       results.push([
         enrollmentNo,
         studentName,
@@ -69,7 +69,7 @@ const studentDataUpload = async (req, res) => {
         status,
       ]);
     })
-    
+
     .on("end", async () => {
       try {
         if (results.length === 0) {
@@ -149,7 +149,9 @@ const studentBySubject = async (req, res) => {
   try {
     const { subject_id, subject_type } = req.query;
     if (!subject_id || !subject_type) {
-      return res.status(400).json({ error: "Subject ID and type are required" });
+      return res
+        .status(400)
+        .json({ error: "Subject ID and type are required" });
     }
 
     const subject = await db("subject")
@@ -168,14 +170,13 @@ const studentBySubject = async (req, res) => {
         semester: subject.semester,
       })
       .select("enrollment_no", "student_name");
-    console.log("students :" , students);
+    console.log("students :", students);
     return res.json(students);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
-
 
 module.exports = {
   studentDataUpload,
