@@ -231,7 +231,40 @@ const resetPassword = async (req, res) => {
 };
 
 const infoUpdate = async (req, res) => {
+  const {userId, role, oldPassword, newEmail, newPassword } = req.body;
 
+  try {
+
+    if (!userId || !role || !oldPassword) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+
+    const tableMap = {
+      admin: "admin",
+      hod: "hod",
+      faculty: "faculty",
+    };
+
+    const table = tableMap[role];
+    if (!table) return res.status(400).json({ error: "Invalid role specified." });
+
+    const user = await db(table).where(`${role}_id`, userId).first();
+    if(!user) return res.status(404).json({ error: "User not found" });
+
+    const match = await bcrypt.compare(oldPassword, user.password);
+    if(!match) return res.status(401).json({ error: "Incorrect current password" });
+
+    const updates = {};
+    if(newEmail  && newEmail !== user.email) updates.email = newEmail;
+    if(newPassword) updates.password = await bcrypt.hash(newPassword, 10);
+
+    await db(table).where(`${role}_id`, userId).update(updates);
+    res.json({ message: "Profile updated successfully" });
+    
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
 };
 
 
