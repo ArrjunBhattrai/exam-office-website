@@ -31,11 +31,14 @@ const HODViewDeptt = () => {
   useEffect(() => {
     const fetchFaculties = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/faculty/get-faculties?branch_id=${branchId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await fetch(
+          `${BACKEND_URL}/api/faculty/get-faculties?branch_id=${branchId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         if (!res.ok) {
           throw new Error("Failed to fetch faculties");
         }
@@ -66,11 +69,14 @@ const HODViewDeptt = () => {
     setAssignedSubjects([]);
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/course/get-courses-byBranch?branch_id=${branchId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(
+        `${BACKEND_URL}/api/course/get-courses-by-branch?branch_id=${branchId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       const data = await res.json();
       const options = data.courses.map((course) => ({
         value: course.course_id,
@@ -88,10 +94,11 @@ const HODViewDeptt = () => {
 
     try {
       const res = await fetch(
-        `${BACKEND_URL}/api/subject/assignedSubjects/${selectedFaculty.faculty_id}`, {
+        `${BACKEND_URL}/api/subject/assignedSubjects/${selectedFaculty.faculty_id}`,
+        {
           headers: {
             Authorization: `Bearer ${token}`,
-          }
+          },
         }
       );
       const data = await res.json();
@@ -110,30 +117,28 @@ const HODViewDeptt = () => {
   const [enrolledStudents, setEnrolledStudents] = useState([]);
   const [studentsModalOpen, setStudentsModalOpen] = useState(false);
 
-
   const handleViewStudents = async (subjectId, subjectType) => {
-  try {
-    const res = await fetch(
-      `${BACKEND_URL}/api/student/getStudents/${subjectId}/${subjectType}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    try {
+      const res = await fetch(
+        `${BACKEND_URL}/api/student/getStudents/${subjectId}/${subjectType}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        setEnrolledStudents(data.students);
+        setStudentsModalOpen(true);
+      } else {
+        toast.error(data.error || "Failed to fetch students");
       }
-    );
-    const data = await res.json();
-    if (res.ok) {
-      setEnrolledStudents(data.students);
-      setStudentsModalOpen(true);
-    } else {
-      toast.error(data.error || "Failed to fetch students");
+    } catch (err) {
+      console.error("Error fetching students:", err);
+      toast.error("Failed to load students");
     }
-  } catch (err) {
-    console.error("Error fetching students:", err);
-    toast.error("Failed to load students");
-  }
-};
-
+  };
 
   return (
     <div className="home-container">
@@ -299,36 +304,35 @@ const HODViewDeptt = () => {
       </ReactModal>
 
       <ReactModal
-  isOpen={studentsModalOpen}
-  onRequestClose={() => setStudentsModalOpen(false)}
-  contentLabel="Enrolled Students"
-  className="custom-modal"
-  overlayClassName="custom-overlay"
->
-  <h3>Enrolled Students</h3>
-  {enrolledStudents.length > 0 ? (
-    <table className="student-table">
-      <thead>
-        <tr>
-          <th>Enrollment No</th>
-          <th>Student Name</th>
-        </tr>
-      </thead>
-      <tbody>
-        {enrolledStudents.map((student) => (
-          <tr key={student.enrollment_no}>
-            <td>{student.enrollment_no}</td>
-            <td>{student.student_name}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  ) : (
-    <p>No students enrolled.</p>
-  )}
-  <Button text="Close" onClick={() => setStudentsModalOpen(false)} />
-</ReactModal>
-
+        isOpen={studentsModalOpen}
+        onRequestClose={() => setStudentsModalOpen(false)}
+        contentLabel="Enrolled Students"
+        className="custom-modal"
+        overlayClassName="custom-overlay"
+      >
+        <h3>Enrolled Students</h3>
+        {enrolledStudents.length > 0 ? (
+          <table className="student-table">
+            <thead>
+              <tr>
+                <th>Enrollment No</th>
+                <th>Student Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              {enrolledStudents.map((student) => (
+                <tr key={student.enrollment_no}>
+                  <td>{student.enrollment_no}</td>
+                  <td>{student.student_name}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p>No students enrolled.</p>
+        )}
+        <Button text="Close" onClick={() => setStudentsModalOpen(false)} />
+      </ReactModal>
     </div>
   );
 };
