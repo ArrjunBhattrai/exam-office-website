@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { BACKEND_URL } from "../../config";
 import { useSelector } from "react-redux";
 import RedHeader from "../components/RedHeader";
@@ -13,7 +13,9 @@ const EditProfile = () => {
     (state) => state.auth
   );
 
-  if (!isAuthenticated || role != "admin") {
+  const allowedRoles = ["admin", "hod", "faculty"];
+
+  if (!isAuthenticated || !allowedRoles.includes(role)) {
     return (
       <div>
         You are not authorized to view this page. Please login to get access to
@@ -26,47 +28,47 @@ const EditProfile = () => {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
-
-  const handleUpdate = async() => {
+  const handleUpdate = async () => {
     // e.preventDefault();
 
-    if (!oldPassword) return toast.error("Enter your current password to continue.");
+    if (!oldPassword)
+      return toast.error("Enter your current password to continue.");
 
     if (!newEmail && !newPassword) {
-    toast.warn("Nothing to update. Enter new email or password.");
-    return;
-  }
+      toast.warn("Nothing to update. Enter new email or password.");
+      return;
+    }
 
     try {
-        const res = await fetch(`${BACKEND_URL}/api/user/info-update`, {
-            method: "POST", 
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
+      const res = await fetch(`${BACKEND_URL}/api/user/info-update`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
 
-            body: JSON.stringify({ 
-                userId,
-                role,
-                oldPassword,
-                newEmail,
-                newPassword,
-            }),
-        });
+        body: JSON.stringify({
+          userId,
+          role,
+          oldPassword,
+          newEmail,
+          newPassword,
+        }),
+      });
 
-        const data = await res.json();
+      const data = await res.json();
 
-        if(!res.ok) {
-            toast.error(data.error || "Failed to update profile.");
-        } else {
-            toast.success(data.message || "Profile updated successfully.");
-            setOldPassword("");
-            setNewEmail("");
-            setNewPassword("");
-        }
+      if (!res.ok) {
+        toast.error(data.error || "Failed to update profile.");
+      } else {
+        toast.success(data.message || "Profile updated successfully.");
+        setOldPassword("");
+        setNewEmail("");
+        setNewPassword("");
+      }
     } catch (err) {
-        console.error("Update error:", err);
-        toast.error("An unexpected error occurred.");
+      console.error("Update error:", err);
+      toast.error("An unexpected error occurred.");
     }
   };
 
@@ -81,7 +83,14 @@ const EditProfile = () => {
               <div className="user-icons">
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/admin-home")}
+                  onClick={() => {
+                    const pathMap = {
+                      admin: "/admin/home",
+                      hod: "/hod/home",
+                      faculty: "/faculty/home",
+                    };
+                    window.location.href = pathMap[role] || "/";
+                  }}
                 >
                   <FaHome className="icon" />
                   Home
@@ -139,11 +148,7 @@ const EditProfile = () => {
                     />
                   </div>
 
-                  <Button
-                  text="Update" 
-                  onClick={handleUpdate}
-                  />
-
+                  <Button text="Update" onClick={handleUpdate} />
                 </div>
               </div>
             </div>
@@ -151,6 +156,19 @@ const EditProfile = () => {
           <RedFooter />
         </div>
       </div>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        //   theme="colored"
+      />
     </div>
   );
 };

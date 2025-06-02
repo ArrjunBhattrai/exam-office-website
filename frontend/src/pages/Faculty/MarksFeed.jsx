@@ -8,7 +8,7 @@ import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
 import Button from "../../components/Button";
-import { FaHome, FaSignOutAlt } from "react-icons/fa";
+import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import "./faculty.css";
 import { BACKEND_URL } from "../../../config";
 
@@ -371,7 +371,7 @@ function MarksFeed() {
       const value = inputValue !== undefined ? inputValue : savedValue;
       return total + (value ? Number(value) : 0);
     }, 0);
-  };  
+  };
 
   const handleSave = async () => {
     try {
@@ -436,7 +436,7 @@ function MarksFeed() {
   const handleCancel = async () => {
     const hasInput = Object.keys(inputMarks).length > 0;
     const hasSaved = Object.keys(savedMarks).length > 0;
-  
+
     const resetForm = () => {
       setSelectedSubject({});
       setComponent("");
@@ -447,19 +447,23 @@ function MarksFeed() {
       setInputMarks({});
       setShowMarksTable(false);
     };
-  
+
     if (hasSaved) {
       if (hasInput) {
-        const confirmCancel = window.confirm("You have unsaved changes. Are you sure you want to cancel? Changes will be lost.");
+        const confirmCancel = window.confirm(
+          "You have unsaved changes. Are you sure you want to cancel? Changes will be lost."
+        );
         if (!confirmCancel) return;
       }
       resetForm();
     } else {
       if (hasInput) {
-        const confirmCancel = window.confirm("You have unsaved changes.Changes will be lost and test details will be deleted. Proceed?");
+        const confirmCancel = window.confirm(
+          "You have unsaved changes.Changes will be lost and test details will be deleted. Proceed?"
+        );
         if (!confirmCancel) return;
       }
-  
+
       try {
         const queryParams = new URLSearchParams({
           subject_id: selectedSubject.subject_id,
@@ -467,45 +471,48 @@ function MarksFeed() {
           component_name: component,
           sub_component_name: subComponent,
         }).toString();
-  
-        const deleteRes = await fetch(`${BACKEND_URL}/api/assesment/deleteTestDetails?${queryParams}`, {
-          method: "DELETE",
-          headers: {
-            authorization: token,
-          },
-        });
-  
+
+        const deleteRes = await fetch(
+          `${BACKEND_URL}/api/assesment/deleteTestDetails?${queryParams}`,
+          {
+            method: "DELETE",
+            headers: {
+              authorization: token,
+            },
+          }
+        );
+
         if (!deleteRes.ok) {
           const errData = await deleteRes.json();
           throw new Error(errData.message || "Failed to delete test details");
         }
-  
+
         toast.success("Test details deleted successfully.");
       } catch (err) {
         toast.error(err.message || "Error while deleting test details");
       }
-  
+
       resetForm();
     }
   };
-  
+
   const handleSubmit = async () => {
     try {
       const coNames = Object.keys(selectedCos);
       const isNewForm = Object.keys(savedMarks).length === 0;
-  
+
       const combinedData = {};
-  
+
       for (const student of students) {
         const enrollment = student.enrollment_no;
         const combinedCOs = {};
-  
+
         if (!isNewForm && savedMarks[enrollment]) {
           for (const co of coNames) {
             combinedCOs[co] = savedMarks[enrollment][co] ?? "";
           }
         }
-  
+
         if (inputMarks[enrollment]) {
           for (const co of coNames) {
             if (
@@ -517,18 +524,18 @@ function MarksFeed() {
             }
           }
         }
-  
+
         combinedData[enrollment] = combinedCOs;
       }
-  
+
       for (const student of students) {
         const enrollment = student.enrollment_no;
-  
+
         if (!combinedData[enrollment]) {
           toast.error(`Missing marks for ${enrollment}`);
           return;
         }
-  
+
         for (const co of coNames) {
           const mark = combinedData[enrollment][co];
           if (mark === undefined || mark === null || mark === "") {
@@ -537,7 +544,7 @@ function MarksFeed() {
           }
         }
       }
-  
+
       const payload = students.map((student) => ({
         enrollment_no: student.enrollment_no,
         subject_id: selectedSubject.subject_id,
@@ -546,7 +553,6 @@ function MarksFeed() {
         sub_component_name: subComponent,
         co_marks: combinedData[student.enrollment_no],
       }));
-  
 
       const response = await fetch(`${BACKEND_URL}/api/assesment/submitMarks`, {
         method: "POST",
@@ -556,9 +562,9 @@ function MarksFeed() {
         },
         body: JSON.stringify({ data: payload }),
       });
-  
+
       if (!response.ok) throw new Error("Failed to submit marks");
-  
+
       toast.success("Marks submitted successfully!");
       setShowMarksTable(false);
       setInputMarks({});
@@ -567,7 +573,6 @@ function MarksFeed() {
       toast.error(err.message || "Error during submission");
     }
   };
-  
 
   return (
     <div className="home-container">
@@ -610,6 +615,15 @@ function MarksFeed() {
                 >
                   <FaHome className="icon" />
                   Home
+                </button>
+                <button
+                  className="icon-btn"
+                  onClick={() =>
+                    (window.location.href = "/edit-user-information")
+                  }
+                >
+                  <FaPen className="icon" />
+                  Edit Info
                 </button>
                 <button
                   className="icon-btn"

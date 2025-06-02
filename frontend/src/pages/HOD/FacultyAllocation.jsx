@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { FaHome, FaSignOutAlt } from "react-icons/fa";
+import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import "./hod.css";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
@@ -11,7 +11,7 @@ import Dropdown from "../../components/Dropdown";
 import Button from "../../components/Button";
 import { BACKEND_URL } from "../../../config";
 
- const FacultyAllocation = () => {
+const FacultyAllocation = () => {
   const { userId, isAuthenticated, role, token, branchId } = useSelector(
     (state) => state.auth
   );
@@ -55,8 +55,7 @@ import { BACKEND_URL } from "../../../config";
 
     const [course_id, specialization] = selectedCourse.split("|");
 
-    const query = `?branch_id=${branchId}&course_id=${course_id}&specialization=${specialization}`
-
+    const query = `?branch_id=${branchId}&course_id=${course_id}&specialization=${specialization}`;
 
     try {
       const response = await fetch(
@@ -162,7 +161,7 @@ import { BACKEND_URL } from "../../../config";
           headers: {
             authorization: token,
             "Content-Type": "application/json",
-            'Cache-Control': 'no-cache'
+            "Cache-Control": "no-cache",
           },
           body: JSON.stringify(body),
         }
@@ -227,6 +226,15 @@ import { BACKEND_URL } from "../../../config";
                 </button>
                 <button
                   className="icon-btn"
+                  onClick={() =>
+                    (window.location.href = "/edit-user-information")
+                  }
+                >
+                  <FaPen className="icon" />
+                  Edit Info
+                </button>
+                <button
+                  className="icon-btn"
                   onClick={() => (window.location.href = "/")}
                 >
                   <FaSignOutAlt className="icon" />
@@ -281,7 +289,8 @@ import { BACKEND_URL } from "../../../config";
                         </thead>
                         <tbody>
                           {subjectDetails.map((subject) => {
-                             const isAssigned = subject.faculty_names?.length > 0;
+                            const isAssigned =
+                              subject.faculty_names?.length > 0;
 
                             return (
                               <tr
@@ -301,7 +310,9 @@ import { BACKEND_URL } from "../../../config";
                                     text={isAssigned ? "Edit" : "Assign"}
                                     onClick={() => {
                                       setSelectedSubject(subject);
-                                      setSelectedFacultyIds(subject.faculty_ids || []);
+                                      setSelectedFacultyIds(
+                                        subject.faculty_ids || []
+                                      );
                                       setShowModal(true);
                                     }}
                                   />
@@ -333,7 +344,7 @@ import { BACKEND_URL } from "../../../config";
                               <strong>Type:</strong>{" "}
                               {selectedSubject.subject_type}
                             </p>
-                                
+
                             <div className="faculty-list">
                               <h4>Faculties:</h4>
                               {faculties.map((faculty) => {
@@ -375,7 +386,10 @@ import { BACKEND_URL } from "../../../config";
                                   selectedSubject.subject_type
                                 )
                               }
-                              disabled={selectedFacultyIds.length === 0 || selectedFacultyIds.length > 2}
+                              disabled={
+                                selectedFacultyIds.length === 0 ||
+                                selectedFacultyIds.length > 2
+                              }
                             >
                               Confirm Assignment
                             </button>

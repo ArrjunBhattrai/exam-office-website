@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import RedHeader from "../../components/RedHeader";
 import ActivityHeader from "../../components/ActivityHeader";
 import Sidebar from "../../components/Sidebar";
-import { FaHome, FaSignOutAlt } from "react-icons/fa";
+import { FaHome,FaPen, FaSignOutAlt } from "react-icons/fa";
 import RedFooter from "../../components/RedFooter";
 import "./admin.css";
 
@@ -155,6 +155,15 @@ const BranchManagement = () => {
                 >
                   <FaHome className="icon" />
                   Home
+                </button>
+                <button
+                  className="icon-btn"
+                  onClick={() =>
+                    (window.location.href = "/edit-user-information")
+                  }
+                >
+                  <FaPen className="icon" />
+                  Edit Info
                 </button>
                 <button
                   className="icon-btn"

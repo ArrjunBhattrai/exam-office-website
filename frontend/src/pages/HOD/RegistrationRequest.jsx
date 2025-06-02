@@ -6,7 +6,7 @@ import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
-import { FaHome, FaSignOutAlt } from "react-icons/fa";
+import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import { BACKEND_URL } from "../../../config";
 
 const RegistrationRequest = () => {
@@ -27,13 +27,16 @@ const RegistrationRequest = () => {
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/faculty/registration-requests`, {
-        method: "GET",
-        headers: {
-          authorization: token,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${BACKEND_URL}/api/faculty/registration-requests`,
+        {
+          method: "GET",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch registration requests");
@@ -59,7 +62,6 @@ const RegistrationRequest = () => {
         endpoint = "/api/faculty/approve-request";
         method = "POST";
       } else if (action === "reject") {
-
         endpoint = "/api/faculty/reject-request";
         method = "DELETE";
       } else {
@@ -136,6 +138,15 @@ const RegistrationRequest = () => {
                 >
                   <FaHome className="icon" />
                   Home
+                </button>
+                <button
+                  className="icon-btn"
+                  onClick={() =>
+                    (window.location.href = "/edit-user-information")
+                  }
+                >
+                  <FaPen className="icon" />
+                  Edit Info
                 </button>
                 <button
                   className="icon-btn"
