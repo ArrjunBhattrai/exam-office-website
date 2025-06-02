@@ -4,7 +4,8 @@ const {
   registerUser,
   loginUser,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  infoUpdate
 } = require("../controller/user");
 
 // Register an user
@@ -18,5 +19,8 @@ router.post('/forgot-password', forgotPassword);
 
 // Reset Password
 router.post('/reset-password', resetPassword);
+
+//update user info
+router.post('/info-update', infoUpdate);
 
 module.exports = router;

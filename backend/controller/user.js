@@ -230,6 +230,10 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const infoUpdate = async (req, res) => {
+
+};
+
 
 module.exports = {
   registerUser,
@@ -237,5 +241,6 @@ module.exports = {
   verifyToken,
   verifyToken,
   forgotPassword, 
-  resetPassword
+  resetPassword,
+  infoUpdate
 };
