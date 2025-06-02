@@ -22,17 +22,53 @@ const EditProfile = () => {
     );
   }
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
+
   const handleUpdate = async() => {
-    if (!password) return toast.error("Enter your current password to continue.");
+    // e.preventDefault();
+
+    if (!oldPassword) return toast.error("Enter your current password to continue.");
+
+    if (!newEmail && !newPassword) {
+    toast.warn("Nothing to update. Enter new email or password.");
+    return;
+  }
 
     try {
-        const res = await fetch()
+        const res = await fetch(`${BACKEND_URL}/api/user/info-update`, {
+            method: "POST", 
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+
+            body: JSON.stringify({ 
+                userId,
+                role,
+                oldPassword,
+                newEmail,
+                newPassword,
+            }),
+        });
+
+        const data = await res.json();
+
+        if(!res.ok) {
+            toast.error(data.error || "Failed to update profile.");
+        } else {
+            toast.success(data.message || "Profile updated successfully.");
+            setOldPassword("");
+            setNewEmail("");
+            setNewPassword("");
+        }
+    } catch (err) {
+        console.error("Update error:", err);
+        toast.error("An unexpected error occurred.");
     }
-  }
+  };
 
   return (
     <div className="home-container">
@@ -77,8 +113,8 @@ const EditProfile = () => {
                     <label>Old Password:</label>
                     <input
                       type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      value={oldPassword}
+                      onChange={(e) => setOldPassword(e.target.value)}
                       placeholder="Enter your current password"
                     />
                   </div>
@@ -87,8 +123,8 @@ const EditProfile = () => {
                     <label>New Email:</label>
                     <input
                       type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
                       placeholder="Enter new email"
                     />
                   </div>
@@ -105,6 +141,7 @@ const EditProfile = () => {
 
                   <Button
                   text="Update" 
+                  onClick={handleUpdate}
                   />
 
                 </div>
