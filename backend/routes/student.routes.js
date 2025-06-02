@@ -20,7 +20,7 @@ router.get(
 router.get(
   "/getStudents",
   authenticateUser,
-  authorizeRole(["faculty"]),
+  authorizeRole(["faculty", "hod"]),
   studentController.studentBySubject
 );
 

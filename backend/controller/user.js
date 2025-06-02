@@ -148,16 +148,32 @@ const verifyToken = (req, res) => {
 
 const forgotPassword = async (req, res) => {
   const { email, role } = req.body;
+
   try {
-    const user = await findUserByEmail({ role, email });
-    if(!user) return res.status(404).json({ error: "No user found "});
+    let user;
+    let userId;
 
-    const userId = 
-    role === "admin" ? user.admin_id :
-    role === "hod" ? user.hod_id :
-    user.faculty_id;
+    if (role === "admin") {
+      const [rows] = await db.query("SELECT * FROM admin WHERE admin_email = ?", [email]);
+      user = rows[0];
+      if (user) userId = user.admin_id;
+    } else if (role === "hod") {
+      const [rows] = await db.query("SELECT * FROM hod WHERE hod_email = ?", [email]);
+      user = rows[0];
+      if (user) userId = user.hod_id;
+    } else if (role === "faculty") {
+      const [rows] = await db.query("SELECT * FROM faculty WHERE faculty_email = ?", [email]);
+      user = rows[0];
+      if (user) userId = user.faculty_id;
+    } else {
+      return res.status(400).json({ error: "Invalid role" });
+    }
 
-    const token = jwt.sign({ userId, role }, process.env.JWT_SECRET, {expiresIn: "15m"});
+    if (!user) {
+      return res.status(404).json({ error: "No user found with that email and role" });
+    }
+
+    const token = jwt.sign({ userId, role }, process.env.JWT_SECRET, { expiresIn: "15m" });
 
     const resetLink = `http://localhost:5137/reset-password/${token}`;
 
@@ -170,18 +186,20 @@ const forgotPassword = async (req, res) => {
     });
 
     await transporter.sendMail({
-      from: process.nextTick.EMAIL,
-      to: email, 
+      from: process.env.EMAIL,
+      to: email,
       subject: "Password Reset",
       text: `Click the link to reset your password: ${resetLink}`,
     });
 
     res.json({ message: "Reset link sent to your email" });
-  } catch(err) {
+
+  } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Something went wrong" });
   }
 };
+
 
 const resetPassword = async (req, res) => {
   const { token } = req.params;
