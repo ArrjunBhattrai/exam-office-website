@@ -115,7 +115,7 @@ const FacultyAllocation = () => {
   const fetchCourses = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/course/get-courses-byBranch?branch_id=${branchId}`,
+        `${BACKEND_URL}/api/course/get-courses-by-branch?branch_id=${branchId}`,
         {
           method: "GET",
           headers: {
@@ -205,6 +205,10 @@ const FacultyAllocation = () => {
                   {
                     name: "Faculty Allocation",
                     path: "/hod/faculty-allocation",
+                  },
+                  {
+                    name: "Upload Electives Data",
+                    path: "/hod/elective-data",
                   },
                   {
                     name: "View Correction Requests",

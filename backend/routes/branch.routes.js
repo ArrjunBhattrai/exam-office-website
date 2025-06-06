@@ -28,7 +28,7 @@ router.patch(
   branchController.updateBranch
 );
 router.get(
-  "/getDetailsByCourse",
+  "/get-details-by-course",
   authenticateUser,
   authorizeRole(["hod"]),
   branchController.getBranchDetails

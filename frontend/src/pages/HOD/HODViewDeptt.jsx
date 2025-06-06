@@ -70,7 +70,7 @@ const HODViewDeptt = () => {
 
     try {
       const res = await fetch(
-        `${BACKEND_URL}/api/course/get-courses-byBranch?branch_id=${branchId}`,
+        `${BACKEND_URL}/api/course/get-courses-by-branch?branch_id=${branchId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -169,6 +169,10 @@ const HODViewDeptt = () => {
                   {
                     name: "Faculty Allocation",
                     path: "/hod/faculty-allocation",
+                  },
+                  {
+                    name: "Upload Electives Data",
+                    path: "/hod/elective-data",
                   },
                   {
                     name: "View Correction Requests",

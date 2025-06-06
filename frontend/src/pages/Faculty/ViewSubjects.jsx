@@ -42,7 +42,7 @@ const ViewSubjects = () => {
   const fetchAssignedSubjects = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/subject/assignedSubject-details/${userId}`,
+        `${BACKEND_URL}/api/subject/faculty-subjects/${userId}`,
         {
           method: "GET",
           headers: {

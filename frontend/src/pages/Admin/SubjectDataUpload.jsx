@@ -8,30 +8,23 @@ import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
-import { FaHome,FaPen, FaSignOutAlt } from "react-icons/fa";
+import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 
-const StudentDataUpload = () => {
-  const { userId, isAuthenticated, role, token } = useSelector(
-    (state) => state.auth
-  );
 
-  if (!isAuthenticated || role != "admin") {
-    return (
-      <div>
-        You are not authorized to view this page. Please login to get access to
-        this page.
-      </div>
-    );
+const SubjectDataUpload = () => {
+  const { userId, isAuthenticated, role, token } = useSelector((state) => state.auth);
+
+  if (!isAuthenticated || role !== "admin") {
+    return <div>You are not authorized to view this page. Please login to get access to this page.</div>;
   }
 
   const [branches, setBranches] = useState([]);
   const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
   const [file, setFile] = useState(null);
   const [fileInputKey, setFileInputKey] = useState(Date.now());
 
-  // fetch branches
   const fetchBranches = async () => {
     try {
       const response = await fetch(`${BACKEND_URL}/api/branch/get-branches`, {
@@ -44,8 +37,6 @@ const StudentDataUpload = () => {
       toast.error(error.message || "Failed to fetch branches");
     }
   };
-
-  //fetch courses of that branch
   const fetchCoursesByBranch = async (branchId) => {
     try {
       const response = await fetch(
@@ -70,7 +61,7 @@ const StudentDataUpload = () => {
   useEffect(() => {
     if (selectedBranch) {
       fetchCoursesByBranch(selectedBranch);
-      setSelectedCourse("");
+      setSelectedCourse(""); 
     }
   }, [selectedBranch]);
 
@@ -93,7 +84,7 @@ const StudentDataUpload = () => {
 
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/student/upload/student-data`,
+        `${BACKEND_URL}/api/subject/upload/subject-data`,
         {
           method: "POST",
           headers: { authorization: token },
@@ -123,7 +114,7 @@ const StudentDataUpload = () => {
         label: branch.branch_name,
       }))
     : [{ value: "", label: "No branches available" }];
-  console.log(branchOptions);
+    console.log(branchOptions);
 
   const courseOptions = courses.length
     ? courses.map((course) => ({
@@ -137,16 +128,14 @@ const StudentDataUpload = () => {
 
   return (
     <div className="home-container">
-      <Toaster position="top-right" />
+      <Toaster position="top-right" /> 
       <div className="user-bg">
         <RedHeader />
         <div className="user-content">
           <ActivityHeader />
-
           <div className="user-main">
             <div className="sidebars">
               <Sidebar
-                className="sidebar"
                 title="Admin Activities"
                 activities={[
                   {
@@ -180,12 +169,8 @@ const StudentDataUpload = () => {
 
             <div className="user-info">
               <div className="user-icons">
-                <button
-                  className="icon-btn"
-                  onClick={() => (window.location.href = "/admin/home")}
-                >
-                  <FaHome className="icon" />
-                  Home
+                <button className="icon-btn" onClick={() => (window.location.href = "/admin-home")}>
+                  <FaHome className="icon" /> Home
                 </button>
                 <button
                   className="icon-btn"
@@ -196,14 +181,11 @@ const StudentDataUpload = () => {
                   <FaPen className="icon" />
                   Edit Info
                 </button>
-                <button
-                  className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
-                >
-                  <FaSignOutAlt className="icon" />
-                  Logout
+                <button className="icon-btn" onClick={() => (window.location.href = "/")}>
+                  <FaSignOutAlt className="icon" /> Logout
                 </button>
               </div>
+
               <div className="user-sec">
                 <p>
                   <span>Welcome: </span>
@@ -211,63 +193,55 @@ const StudentDataUpload = () => {
                 </p>
                 <p>
                   <span className="user-role">Role: </span>
-                  <span className="user-name">
-                    [{(role && `${role}`) || "Please Login"}]
-                  </span>
+                  <span className="user-name">[{role || "Please Login"}]</span>
                 </p>
               </div>
 
-              <div>
-                {/* here */}
-                <div className="fac-alloc">
-                  <h3>Upload Student Data</h3>
-                  <p className="session-text">Current Session: June 2025</p>
+              <div className="fac-alloc">
+                <h3>Upload Subject Data</h3>
+                <p className="session-text">Current Session: June 2025</p>
+                <span className="box-overlay-text">Upload</span>
 
-                  <span className="box-overlay-text">Upload</span>
+                <div className="faculty-box">
+                  <p className="institute-text">
+                    <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF TECHNOLOGY & SCIENCE
+                  </p>
 
-                  <div className="faculty-box">
-                    <p className="institute-text">
-                      <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
-                      TECHNOLOGY & SCIENCE
-                    </p>
+                  <div className="dropdown">
+                    <Dropdown
+                      label="Branch"
+                      options={branchOptions}
+                      selectedValue={selectedBranch}
+                      onChange={setSelectedBranch}
+                    />
+                    <Dropdown
+                      label="Course"
+                      options={courseOptions}
+                      selectedValue={selectedCourse}
+                      onChange={setSelectedCourse}
+                    />
+                  </div>
 
-                    <div className="dropdown">
-                      <Dropdown
-                        label="Branch"
-                        options={branchOptions}
-                        selectedValue={selectedBranch}
-                        onChange={setSelectedBranch}
-                      />
-                      <Dropdown
-                        label="Course"
-                        options={courseOptions}
-                        selectedValue={selectedCourse}
-                        onChange={setSelectedCourse}
-                      />
-                    </div>
-
-                    <div className="upload-container">
-                      <input
-                        key={fileInputKey}
-                        type="file"
-                        accept=".csv"
-                        className="file-input"
-                        onChange={handleFileChange}
-                      />
-                      <button
-                        className="upload-button"
-                        disabled={!selectedCourse || !selectedBranch}
-                        onClick={handleUpload}
-                      >
-                        Upload
-                      </button>
-                    </div>
+                  <div className="upload-container">
+                    <input
+                      key={fileInputKey}
+                      type="file"
+                      accept=".csv"
+                      className="file-input"
+                      onChange={handleFileChange}
+                    />
+                    <button
+                      className="upload-button"
+                      disabled={!selectedCourse || !selectedBranch}
+                      onClick={handleUpload}
+                    >
+                      Upload
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
           <RedFooter />
         </div>
       </div>
@@ -275,4 +249,4 @@ const StudentDataUpload = () => {
   );
 };
 
-export default StudentDataUpload;
+export default SubjectDataUpload;

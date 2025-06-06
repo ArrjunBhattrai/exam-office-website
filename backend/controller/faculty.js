@@ -108,6 +108,7 @@ const getFaculties = async (req, res) => {
   }
 };
 
+// Assign faculty for a subject
 const assignFaculties = async(req, res) => {
   try {
     const branch_id = req.user.branchId;
@@ -150,7 +151,7 @@ const assignFaculties = async(req, res) => {
 
     return res.status(200).json({ message: "Faculty assigned successfully" });
   } catch (err) {
-    console.error("Error assigning faculties:", error);
+    console.error("Error assigning faculties:", err);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
