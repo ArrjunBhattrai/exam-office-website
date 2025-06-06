@@ -21,6 +21,7 @@ import HODHome from "./pages/HOD/HODHome";
 import HODViewDeptt from "./pages/HOD/HODViewDeptt";
 import RegistrationRequest from "./pages/HOD/RegistrationRequest";
 import FacultyAllocation from "./pages/HOD/FacultyAllocation";
+import ElectiveDataUpload from "./pages/HOD/ElectiveDataUpload";
 import HODCorrectionReq from "./pages/HOD/HODCorrectionReq";
 import HodProgressReport from "./pages/HOD/HodProgressReport";
 
@@ -53,7 +54,7 @@ function App() {
           <Route
             path="/admin/course-management"
             element={<CourseManagement />}
-          />                    
+          />
           <Route
             path="/admin/subject-data-upload"
             element={<SubjectDataUpload />}
@@ -62,10 +63,7 @@ function App() {
             path="/admin/student-data-upload"
             element={<StudentDataUpload />}
           />
-          <Route
-            path="/admin/atkt-data-upload"
-            element={<ATKTDataUpload />}
-          />
+          <Route path="/admin/atkt-data-upload" element={<ATKTDataUpload />} />
           <Route path="/admin/req" element={<AdminRequest />} />
           <Route
             path="/admin/progress-report"
@@ -78,6 +76,8 @@ function App() {
             element={<FacultyAllocation />}
           />
           <Route path="/hod/department-details" element={<HODViewDeptt />} />
+          <Route path="/hod/elective-data" element={<ElectiveDataUpload />} />
+
           <Route
             path="/hod/correction-request"
             element={<HODCorrectionReq />}

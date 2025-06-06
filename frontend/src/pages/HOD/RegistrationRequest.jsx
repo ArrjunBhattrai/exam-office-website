@@ -27,13 +27,16 @@ const RegistrationRequest = () => {
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/faculty/registration-requests`, {
-        method: "GET",
-        headers: {
-          authorization: token,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${BACKEND_URL}/api/faculty/registration-requests`,
+        {
+          method: "GET",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch registration requests");
@@ -59,7 +62,6 @@ const RegistrationRequest = () => {
         endpoint = "/api/faculty/approve-request";
         method = "POST";
       } else if (action === "reject") {
-
         endpoint = "/api/faculty/reject-request";
         method = "DELETE";
       } else {
@@ -118,6 +120,10 @@ const RegistrationRequest = () => {
                   {
                     name: "Faculty Allocation",
                     path: "/hod/faculty-allocation",
+                  },
+                  {
+                    name: "Upload Electives Data",
+                    path: "/hod/elective-data",
                   },
                   {
                     name: "View Correction Requests",

@@ -90,7 +90,6 @@ exports.up = function (knex) {
         .references("faculty_id")
         .inTable("faculty")
         .onDelete("CASCADE");
-
       table
         .foreign(["subject_id", "subject_type"])
         .references(["subject_id", "subject_type"])
@@ -110,6 +109,17 @@ exports.up = function (knex) {
         .foreign(["branch_id", "course_id", "specialization"])
         .references(["branch_id", "course_id", "specialization"])
         .inTable("course")
+        .onDelete("CASCADE");
+    })
+    .createTable("elective_data", (table) => {
+      table.string("enrollment_no").primary();
+      table.string("subject_id").notNullable();
+      table.string("subject_type").notNullable();
+
+      table
+        .foreign(["subject_id","subject_type"])
+        .references(["subject_id", "subject_type"])
+        .inTable("subject")
         .onDelete("CASCADE");
     })
     .createTable("atkt_students", (table) => {
@@ -148,7 +158,7 @@ exports.up = function (knex) {
 
       table.primary(["subject_id", "subject_type", "co_name"]);
     })
-    .createTable("test_details", function (table) {
+    .createTable("test_details", (table) => {
       table.string("subject_id").notNullable();
       table.string("subject_type").notNullable();
       table.string("component_name").notNullable();
@@ -162,7 +172,7 @@ exports.up = function (knex) {
         .inTable("course_outcome")
         .onDelete("CASCADE");
     })
-    .createTable("atkt_test_details", function (table) {
+    .createTable("atkt_test_details", (table) => {
       table.string("subject_id").notNullable();
       table.string("subject_type").notNullable();
       table.string("co_name").notNullable();
@@ -215,7 +225,6 @@ exports.up = function (knex) {
         .references(["enrollment_no", "subject_id", "subject_type"])
         .inTable("atkt_students")
         .onDelete("CASCADE");
-
       table
         .foreign(["subject_id", "subject_type", "co_name"])
         .references(["subject_id", "subject_type", "co_name"])
@@ -237,6 +246,7 @@ exports.up = function (knex) {
         .references("faculty_id")
         .inTable("faculty")
         .onDelete("CASCADE");
+
       table
         .foreign(["subject_id", "subject_type"])
         .references(["subject_id", "subject_type"])
@@ -291,6 +301,10 @@ exports.down = async function (knex) {
     table.dropForeign(["branch_id", "course_id", "specialization"]);
   });
 
+  await knex.schema.alterTable("elective_data", (table) => {
+    table.dropForeign(["subject_id", "subject_type"]);
+  });
+
   await knex.schema.alterTable("student", (table) => {
     table.dropForeign(["branch_id", "course_id", "specialization"]);
   });
@@ -330,6 +344,7 @@ exports.down = async function (knex) {
     .dropTableIfExists("test_details")
     .dropTableIfExists("course_outcome")
     .dropTableIfExists("atkt_students")
+    .dropTableIfExists("elective_data")
     .dropTableIfExists("student")
     .dropTableIfExists("faculty_subject")
     .dropTableIfExists("subject")

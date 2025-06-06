@@ -38,6 +38,10 @@ const HodProgressReport = () => {
                     path: "/hod/faculty-allocation",
                   },
                   {
+                    name: "Upload Electives Data",
+                    path: "/hod/elective-data",
+                  },
+                  {
                     name: "View Correction Requests",
                     path: "/hod/correction-request",
                   },
