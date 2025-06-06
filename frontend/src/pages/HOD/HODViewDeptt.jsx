@@ -70,7 +70,7 @@ const HODViewDeptt = () => {
 
     try {
       const res = await fetch(
-        `${BACKEND_URL}/api/course/get-courses-byBranch?branch_id=${branchId}`,
+        `${BACKEND_URL}/api/course/get-courses-by-branch?branch_id=${branchId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -88,10 +88,10 @@ const HODViewDeptt = () => {
       setCourses(options);
 
       const subjectRes = await fetch(
-        `${BACKEND_URL}/api/subject/assignedSubjects?faculty_id=${faculty.faculty_id}`, {
+        `${BACKEND_URL}/api/subject/faculty-subject/${faculty.faculty_id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
-          }
+          },
         }
       );
 
@@ -168,6 +168,10 @@ setAssignedSubjects(subjectData.subjects || []);
                   {
                     name: "Faculty Allocation",
                     path: "/hod/faculty-allocation",
+                  },
+                  {
+                    name: "Upload Electives Data",
+                    path: "/hod/elective-data",
                   },
                   {
                     name: "View Correction Requests",

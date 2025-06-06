@@ -11,7 +11,7 @@ import Dropdown from "../../components/Dropdown";
 import Button from "../../components/Button";
 import { BACKEND_URL } from "../../../config";
 
- const FacultyAllocation = () => {
+const FacultyAllocation = () => {
   const { userId, isAuthenticated, role, token, branchId } = useSelector(
     (state) => state.auth
   );
@@ -55,8 +55,7 @@ import { BACKEND_URL } from "../../../config";
 
     const [course_id, specialization] = selectedCourse.split("|");
 
-    const query = `?branch_id=${branchId}&course_id=${course_id}&specialization=${specialization}`
-
+    const query = `?branch_id=${branchId}&course_id=${course_id}&specialization=${specialization}`;
 
     try {
       const response = await fetch(
@@ -116,7 +115,7 @@ import { BACKEND_URL } from "../../../config";
   const fetchCourses = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/course/get-courses-byBranch?branch_id=${branchId}`,
+        `${BACKEND_URL}/api/course/get-courses-by-branch?branch_id=${branchId}`,
         {
           method: "GET",
           headers: {
@@ -162,7 +161,7 @@ import { BACKEND_URL } from "../../../config";
           headers: {
             authorization: token,
             "Content-Type": "application/json",
-            'Cache-Control': 'no-cache'
+            "Cache-Control": "no-cache",
           },
           body: JSON.stringify(body),
         }
@@ -206,6 +205,10 @@ import { BACKEND_URL } from "../../../config";
                   {
                     name: "Faculty Allocation",
                     path: "/hod/faculty-allocation",
+                  },
+                  {
+                    name: "Upload Electives Data",
+                    path: "/hod/elective-data",
                   },
                   {
                     name: "View Correction Requests",
@@ -281,7 +284,8 @@ import { BACKEND_URL } from "../../../config";
                         </thead>
                         <tbody>
                           {subjectDetails.map((subject) => {
-                             const isAssigned = subject.faculty_names?.length > 0;
+                            const isAssigned =
+                              subject.faculty_names?.length > 0;
 
                             return (
                               <tr
@@ -301,7 +305,9 @@ import { BACKEND_URL } from "../../../config";
                                     text={isAssigned ? "Edit" : "Assign"}
                                     onClick={() => {
                                       setSelectedSubject(subject);
-                                      setSelectedFacultyIds(subject.faculty_ids || []);
+                                      setSelectedFacultyIds(
+                                        subject.faculty_ids || []
+                                      );
                                       setShowModal(true);
                                     }}
                                   />
@@ -333,7 +339,7 @@ import { BACKEND_URL } from "../../../config";
                               <strong>Type:</strong>{" "}
                               {selectedSubject.subject_type}
                             </p>
-                                
+
                             <div className="faculty-list">
                               <h4>Faculties:</h4>
                               {faculties.map((faculty) => {
@@ -375,7 +381,10 @@ import { BACKEND_URL } from "../../../config";
                                   selectedSubject.subject_type
                                 )
                               }
-                              disabled={selectedFacultyIds.length === 0 || selectedFacultyIds.length > 2}
+                              disabled={
+                                selectedFacultyIds.length === 0 ||
+                                selectedFacultyIds.length > 2
+                              }
                             >
                               Confirm Assignment
                             </button>

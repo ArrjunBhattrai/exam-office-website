@@ -1,43 +1,57 @@
 const express = require("express");
 const router = express.Router();
 const { authenticateUser, authorizeRole } = require("../middleware/auth");
-const assesmentController = require("../controller/assesment");
+const { upload } = require("../middleware/upload");
+const atktController = require("../controller/atkt");
 
+router.post(
+  "/upload",
+  authenticateUser,
+  authorizeRole(["admin"]),
+  upload.single("file"),
+  atktController.atktStudentUpload
+);
+router.get(
+  "/get-atkt-students",
+  authenticateUser,
+  authorizeRole(["faculty"]),
+  atktController.getATKTStudentBySubject
+);
 router.post(
   "/insert-test-details",
   authenticateUser,
   authorizeRole(["faculty"]),
-  assesmentController.insertTestDetails
+  atktController.insertTestDetails
 );
 router.get(
   "/fetch-test-details",
   authenticateUser,
   authorizeRole(["faculty"]),
-  assesmentController.fetchTestDetails
+  atktController.fetchTestDetails
 );
 router.delete(
   "/delete-test-details",
   authenticateUser,
   authorizeRole(["faculty"]),
-  assesmentController.deleteTestDetails
+  atktController.deleteTestDetails
 );
 router.post(
   "/save-marks",
   authenticateUser,
   authorizeRole(["faculty"]),
-  assesmentController.saveMarks
+  atktController.saveATKTMarks
 );
 router.post(
   "/submit-marks",
   authenticateUser,
   authorizeRole(["faculty"]),
-  assesmentController.submitMarks
+  atktController.submitATKTMarks
 );
 router.get(
-  "/fetch-marks-data",
+  "/fetch-atkt-marks-data",
   authenticateUser,
   authorizeRole(["faculty"]),
-  assesmentController.fetchMarksData
+  atktController.fetchATKTMarksData
 );
 
 module.exports = router;

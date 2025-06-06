@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Toaster, toast } from "react-hot-toast";
-import "react-toastify/dist/ReactToastify.css";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
@@ -9,10 +8,10 @@ import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
 import Button from "../../components/Button";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
-import "./faculty.css";
 import { BACKEND_URL } from "../../../config";
+import "./faculty.css";
 
-function MarksFeed() {
+const ATKTMarksFeed = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
     (state) => state.auth
   );
@@ -28,8 +27,6 @@ function MarksFeed() {
 
   const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState({});
-  const [component, setComponent] = useState("");
-  const [subComponent, setSubComponent] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [cos, setCos] = useState([]);
   const [selectedCos, setSelectedCos] = useState({});
@@ -46,28 +43,9 @@ function MarksFeed() {
           subject_type: subject.subject_type,
           subject_name: subject.subject_name,
         }),
-        label: `${subject.subject_id} -${subject.subject_type.charAt(0)}`,
+        label: `${subject.subject_id} (${subject.subject_type.charAt(0)})`,
       }))
     : [{ value: "", label: "No subjects assigned" }];
-
-  const componentMap = {
-    Elective: ["CW", "Theory"],
-    Theory: ["CW", "Theory"],
-    Practical: ["SW", "Practical"],
-  };
-
-  const subComponentMap = {
-    CW: ["MST 1", "MST 2", "Assignment 1", "Assignment 2"],
-    Theory: ["Theory Exam"],
-    SW: ["Viva 1", "Viva 2"],
-    Practical: ["External Viva", "External Submission"],
-  };
-
-  const componentOptions = selectedSubject?.subject_type
-    ? componentMap[selectedSubject.subject_type] || []
-    : [];
-
-  const subComponentOptions = component ? subComponentMap[component] || [] : [];
 
   const fetchAssignedSubjects = async () => {
     try {
@@ -125,7 +103,7 @@ function MarksFeed() {
 
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/student/getStudents?subject_id=${selectedSubject.subject_id}&subject_type=${selectedSubject.subject_type}`,
+        `${BACKEND_URL}/api/atkt/get-atkt-students?subject_id=${selectedSubject.subject_id}&subject_type=${selectedSubject.subject_type}`,
         {
           method: "GET",
           headers: {
@@ -146,8 +124,8 @@ function MarksFeed() {
   };
 
   const handleProceed = async () => {
-    if (!selectedSubject.subject_id || !component || !subComponent) {
-      toast.error("Please select all fields");
+    if (!selectedSubject.subject_id) {
+      toast.error("Please select the subject");
       return;
     }
 
@@ -155,12 +133,10 @@ function MarksFeed() {
       const queryParams = new URLSearchParams({
         subject_id: selectedSubject.subject_id,
         subject_type: selectedSubject.subject_type,
-        component_name: component,
-        sub_component_name: subComponent,
       }).toString();
 
       const marksRes = await fetch(
-        `${BACKEND_URL}/api/assesment/fetch-marks-data?${queryParams}`,
+        `${BACKEND_URL}/api/atkt/fetch-atkt-marks-data?${queryParams}`,
         {
           method: "GET",
           headers: {
@@ -179,8 +155,6 @@ function MarksFeed() {
       if (marksData.status === "submitted") {
         toast("Marks already submitted. Cannot edit.");
         setSelectedSubject({});
-        setComponent("");
-        setSubComponent("");
         return;
       }
 
@@ -209,7 +183,7 @@ function MarksFeed() {
       }
 
       const testDetailsRes = await fetch(
-        `${BACKEND_URL}/api/assesment/fetch-test-details?${queryParams}`,
+        `${BACKEND_URL}/api/atkt/fetch-test-details?${queryParams}`,
         {
           method: "GET",
           headers: {
@@ -239,12 +213,18 @@ function MarksFeed() {
         return;
       }
 
-      const data = await fetchCos();
-      if (data?.length > 0) {
-        setCos(data);
-        setShowModal(true);
+      const studentData = await fetchStudents(selectedSubject, token);
+      if (studentData.length > 0) {
+        setStudents(studentData);
+        const data = await fetchCos();
+        if (data?.length > 0) {
+          setCos(data);
+          setShowModal(true);
+        } else {
+          toast.error("No COs found for the selected subject.");
+        }
       } else {
-        toast.error("No COs found for the selected subject.");
+        toast.error("No students found for the selected Subject");
       }
     } catch (err) {
       toast.error(err.message || "An error occurred in proceeding");
@@ -285,7 +265,7 @@ function MarksFeed() {
 
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/assesment/insert-test-details`,
+        `${BACKEND_URL}/api/atkt/insert-test-details`,
         {
           method: "POST",
           headers: {
@@ -295,8 +275,6 @@ function MarksFeed() {
           body: JSON.stringify({
             subject_id: selectedSubject.subject_id,
             subject_type: selectedSubject.subject_type,
-            component_name: component,
-            sub_component_name: subComponent,
             co_marks,
           }),
         }
@@ -389,8 +367,6 @@ function MarksFeed() {
           enrollment_no,
           subject_id: selectedSubject.subject_id,
           subject_type: selectedSubject.subject_type,
-          component_name: component,
-          sub_component_name: subComponent,
           co_marks: {},
         };
 
@@ -416,7 +392,7 @@ function MarksFeed() {
 
       console.log("Payload to save:", payload);
 
-      const response = await fetch(`${BACKEND_URL}/api/assesment/save-marks`, {
+      const response = await fetch(`${BACKEND_URL}/api/atkt/save-marks`, {
         method: "POST",
         headers: {
           authorization: token,
@@ -440,8 +416,6 @@ function MarksFeed() {
 
     const resetForm = () => {
       setSelectedSubject({});
-      setComponent("");
-      setSubComponent("");
       setStudents([]);
       setSelectedCos({});
       setSavedMarks({});
@@ -469,12 +443,10 @@ function MarksFeed() {
         const queryParams = new URLSearchParams({
           subject_id: selectedSubject.subject_id,
           subject_type: selectedSubject.subject_type,
-          component_name: component,
-          sub_component_name: subComponent,
         }).toString();
 
         const deleteRes = await fetch(
-          `${BACKEND_URL}/api/assesment/delete-test-details?${queryParams}`,
+          `${BACKEND_URL}/api/atkt/delete-test-details?${queryParams}`,
           {
             method: "DELETE",
             headers: {
@@ -550,13 +522,11 @@ function MarksFeed() {
         enrollment_no: student.enrollment_no,
         subject_id: selectedSubject.subject_id,
         subject_type: selectedSubject.subject_type,
-        component_name: component,
-        sub_component_name: subComponent,
         co_marks: combinedData[student.enrollment_no],
       }));
 
       const response = await fetch(
-        `${BACKEND_URL}/api/assesment/submit-marks`,
+        `${BACKEND_URL}/api/atkt/submit-marks`,
         {
           method: "POST",
           headers: {
@@ -588,8 +558,8 @@ function MarksFeed() {
           <div className="user-main">
             <div className="sidebars">
               <Sidebar
-                className="sidebar-1"
-                title="Faculty Activity"
+                className="sidebar"
+                title="Faculty Activities"
                 activities={[
                   {
                     name: "View Assigned Subjects",
@@ -631,7 +601,7 @@ function MarksFeed() {
               <div className="user-sec">
                 <p>
                   <span>Welcome: </span>
-                  <span className="user-name">{userId && `[${userId}]`}</span>
+                  <span className="user-name">{userId && [`${userId}`]}</span>
                 </p>
 
                 <p>
@@ -642,11 +612,10 @@ function MarksFeed() {
 
               <div>
                 <div className="fac-alloc">
-                  <h3>Marks Feeding</h3>
+                  <h3>ATKT Marks Feeding</h3>
                   <p className="session-text">Current Session: June 2025</p>
 
-                  <span className="box-overlay-text">Enter details</span>
-
+                  <span className="box-overlay-text">Select to view</span>
                   <div className="faculty-box">
                     <Toaster position="top-right" />
                     <div className="marks-feeding-dropdown-container">
@@ -657,32 +626,7 @@ function MarksFeed() {
                         onChange={(value) => {
                           const parsedValue = JSON.parse(value);
                           setSelectedSubject(parsedValue);
-                          setComponent("");
-                          setSubComponent("");
                         }}
-                      />
-
-                      <Dropdown
-                        label="Component"
-                        options={componentOptions.map((comp) => ({
-                          value: comp,
-                          label: comp,
-                        }))}
-                        selectedValue={component}
-                        onChange={(value) => {
-                          setComponent(value);
-                          setSubComponent("");
-                        }}
-                      />
-
-                      <Dropdown
-                        label="Sub Component"
-                        options={subComponentOptions.map((sub) => ({
-                          value: sub,
-                          label: sub,
-                        }))}
-                        selectedValue={subComponent}
-                        onChange={setSubComponent}
                       />
                     </div>
                     {!showMarksTable && (
@@ -785,67 +729,64 @@ function MarksFeed() {
                 </div>
               </div>
             </div>
-          </div>
+            {showModal && (
+              <div className="modal-overlay">
+                <div className="modal-content">
+                  <h3>
+                    {selectedSubject.subject_name} -{" "}
+                    {selectedSubject.subject_type}
+                  </h3>
 
-          {showModal && (
-            <div className="modal-overlay">
-              <div className="modal-content">
-                <h3>
-                  {selectedSubject.subject_name} -{" "}
-                  {selectedSubject.subject_type}
-                  <br />
-                  {component} / {subComponent}
-                </h3>
+                  <hr style={{ margin: "10px 0" }} />
 
-                <hr style={{ margin: "10px 0" }} />
+                  {cos && cos.length > 0 ? (
+                    cos.map((co) => (
+                      <div key={co} className="modal-co-item">
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={selectedCos[co] !== undefined}
+                            onChange={() => handleCheckboxChange(co)}
+                          />
+                          {co}
+                        </label>
+                        {selectedCos[co] !== undefined && (
+                          <input
+                            type="number"
+                            placeholder="Max Marks"
+                            value={selectedCos[co]}
+                            onChange={(e) =>
+                              handleMaxMarksChange(co, e.target.value)
+                            }
+                          />
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p>No Course Outcomes available.</p>
+                  )}
 
-                {cos && cos.length > 0 ? (
-                  cos.map((co) => (
-                    <div key={co} className="modal-co-item">
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={selectedCos[co] !== undefined}
-                          onChange={() => handleCheckboxChange(co)}
-                        />
-                        {co}
-                      </label>
-                      {selectedCos[co] !== undefined && (
-                        <input
-                          type="number"
-                          placeholder="Max Marks"
-                          value={selectedCos[co]}
-                          onChange={(e) =>
-                            handleMaxMarksChange(co, e.target.value)
-                          }
-                        />
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <p>No Course Outcomes available.</p>
-                )}
-
-                <div className="modal-buttons">
-                  <button
-                    onClick={() => setShowModal(false)}
-                    className="cancel-btn"
-                  >
-                    Cancel
-                  </button>
-                  <button onClick={handleModalSubmit} className="save-btn">
-                    Proceed
-                  </button>
+                  <div className="modal-buttons">
+                    <button
+                      onClick={() => setShowModal(false)}
+                      className="cancel-btn"
+                    >
+                      Cancel
+                    </button>
+                    <button onClick={handleModalSubmit} className="save-btn">
+                      Proceed
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <RedFooter />
+            <RedFooter />
+          </div>
         </div>
       </div>
     </div>
   );
-}
+};
 
-export default MarksFeed;
+export default ATKTMarksFeed;
