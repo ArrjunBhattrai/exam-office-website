@@ -51,6 +51,7 @@ function MarksFeed() {
     : [{ value: "", label: "No subjects assigned" }];
 
   const componentMap = {
+    Elective: ["CW", "Theory"],
     Theory: ["CW", "Theory"],
     Practical: ["SW", "Practical"],
   };

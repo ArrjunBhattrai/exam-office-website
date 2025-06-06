@@ -148,6 +148,7 @@ const getStudentsForCourse = async (req, res) => {
 const studentBySubject = async (req, res) => {
   try {
     const { subject_id, subject_type } = req.query;
+
     if (!subject_id || !subject_type) {
       return res
         .status(400)
@@ -162,21 +163,34 @@ const studentBySubject = async (req, res) => {
       return res.status(404).json({ error: "Subject not found" });
     }
 
-    const students = await db("student")
-      .where({
-        branch_id: subject.branch_id,
-        course_id: subject.course_id,
-        specialization: subject.specialization,
-        semester: subject.semester,
-      })
-      .select("enrollment_no", "student_name");
-    console.log("students :", students);
+    let students;
+
+    if (subject_type.toLowerCase() === "elective") {
+      students = await db("elective_data")
+        .join("student", "elective_data.enrollment_no", "student.enrollment_no")
+        .where({
+          "elective_data.subject_id": subject_id,
+          "elective_data.subject_type": subject_type,
+        })
+        .select("student.enrollment_no", "student.student_name");
+    } else {
+      students = await db("student")
+        .where({
+          branch_id: subject.branch_id,
+          course_id: subject.course_id,
+          specialization: subject.specialization,
+          semester: subject.semester,
+        })
+        .select("enrollment_no", "student_name");
+    }
+
     return res.json(students);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 module.exports = {
   studentDataUpload,

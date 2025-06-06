@@ -8,13 +8,17 @@ import RedHeader from "../../components/RedHeader";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
 const HODHome = () => {
-
   const { userId, isAuthenticated, role, token, branchId } = useSelector(
     (state) => state.auth
   );
 
   if (!isAuthenticated || role != "hod") {
-    return <div>You are not authorized to view this page. Please login to get access to this page.</div>;
+    return (
+      <div>
+        You are not authorized to view this page. Please login to get access to
+        this page.
+      </div>
+    );
   }
 
   return (
@@ -34,8 +38,18 @@ const HODHome = () => {
                     name: "View Department Details",
                     path: "/hod/department-details",
                   },
-                  { name: "Registration Requests", path: "/hod/registration-request" },
-                  { name: "Faculty Allocation", path: "/hod/faculty-allocation" },
+                  {
+                    name: "Registration Requests",
+                    path: "/hod/registration-request",
+                  },
+                  {
+                    name: "Faculty Allocation",
+                    path: "/hod/faculty-allocation",
+                  },
+                  {
+                    name: "Upload Electives Data",
+                    path: "/hod/elective-data",
+                  },
                   {
                     name: "View Correction Requests",
                     path: "/hod/correction-request",
@@ -70,11 +84,8 @@ const HODHome = () => {
 
                 <p>
                   <span className="user-role">Role: </span>
-                  <span className="user-name">
-                    [{(role && `${role}`)}]
-                  </span>
+                  <span className="user-name">[{role && `${role}`}]</span>
                 </p>
-                
               </div>
             </div>
           </div>
