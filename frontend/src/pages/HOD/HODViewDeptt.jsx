@@ -26,6 +26,12 @@ const HODViewDeptt = () => {
     );
   }
 
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [selectedFaculty, setSelectedFaculty] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState({});
+  const [assignedSubjects, setAssignedSubjects] = useState([]);
+  const [filteredSubjects, setFilteredSujects] = useState([]);
   const [faculties, setFaculties] = useState([]);
 
   useEffect(() => {
@@ -56,16 +62,10 @@ const HODViewDeptt = () => {
     }
   }, [branchId, token]);
 
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [selectedFaculty, setSelectedFaculty] = useState(null);
-  const [courses, setCourses] = useState([]);
-  const [selectedCourseId, setSelectedCourseId] = useState("");
-  const [assignedSubjects, setAssignedSubjects] = useState([]);
-
   const openModal = async (faculty) => {
     setSelectedFaculty(faculty);
     setModalIsOpen(true);
-    setSelectedCourseId("");
+    setSelectedCourse("");
     setAssignedSubjects([]);
 
     try {
@@ -79,39 +79,42 @@ const HODViewDeptt = () => {
       );
       const data = await res.json();
       const options = data.courses.map((course) => ({
-        value: course.course_id,
-        label: course.course_name,
+        value: JSON.stringify({
+          course_id: course.course_id,
+          specialization: course.specialization,
+        }),
+        label: `${course.course_name} (${course.specialization})`,
       }));
       setCourses(options);
+
+      const subjectRes = await fetch(
+        `${BACKEND_URL}/api/subject/faculty-subject/${faculty.faculty_id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const subjectData = await subjectRes.json();
+setAssignedSubjects(subjectData.subjects || []);
     } catch (err) {
       console.error("Failed to fetch courses", err);
       toast.error("Failed to load courses");
     }
   };
 
-  const handleCourseChange = async (courseId) => {
-    setSelectedCourseId(courseId);
+  const handleCourseChange = async (value) => {
+    const { course_id, specialization } = JSON.parse(value);
 
-    try {
-      const res = await fetch(
-        `${BACKEND_URL}/api/subject/assignedSubjects/${selectedFaculty.faculty_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const data = await res.json();
+  setSelectedCourse({ course_id, specialization });
 
-      const filtered = data.subjects.filter(
-        (subj) => subj.course_id === courseId
-      );
+  const filtered = assignedSubjects.filter(
+    (subj) =>
+      String(subj.course_id) === String(course_id) &&
+      String(subj.specialization) === String(specialization)
+  );
 
-      setAssignedSubjects(filtered);
-    } catch (err) {
-      console.error("Error fetching subjects:", err);
-      toast.error("Failed to load assigned subjects");
-    }
+  setFilteredSujects(filtered);
   };
 
   const [enrolledStudents, setEnrolledStudents] = useState([]);
@@ -255,11 +258,11 @@ const HODViewDeptt = () => {
         <Dropdown
           label="Select Course"
           options={courses}
-          selectedValue={selectedCourseId}
+          selectedValue={JSON.stringify(selectedCourse)}
           onChange={handleCourseChange}
         />
 
-        {selectedCourseId && (
+        {selectedCourse && (
           <>
             {assignedSubjects.length > 0 ? (
               <table className="subject-table">
@@ -274,7 +277,7 @@ const HODViewDeptt = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {assignedSubjects.map((subject) => (
+                  {filteredSubjects.map((subject) => (
                     <tr key={subject.subject_id + subject.subject_type}>
                       <td>{subject.subject_id}</td>
                       <td>{subject.subject_name}</td>

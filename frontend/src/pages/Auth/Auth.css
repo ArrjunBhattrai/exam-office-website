@@ -184,3 +184,10 @@
     justify-content: center;
     align-content: center;
   }
+
+  .forgot-pass .input-group-auth input {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 5px;
+      max-width: 85%;
+  }
