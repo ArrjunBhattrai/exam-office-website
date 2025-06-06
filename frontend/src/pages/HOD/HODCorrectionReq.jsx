@@ -7,7 +7,7 @@ import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import Button from "../../components/Button";
 import Dropdown from "../../components/Dropdown";
-import { FaHome, FaSignOutAlt } from "react-icons/fa";
+import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 
 const HODCorrectionReq = () => {
   const user = useSelector((state) => state.auth.user); // Get logged-in user
@@ -62,6 +62,15 @@ const HODCorrectionReq = () => {
                 >
                   <FaHome className="icon" />
                   Home
+                </button>
+                <button
+                  className="icon-btn"
+                  onClick={() =>
+                    (window.location.href = "/edit-user-information")
+                  }
+                >
+                  <FaPen className="icon" />
+                  Edit Info
                 </button>
                 <button
                   className="icon-btn"

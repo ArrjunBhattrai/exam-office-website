@@ -6,6 +6,7 @@ import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import ForgotPass from "./pages/Auth/ForgotPass";
 import ResetPass from "./pages/Auth/ResetPass";
+import EditProfile from "./pages/EditProfile";
 
 import AdminHome from "./pages/Admin/AdminHome";
 import SessionManagement from "./pages/Admin/SessionManagament";
@@ -41,7 +42,8 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPass />} />
           <Route path="/reset-password" element={<ResetPass />} />
-
+          <Route path="/edit-user-information" element={<EditProfile />} />
+          
           <Route path="/admin/home" element={<AdminHome />} />
           <Route
             path="/admin/session-management"

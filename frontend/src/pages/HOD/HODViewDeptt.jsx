@@ -9,7 +9,7 @@ import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
 import Button from "../../components/Button";
 import ReactModal from "react-modal";
-import { FaHome, FaSignOutAlt } from "react-icons/fa";
+import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import { Toaster, toast } from "react-hot-toast";
 
 const HODViewDeptt = () => {
@@ -96,7 +96,7 @@ const HODViewDeptt = () => {
       );
 
       const subjectData = await subjectRes.json();
-setAssignedSubjects(subjectData.subjects || []);
+      setAssignedSubjects(subjectData.subjects || []);
     } catch (err) {
       console.error("Failed to fetch courses", err);
       toast.error("Failed to load courses");
@@ -106,15 +106,15 @@ setAssignedSubjects(subjectData.subjects || []);
   const handleCourseChange = async (value) => {
     const { course_id, specialization } = JSON.parse(value);
 
-  setSelectedCourse({ course_id, specialization });
+    setSelectedCourse({ course_id, specialization });
 
-  const filtered = assignedSubjects.filter(
-    (subj) =>
-      String(subj.course_id) === String(course_id) &&
-      String(subj.specialization) === String(specialization)
-  );
+    const filtered = assignedSubjects.filter(
+      (subj) =>
+        String(subj.course_id) === String(course_id) &&
+        String(subj.specialization) === String(specialization)
+    );
 
-  setFilteredSujects(filtered);
+    setFilteredSujects(filtered);
   };
 
   const [enrolledStudents, setEnrolledStudents] = useState([]);
@@ -190,6 +190,15 @@ setAssignedSubjects(subjectData.subjects || []);
                 >
                   <FaHome className="icon" />
                   Home
+                </button>
+                <button
+                  className="icon-btn"
+                  onClick={() =>
+                    (window.location.href = "/edit-user-information")
+                  }
+                >
+                  <FaPen className="icon" />
+                  Edit Info
                 </button>
                 <button
                   className="icon-btn"

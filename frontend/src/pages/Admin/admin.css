@@ -91,7 +91,7 @@ body {
   display: flex;
   z-index: 5;
   margin-top: 6.5rem;
-  gap: 10px;
+  gap: 14px;
   font-size: 12px;
   align-items: center;
 }
@@ -101,11 +101,12 @@ body {
   color: #8b0000;
   border: none;
   background-color: white;
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .icon {
-  font-size: 12px;
+  font-size: 10px;
+  margin-right: -2px;
 }
 
 .icon-btn:hover{
@@ -355,6 +356,31 @@ body {
   margin-left: 0.7rem;
  }
 
+ .faculty-box .edit-profile-input{
+  margin-top: 1rem;
+ }
+
+ .edit-profile-input {
+  display: flex;
+  /* justify-content: center; */
+  align-items: center;
+ }
+
+ .faculty-box .edit-profile-input label{
+  color: #333;
+  font-weight: 500;
+  font-size: 14px;
+  margin-right: 20px;
+  min-width: 200px;
+ }
+
+ .faculty-box .edit-profile-input input{
+  color: #333;
+  font-weight: 500;
+  font-size: 14px;
+  min-width: 250px;
+ }
+
  Button {
   margin-left: 0.7rem;
   margin-top: 0.7rem;
@@ -391,6 +417,4 @@ td {
     height: auto;
     font-size: 12px;
   }
-
-  
 }

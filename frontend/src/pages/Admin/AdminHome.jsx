@@ -5,7 +5,7 @@ import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
-import { FaHome, FaSignOutAlt } from "react-icons/fa";
+import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 
 const AdminHome = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -59,6 +59,7 @@ const AdminHome = () => {
                     path: "/admin/atkt-data-upload",
                   },
                   { name: "Address Requests", path: "/admin/req" },
+                  { name: "Edit Information", path: "/admin/req" },
                 ]}
               />
             </div>
@@ -72,6 +73,17 @@ const AdminHome = () => {
                   <FaHome className="icon" />
                   Home
                 </button>
+
+                <button
+                  className="icon-btn"
+                  onClick={() =>
+                    (window.location.href = "/edit-user-information")
+                  }
+                >
+                  <FaPen className="icon" />
+                  Edit Info
+                </button>
+
                 <button
                   className="icon-btn"
                   onClick={() => (window.location.href = "/")}

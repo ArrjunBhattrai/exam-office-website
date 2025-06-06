@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { FaHome, FaSignOutAlt } from "react-icons/fa";
+import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import "./hod.css";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
@@ -227,6 +227,15 @@ const FacultyAllocation = () => {
                 >
                   <FaHome className="icon" />
                   Home
+                </button>
+                <button
+                  className="icon-btn"
+                  onClick={() =>
+                    (window.location.href = "/edit-user-information")
+                  }
+                >
+                  <FaPen className="icon" />
+                  Edit Info
                 </button>
                 <button
                   className="icon-btn"

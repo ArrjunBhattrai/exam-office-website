@@ -8,7 +8,7 @@ import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
 import Button from "../../components/Button";
 import "./faculty.css";
-import { FaHome, FaSignOutAlt } from "react-icons/fa";
+import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import { BACKEND_URL } from "../../../config";
 
 const FacCorrectionReq = () => {
@@ -144,6 +144,15 @@ const FacCorrectionReq = () => {
                 >
                   <FaHome className="icon" />
                   Home
+                </button>
+                <button
+                  className="icon-btn"
+                  onClick={() =>
+                    (window.location.href = "/edit-user-information")
+                  }
+                >
+                  <FaPen className="icon" />
+                  Edit Info
                 </button>
                 <button
                   className="icon-btn"
