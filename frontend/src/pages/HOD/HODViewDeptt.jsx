@@ -88,7 +88,7 @@ const HODViewDeptt = () => {
       setCourses(options);
 
       const subjectRes = await fetch(
-        `${BACKEND_URL}/api/subject/assignedSubjects?faculty_id=${faculty.faculty_id}`,
+        `${BACKEND_URL}/api/subject/faculty-subjects/faculty_id=${faculty.faculty_id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
