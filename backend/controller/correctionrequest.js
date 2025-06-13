@@ -76,7 +76,23 @@ const submitCorrectionRequest = async (req, res) => {
     }
 }
 
+const getPastRequests = async (req, res) => {
+  const { faculty_id } = req.params;
+
+  try {
+    const requests = await db('correction_requests')
+      .where({ faculty_id })
+      .orderBy('created_at', 'desc');
+
+    res.status(200).json({ requests });
+  } catch (error) {
+    console.error("Error fetching past requests:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
     getSubmittedForms,
     submitCorrectionRequest,
+    getPastRequests
 };

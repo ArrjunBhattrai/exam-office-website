@@ -31,6 +31,10 @@ const FacCorrectionReq = () => {
   const [subComponent, setSubComponent] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [reason, setReason] = useState("");
+  const [pastRequests, setPastRequests] = useState([]);
+const [showPastRequests, setShowPastRequests] = useState(false);
+
 
   const subjectOptions = assignedSubjects.length
     ? assignedSubjects.map((subject) => ({
@@ -62,9 +66,44 @@ const FacCorrectionReq = () => {
   const subComponentOptions = component ? subComponentMap[component] || [] : [];
 
   const fetchAssignedSubjects = async () => {
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/subject/faculty-subjects/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch assigned Subjects");
+      }
+
+      const data = await response.json();
+      setAssignedSubjects(data.subjects);
+    } catch (error) {
+      toast.error(error.message || "Failed to fetch Assigned Subjects");
+    }
+  };
+  useEffect(() => {
+    fetchAssignedSubjects();
+  }, [token]);
+
+  const handleProceed = async () => {
+    if (selectedSubject.subject_id && component && subComponent) {
       try {
-        const response = await fetch(
-          `${BACKEND_URL}/api/faculty/assignedSubjects/${userId}`,
+        const query = new URLSearchParams({
+          subject_id: selectedSubject.subject_id,
+          subject_type: selectedSubject.subject_type,
+          component_name: component,
+          sub_component_name: subComponent,
+        }).toString();
+
+        const res = await fetch(
+          `${BACKEND_URL}/api/req/submitted-form?${query}`,
           {
             method: "GET",
             headers: {
@@ -73,26 +112,87 @@ const FacCorrectionReq = () => {
             },
           }
         );
-  
-        if (!response.ok) {
-          throw new Error("Failed to fetch assigned Subjects");
-        }
-  
-        const data = await response.json();
-        setAssignedSubjects(data.subjects);
-      } catch (error) {
-        toast.error(error.message || "Failed to fetch Assigned Subjects");
-      }
-    };
-    useEffect(() => {
-        fetchAssignedSubjects();
-      }, [token]);
 
-  const handleProceed = async () => {
-    if (selectedSubject.subject_id && component && subComponent) {
-      setShowOptions(true);
+        const data = await res.json();
+
+        if (!res.ok || !data.submitted) {
+          toast.error("No submitted marks found for the selected inputs.");
+          return;
+        }
+
+        setShowOptions(true);
+      } catch (err) {
+        toast.error("Error checking for submitted forms.");
+        console.error(err);
+      }
     } else {
       toast.error("Please select all fields");
+    }
+  };
+
+  const handleSubmitRequest = async () => {
+    if (!reason.trim()) {
+      toast.error("Please provide a reason.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/req/submit-request`, {
+        method: "POST",
+        headers: {
+          authorization: token,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          subject_id: selectedSubject.subject_id,
+          subject_type: selectedSubject.subject_type,
+          component_name: component,
+          sub_component_name: subComponent,
+          reason,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error || "Failed to submit request");
+        return;
+      }
+
+      toast.success("Request submitted successfully");
+      setReason("");
+      setShowModal(false);
+    } catch (err) {
+      toast.error("Failed to submit request");
+      console.error(err);
+    }
+  };
+
+  const handleFetchPastRequests = async () => {
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/req/past-requests/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || "Failed to fetch past requests");
+        return;
+      }
+
+      setPastRequests(data.requests || []);
+      setShowPastRequests(true);
+    } catch (err) {
+      toast.error("Failed to load past requests");
+      console.error(err);
     }
   };
 
@@ -122,7 +222,7 @@ const FacCorrectionReq = () => {
                     name: "ATKT Marks Feeding",
                     path: "/faculty/atkt-marks-feed",
                   },
-                  
+
                   {
                     name: "Make Correction Request",
                     path: "/faculty/correction-request",
@@ -130,7 +230,6 @@ const FacCorrectionReq = () => {
                   {
                     name: "Edit Personal Info",
                     path: "/faculty/edit-info",
-
                   },
                 ]}
               />
@@ -224,34 +323,22 @@ const FacCorrectionReq = () => {
                       />
                     </div>
 
-
                     {!showOptions ? (
                       <Button text="Proceed" onClick={handleProceed} />
                     ) : (
                       <div className="req-options">
                         <Button
                           text="See Past Requests"
-                          //   onClick={async () => {
-
-                          // }}
+                          onClick={handleFetchPastRequests}
                         />
 
                         <Button
                           text="Draft New Request"
-                          // onClick={async () => {
-
-                          // }}
+                          onClick={() => setShowModal(true)}
                         />
 
-                        <Button
-                          text="Withdraw Waiting Requests"
-                          // onClick={async () => {
-                            
-                          // }}
-                        />
                       </div>
                     )}
-
                   </div>
                 </div>
               </div>
@@ -260,7 +347,53 @@ const FacCorrectionReq = () => {
 
           {showModal && (
             <div className="modal-overlay">
-              <div className="modal-content"></div>
+              <div className="modal-content">
+                <h2>Submit Correction Request</h2>
+                <textarea
+                  rows="4"
+                  placeholder="State the reason for your correction request..."
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                ></textarea>
+                <div className="modal-actions">
+                  <Button text="Submit Request" onClick={handleSubmitRequest} />
+                  <Button text="Cancel" onClick={() => setShowModal(false)} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showPastRequests && (
+            <div className="past-requests-section">
+              <h3>Past Correction Requests</h3>
+              {pastRequests.length === 0 ? (
+                <p>No past requests found.</p>
+              ) : (
+                <ul className="past-request-list">
+                  {pastRequests.map((req, idx) => (
+                    <li key={idx} className="past-request-item">
+                      <p>
+                        <strong>Subject:</strong> {req.subject_name} (
+                        {req.subject_type})
+                      </p>
+                      <p>
+                        <strong>Component:</strong> {req.component_name}
+                      </p>
+                      <p>
+                        <strong>Sub-Component:</strong> {req.sub_component_name}
+                      </p>
+                      <p>
+                        <strong>Reason:</strong> {req.reason}
+                      </p>
+                      <p>
+                        <strong>Status:</strong> {req.status}
+                      </p>
+                      <hr />
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <Button text="Close" onClick={() => setShowPastRequests(false)} />
             </div>
           )}
 
