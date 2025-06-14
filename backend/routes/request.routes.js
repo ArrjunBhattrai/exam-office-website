@@ -22,6 +22,20 @@ router.get(
     authenticateUser,
     authorizeRole(["faculty"]),
     requestController.getPastRequests
-)
+);
+
+router.get(
+  "/correction-requests",
+  authenticateUser,
+  authorizeRole(["admin"]),
+  requestController.getAllCorrectionRequests
+);
+
+router.put(
+  "/correction-requests/:request_id/status", 
+  authenticateUser,
+  authorizeRole(["admin"]),
+  requestController.updateRequestStatus
+);
 
 module.exports = router;
