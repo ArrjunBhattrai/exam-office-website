@@ -83,7 +83,7 @@ const getPastRequests = async (req, res) => {
   const { faculty_id } = req.params;
 
   try {
-    const requests = await db('correction_requests')
+    const requests = await db("marks_update_request")
       .where({ faculty_id })
       .orderBy('created_at', 'desc');
 

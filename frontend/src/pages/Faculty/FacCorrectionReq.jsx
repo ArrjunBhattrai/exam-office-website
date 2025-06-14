@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
@@ -400,6 +400,7 @@ const [showPastRequests, setShowPastRequests] = useState(false);
           <RedFooter />
         </div>
       </div>
+       <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };
