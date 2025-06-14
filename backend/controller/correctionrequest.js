@@ -1,12 +1,15 @@
-const { sub } = require("framer-motion/client");
+// const { sub } = require("framer-motion/client");
 const db = require("../db/db");
 
 const getSubmittedForms = async(req, res) => {
-    const facultyId = req.user.id;
+    const facultyId = req.user.userId;
+    console.log("req.user:", req.user);
+    console.log(facultyId);
+
     const {subject_id, subject_type, component_name, sub_component_name } = req.query;
 
     try {
-        const isAssigned = await db("faculty_subjects")
+        const isAssigned = await db("faculty_subject")
         .where({ faculty_id: facultyId, subject_id, subject_type })
         .first();
 
@@ -21,7 +24,7 @@ const getSubmittedForms = async(req, res) => {
             component_name,
             sub_component_name,
         })
-        .ansWhere("status", "submitted");
+        .andWhere("status", "submitted");
 
         if(marks.length === 0) {
             return res.json({ submitted: false });
@@ -29,7 +32,7 @@ const getSubmittedForms = async(req, res) => {
 
         return res.json({ submitted: true, data: marks });
     } catch (err) {
-        console.error(err);
+        console.error("Error in getSubmittedForms:", err.stack || err);
         res.status(500).json({ error: "Failed to fetch submitted forms" });
     }
 };
