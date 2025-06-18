@@ -16,36 +16,13 @@ const FacCorrectionReq = () => {
     (state) => state.auth
   );
 
-  if (!isAuthenticated || role !== "faculty") {
-    return (
-      <div>
-        You are not authorized to view this page. Please login to get access to
-        this page.
-      </div>
-    );
-  }
-
   const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState({});
   const [component, setComponent] = useState("");
   const [subComponent, setSubComponent] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [showOptions, setShowOptions] = useState(false);
   const [reason, setReason] = useState("");
+  const [showModal, setShowModal] = useState(false);
   const [pastRequests, setPastRequests] = useState([]);
-const [showPastRequests, setShowPastRequests] = useState(false);
-
-
-  const subjectOptions = assignedSubjects.length
-    ? assignedSubjects.map((subject) => ({
-        value: JSON.stringify({
-          subject_id: subject.subject_id,
-          subject_type: subject.subject_type,
-          subject_name: subject.subject_name,
-        }),
-        label: `${subject.subject_name} - ${subject.subject_type}`,
-      }))
-    : [{ value: "", label: "No subjects assigned" }];
 
   const componentMap = {
     Theory: ["CW", "Theory"],
@@ -59,51 +36,52 @@ const [showPastRequests, setShowPastRequests] = useState(false);
     Practical: ["External Viva", "External Submission"],
   };
 
+  const subjectOptions = assignedSubjects.length
+    ? assignedSubjects.map((subject) => ({
+        value: JSON.stringify({
+          subject_id: subject.subject_id,
+          subject_type: subject.subject_type,
+          subject_name: subject.subject_name,
+        }),
+        label: `${subject.subject_name} - ${subject.subject_type}`,
+      }))
+    : [{ value: "", label: "No subjects assigned" }];
+
   const componentOptions = selectedSubject?.subject_type
     ? componentMap[selectedSubject.subject_type] || []
     : [];
 
   const subComponentOptions = component ? subComponentMap[component] || [] : [];
 
-  const fetchAssignedSubjects = async () => {
-    try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/subject/faculty-subjects/${userId}`,
-        {
-          method: "GET",
-          headers: {
-            authorization: token,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch assigned Subjects");
-      }
-
-      const data = await response.json();
-      setAssignedSubjects(data.subjects);
-    } catch (error) {
-      toast.error(error.message || "Failed to fetch Assigned Subjects");
-    }
-  };
   useEffect(() => {
-    fetchAssignedSubjects();
-  }, [token]);
+    if (!isAuthenticated || role !== "faculty") return;
 
-  const handleProceed = async () => {
-    if (selectedSubject.subject_id && component && subComponent) {
+    const fetchAssignedSubjects = async () => {
       try {
-        const query = new URLSearchParams({
-          subject_id: selectedSubject.subject_id,
-          subject_type: selectedSubject.subject_type,
-          component_name: component,
-          sub_component_name: subComponent,
-        }).toString();
-
         const res = await fetch(
-          `${BACKEND_URL}/api/req/submitted-form?${query}`,
+          `${BACKEND_URL}/api/subject/faculty-subjects/${userId}`,
+          {
+            method: "GET",
+            headers: {
+              authorization: token,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!res.ok) throw new Error("Failed to fetch assigned Subjects");
+
+        const data = await res.json();
+        setAssignedSubjects(data.subjects);
+      } catch (err) {
+        toast.error(err.message || "Error fetching subjects.");
+      }
+    };
+
+    const fetchPastRequests = async () => {
+      try {
+        const res = await fetch(
+          `${BACKEND_URL}/api/req/past-requests/${userId}`,
           {
             method: "GET",
             headers: {
@@ -114,25 +92,28 @@ const [showPastRequests, setShowPastRequests] = useState(false);
         );
 
         const data = await res.json();
+        if (!res.ok)
+          throw new Error(data.error || "Failed to fetch past requests");
 
-        if (!res.ok || !data.submitted) {
-          toast.error("No submitted marks found for the selected inputs.");
-          return;
-        }
-
-        setShowOptions(true);
+        setPastRequests(data.requests || []);
       } catch (err) {
-        toast.error("Error checking for submitted forms.");
+        toast.error("Failed to load past requests");
         console.error(err);
       }
-    } else {
-      toast.error("Please select all fields");
-    }
-  };
+    };
+
+    fetchAssignedSubjects();
+    fetchPastRequests();
+  }, [isAuthenticated, role, token, userId]);
 
   const handleSubmitRequest = async () => {
-    if (!reason.trim()) {
-      toast.error("Please provide a reason.");
+    if (
+      !selectedSubject.subject_id ||
+      !component ||
+      !subComponent ||
+      !reason.trim()
+    ) {
+      toast.error("Please complete all fields.");
       return;
     }
 
@@ -153,48 +134,19 @@ const [showPastRequests, setShowPastRequests] = useState(false);
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        toast.error(data.error || "Failed to submit request");
-        return;
-      }
+      if (!res.ok) throw new Error(data.error || "Failed to submit request");
 
       toast.success("Request submitted successfully");
       setReason("");
       setShowModal(false);
     } catch (err) {
-      toast.error("Failed to submit request");
-      console.error(err);
+      toast.error(err.message || "Request failed");
     }
   };
 
-  const handleFetchPastRequests = async () => {
-    try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/req/past-requests/${userId}`,
-        {
-          method: "GET",
-          headers: {
-            authorization: token,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error(data.error || "Failed to fetch past requests");
-        return;
-      }
-
-      setPastRequests(data.requests || []);
-      setShowPastRequests(true);
-    } catch (err) {
-      toast.error("Failed to load past requests");
-      console.error(err);
-    }
-  };
+  if (!isAuthenticated || role !== "faculty") {
+    return <div>You are not authorized to view this page.</div>;
+  }
 
   return (
     <div className="home-container">
@@ -202,7 +154,6 @@ const [showPastRequests, setShowPastRequests] = useState(false);
         <RedHeader />
         <div className="user-content">
           <ActivityHeader />
-
           <div className="user-main">
             <div className="sidebars">
               <Sidebar
@@ -217,20 +168,15 @@ const [showPastRequests, setShowPastRequests] = useState(false);
                     name: "Marks Feeding Activities",
                     path: "/faculty/marks-feed",
                   },
-
                   {
                     name: "ATKT Marks Feeding",
                     path: "/faculty/atkt-marks-feed",
                   },
-
                   {
                     name: "Make Correction Request",
                     path: "/faculty/correction-request",
                   },
-                  {
-                    name: "Edit Personal Info",
-                    path: "/faculty/edit-info",
-                  },
+                  { name: "Edit Personal Info", path: "/faculty/edit-info" },
                 ]}
               />
             </div>
@@ -261,10 +207,11 @@ const [showPastRequests, setShowPastRequests] = useState(false);
                   Logout
                 </button>
               </div>
+
               <div className="user-sec">
                 <p>
                   <span>Welcome: </span>
-                  <span className="user-name">{userId && `[${userId}]`}</span>
+                  <span className="user-name">{userId && [`${userId}`]}</span>
                 </p>
                 <p>
                   <span className="user-role">Role: </span>
@@ -272,135 +219,113 @@ const [showPastRequests, setShowPastRequests] = useState(false);
                 </p>
               </div>
 
-              <div>
-                {/* here */}
-                <div className="fac-alloc">
-                  <h3>Correction Request</h3>
-                  <p className="session-text">Current Session: June 2025</p>
+              <div className="fac-alloc">
+                <h3>Correction Request</h3>
+                <p className="session-text">Current Session: June 2025</p>
+                <span className="box-overlay-text">Draft a request</span>
 
-                  <span className="box-overlay-text">Draft a request</span>
+                <div className="faculty-box">
+                  <br/>
+                  <h4>Past Correction Requests</h4>
+                  {pastRequests.length === 0 ? (
+                    <p>No past requests found.</p>
+                  ) : (
+                    <table className="request-table">
+                      <thead>
+                        <tr>
+                          <th>Subject</th>
+                          <th>Type</th>
+                          <th>Component</th>
+                          <th>Sub-Component</th>
+                          <th>Reason</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pastRequests.map((req, idx) => (
+                          <tr key={idx}>
+                            <td>{req.subject_name}</td>
+                            <td>{req.subject_type}</td>
+                            <td>{req.component_name}</td>
+                            <td>{req.sub_component_name}</td>
+                            <td>{req.reason}</td>
+                            <td>{req.status}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
 
-                  <div className="faculty-box">
-                    {/* <p className="institute-text">
-                      <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
-                      TECHNOLOGY & SCIENCE
-                    </p> */}
-
-                    <div className="dropdown-container">
-                      <Dropdown
-                        label="Subject"
-                        options={subjectOptions}
-                        selectedValue={JSON.stringify(selectedSubject)}
-                        onChange={(value) => {
-                          const parsedValue = JSON.parse(value);
-                          setSelectedSubject(parsedValue);
-                          setComponent("");
-                          setSubComponent("");
-                        }}
-                      />
-
-                      <Dropdown
-                        label="Component"
-                        options={componentOptions.map((comp) => ({
-                          value: comp,
-                          label: comp,
-                        }))}
-                        selectedValue={component}
-                        onChange={(value) => {
-                          setComponent(value);
-                          setSubComponent("");
-                        }}
-                      />
-
-                      <Dropdown
-                        label="Sub Component"
-                        options={subComponentOptions.map((sub) => ({
-                          value: sub,
-                          label: sub,
-                        }))}
-                        selectedValue={subComponent}
-                        onChange={setSubComponent}
-                      />
-                    </div>
-
-                    {!showOptions ? (
-                      <Button text="Proceed" onClick={handleProceed} />
-                    ) : (
-                      <div className="req-options">
-                        <Button
-                          text="See Past Requests"
-                          onClick={handleFetchPastRequests}
-                        />
-
-                        <Button
-                          text="Draft New Request"
-                          onClick={() => setShowModal(true)}
-                        />
-
-                      </div>
-                    )}
+                  <div className="text-center mt-4">
+                    <Button
+                      text="Draft New Request"
+                      onClick={() => setShowModal(true)}
+                    />
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
-          {showModal && (
-            <div className="modal-overlay">
-              <div className="modal-content">
-                <h2>Submit Correction Request</h2>
-                <textarea
-                  rows="4"
-                  placeholder="State the reason for your correction request..."
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                ></textarea>
-                <div className="modal-actions">
-                  <Button text="Submit Request" onClick={handleSubmitRequest} />
-                  <Button text="Cancel" onClick={() => setShowModal(false)} />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {showPastRequests && (
-            <div className="past-requests-section">
-              <h3>Past Correction Requests</h3>
-              {pastRequests.length === 0 ? (
-                <p>No past requests found.</p>
-              ) : (
-                <ul className="past-request-list">
-                  {pastRequests.map((req, idx) => (
-                    <li key={idx} className="past-request-item">
-                      <p>
-                        <strong>Subject:</strong> {req.subject_name} (
-                        {req.subject_type})
-                      </p>
-                      <p>
-                        <strong>Component:</strong> {req.component_name}
-                      </p>
-                      <p>
-                        <strong>Sub-Component:</strong> {req.sub_component_name}
-                      </p>
-                      <p>
-                        <strong>Reason:</strong> {req.reason}
-                      </p>
-                      <p>
-                        <strong>Status:</strong> {req.status}
-                      </p>
-                      <hr />
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <Button text="Close" onClick={() => setShowPastRequests(false)} />
-            </div>
-          )}
-
           <RedFooter />
         </div>
       </div>
-       <ToastContainer position="top-right" autoClose={3000} />
+
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Submit Correction Request</h2>
+            <Dropdown
+              label="Subject"
+              options={subjectOptions}
+              selectedValue={JSON.stringify(selectedSubject)}
+              onChange={(value) => {
+                const parsed = JSON.parse(value);
+                setSelectedSubject(parsed);
+                setComponent("");
+                setSubComponent("");
+              }}
+            />
+
+            <Dropdown
+              label="Component"
+              options={componentOptions.map((comp) => ({
+                value: comp,
+                label: comp,
+              }))}
+              selectedValue={component}
+              onChange={(value) => {
+                setComponent(value);
+                setSubComponent("");
+              }}
+            />
+
+            <Dropdown
+              label="Sub Component"
+              options={subComponentOptions.map((sub) => ({
+                value: sub,
+                label: sub,
+              }))}
+              selectedValue={subComponent}
+              onChange={setSubComponent}
+            />
+
+            <textarea
+              rows="8"
+             
+              placeholder="State the reason for your correction request..."
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            ></textarea>
+
+            <div className="modal-actions">
+              <Button text="Submit Request" onClick={handleSubmitRequest} />
+              <Button text="Cancel" onClick={() => setShowModal(false)} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };
