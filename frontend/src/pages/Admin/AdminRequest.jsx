@@ -9,6 +9,7 @@ import Dropdown from "../../components/Dropdown";
 import Button from "../../components/Button";
 import { BACKEND_URL } from "../../../config";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
+import { toast, ToastContainer } from "react-toastify";
 
 const AdminRequest = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -19,60 +20,64 @@ const AdminRequest = () => {
     return <div>Please log in to access this page.</div>;
   }
 
-  const [courses, setCourses] = useState([]);
-  const [branches, setBranches] = useState([]);
   const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [selectedReason, setSelectedReason] = useState("");
+  const [selectedRequestId, setSelectedRequestId] = useState(null);
+  const [showReasonModal, setShowReasonModal] = useState(false);
 
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await fetch(
-          `${BACKEND_URL}/api/req/correction-requests`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const data = await response.json();
+        const res = await fetch(`${BACKEND_URL}/api/req/correction-requests`, {
+          method: "GET",
+          headers: {
+            authorization: token,
+          },
+        });
+        const data = await res.json();
         setRequests(data.requests || []);
       } catch (err) {
-        console.error("Error fetching correction requests:", err);
-      } finally {
-        setLoading(false);
+        toast.error("Failed to fetch requests");
       }
     };
 
     fetchRequests();
   }, [token]);
 
-  const handleAction = async (requestId, status) => {
+  const handleUpdateStatus = async (request_id, newStatus) => {
     try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/req/correction-requests/${requestId}/status`,
+      const res = await fetch(
+        `${BACKEND_URL}/api/req/correction-requests/${request_id}/status`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            authorization: token,
           },
-          body: JSON.stringify({ status }),
+          body: JSON.stringify({ status: newStatus }),
         }
       );
 
-      if (!response.ok) {
-        setRequests((prev) =>
-          prev.map((r) => (r.request_id === requestId ? { ...r, status } : r))
-        );
-      } else {
-        console.error("Failed to update request");
+      if (!res.ok) {
+        toast.error("Failed to update status");
+        return;
       }
+
+      toast.success(`Request ${newStatus}`);
+      setRequests((prev) =>
+        prev.map((req) =>
+          req.request_id === request_id ? { ...req, status: newStatus } : req
+        )
+      );
     } catch (err) {
-      console.error("Error updating request:", error);
+      toast.error("Server error");
     }
+  };
+
+  const handleView = (reason, request_id) => {
+    setSelectedReason(reason);
+    setSelectedRequestId(request_id);
+    setShowReasonModal(true);
   };
 
   return (
@@ -165,69 +170,55 @@ const AdminRequest = () => {
                   <span className="box-overlay-text">View request</span>
 
                   <div className="faculty-box">
-                    {loading ? (
-                      <p>Loading requests...</p>
-                    ) : (
-                      <div className="request-table-container">
-                        <table className="request-table">
-                          <thead>
-                            <tr>
-                              <th>Faculty</th>
-                              <th>Subject</th>
-                              <th>Component</th>
-                              <th>Sub-Component</th>
-                              <th>Reason</th>
-                              <th>Status</th>
-                              <th>Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {requests.map((req) => (
-                              <tr key={req.request_id}>
-                                <td>{req.faculty_name}</td>
-                                <td>{req.subject_name}</td>
-                                <td>{req.component_name}</td>
-                                <td>{req.sub_component_name}</td>
-                                <td>{req.reason}</td>
-                                <td>{req.status}</td>
-                                <td>
-                                  {req.status === "Pending" && (
-                                    <>
-                                      <button
-                                        className="approve-btn"
-                                        onClick={() =>
-                                          handleAction(
-                                            req.request_id,
-                                            "Approved"
-                                          )
-                                        }
-                                      >
-                                        Approve
-                                      </button>
-                                      <button
-                                        className="reject-btn"
-                                        onClick={() =>
-                                          handleAction(
-                                            req.request_id,
-                                            "Rejected"
-                                          )
-                                        }
-                                      >
-                                        Reject
-                                      </button>
-                                    </>
-                                  )}
-                                  {req.status !== "Pending" && (
-                                    <span>{req.status}</span>
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-
+                    <table className="request-table">
+                      <thead>
+                        <tr>
+                          <th>Request ID</th>
+                          <th>Faculty</th>
+                          <th>Subject</th>
+                          <th>Type</th>
+                          <th>Component</th>
+                          <th>Sub Component</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {requests.map((req) => (
+                          <tr key={req.request_id}>
+                            <td>{req.request_id}</td>
+                            <td>
+                              {req.faculty_id} - {req.faculty_name}
+                            </td>
+                            <td>{req.subject_name}</td>
+                            <td>{req.subject_type}</td>
+                            <td>{req.component_name}</td>
+                            <td>{req.sub_component_name}</td>
+                            <td>{req.status}</td>
+                            <td>
+                              <Button
+                                text="View"
+                                onClick={() =>
+                                  handleView(req.reason, req.request_id)
+                                }
+                              />
+                              <Button
+                                text="Approve"
+                                onClick={() =>
+                                  handleUpdateStatus(req.request_id, "Approved")
+                                }
+                              />
+                              <Button
+                                text="Reject"
+                                onClick={() =>
+                                  handleUpdateStatus(req.request_id, "Rejected")
+                                }
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
@@ -237,6 +228,20 @@ const AdminRequest = () => {
 
         <RedFooter />
       </div>
+
+      {showReasonModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Reason for Request #{selectedRequestId}</h2>
+            <p>{selectedReason}</p>
+            <div className="modal-actions">
+              <Button text="Close" onClick={() => setShowReasonModal(false)} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };

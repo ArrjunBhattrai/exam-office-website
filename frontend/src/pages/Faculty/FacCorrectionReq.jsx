@@ -15,6 +15,9 @@ const FacCorrectionReq = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
     (state) => state.auth
   );
+  if (!isAuthenticated || role !== "faculty") {
+    return <div>You are not authorized to view this page.</div>;
+  }
 
   const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState({});
@@ -22,7 +25,10 @@ const FacCorrectionReq = () => {
   const [subComponent, setSubComponent] = useState("");
   const [reason, setReason] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [draftStatus, setDraftStatus] = useState("");
+  const [stage, setStage] = useState(1);
   const [pastRequests, setPastRequests] = useState([]);
+
 
   const componentMap = {
     Theory: ["CW", "Theory"],
@@ -54,99 +60,87 @@ const FacCorrectionReq = () => {
   const subComponentOptions = component ? subComponentMap[component] || [] : [];
 
   useEffect(() => {
-    if (!isAuthenticated || role !== "faculty") return;
-
-    const fetchAssignedSubjects = async () => {
-      try {
-        const res = await fetch(
-          `${BACKEND_URL}/api/subject/faculty-subjects/${userId}`,
-          {
-            method: "GET",
-            headers: {
-              authorization: token,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!res.ok) throw new Error("Failed to fetch assigned Subjects");
-
-        const data = await res.json();
-        setAssignedSubjects(data.subjects);
-      } catch (err) {
-        toast.error(err.message || "Error fetching subjects.");
-      }
-    };
-
     const fetchPastRequests = async () => {
       try {
-        const res = await fetch(
+        const response = await fetch(
           `${BACKEND_URL}/api/req/past-requests/${userId}`,
           {
             method: "GET",
             headers: {
               authorization: token,
-              "Content-Type": "application/json",
             },
           }
         );
 
-        const data = await res.json();
-        if (!res.ok)
-          throw new Error(data.error || "Failed to fetch past requests");
+        const data = await response.json();
+        if (!response.ok)
+          throw new Error(data.error || "Failed to load past requests");
 
         setPastRequests(data.requests || []);
       } catch (err) {
-        toast.error("Failed to load past requests");
+        toast.error("Could not fetch past requests");
         console.error(err);
       }
     };
 
-    fetchAssignedSubjects();
     fetchPastRequests();
-  }, [isAuthenticated, role, token, userId]);
+  }, [token, userId]);
 
-  const handleSubmitRequest = async () => {
-    if (
-      !selectedSubject.subject_id ||
-      !component ||
-      !subComponent ||
-      !reason.trim()
-    ) {
-      toast.error("Please complete all fields.");
-      return;
-    }
-
+  const handleWithdraw = async (requestId) => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/req/submit-request`, {
-        method: "POST",
-        headers: {
-          authorization: token,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          subject_id: selectedSubject.subject_id,
-          subject_type: selectedSubject.subject_type,
-          component_name: component,
-          sub_component_name: subComponent,
-          reason,
-        }),
-      });
+      const response = await fetch(
+        `${BACKEND_URL}/api/req/withdraw/${requestId}`,
+        {
+          method: "POST",
+          headers: {
+            authorization: token,
+          },
+        }
+      );
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to submit request");
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.error || "Failed to withdraw request");
 
-      toast.success("Request submitted successfully");
-      setReason("");
-      setShowModal(false);
+      toast.success("Request withdrawn");
+      setPastRequests((prev) => prev.filter((r) => r.request_id !== requestId));
     } catch (err) {
-      toast.error(err.message || "Request failed");
+      toast.error("Could not withdraw request");
+      console.error(err);
     }
   };
 
-  if (!isAuthenticated || role !== "faculty") {
-    return <div>You are not authorized to view this page.</div>;
-  }
+  const handleProceed = async (req) => {
+    try {
+      const query = new URLSearchParams({
+        subject_id: req.subject_id,
+        subject_type: req.subject_type,
+        component_name: req.component_name,
+        sub_component_name: req.sub_component_name,
+        form_status: req.form_status,
+      }).toString();
+
+      const response = await fetch(
+        `${BACKEND_URL}/api/req/form-check?${query}`,
+        {
+          method: "GET",
+          headers: { authorization: token },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.submitted) {
+        toast.error("Form not found or not submitted");
+        return;
+      }
+
+      window.location.href = `/faculty/edit-form?subject_id=${req.subject_id}&subject_type=${req.subject_type}&component=${req.component_name}&sub_component=${req.sub_component_name}&status=${req.form_status}`;
+    } catch (err) {
+      toast.error("Error proceeding to form");
+      console.error(err);
+    }
+  };
 
   return (
     <div className="home-container">
@@ -225,10 +219,8 @@ const FacCorrectionReq = () => {
                 <span className="box-overlay-text">Draft a request</span>
 
                 <div className="faculty-box">
-                  <br/>
-                  <h4>Past Correction Requests</h4>
                   {pastRequests.length === 0 ? (
-                    <p>No past requests found.</p>
+                    <p>No correction requests found.</p>
                   ) : (
                     <table className="request-table">
                       <thead>
@@ -237,26 +229,42 @@ const FacCorrectionReq = () => {
                           <th>Type</th>
                           <th>Component</th>
                           <th>Sub-Component</th>
-                          <th>Reason</th>
                           <th>Status</th>
+                          <th>Action</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {pastRequests.map((req, idx) => (
-                          <tr key={idx}>
+                        {pastRequests.map((req) => (
+                          <tr key={req.request_id}>
                             <td>{req.subject_name}</td>
                             <td>{req.subject_type}</td>
-                            <td>{req.component_name}</td>
-                            <td>{req.sub_component_name}</td>
-                            <td>{req.reason}</td>
+                            <td>{req.component_name || "-"}</td>
+                            <td>{req.sub_component_name || "-"}</td>
                             <td>{req.status}</td>
+                            <td>
+                              {req.status === "Rejected" && (
+                                <span>Rejected</span>
+                              )}
+                              {req.status === "Pending" && (
+                                <Button
+                                  text="Withdraw"
+                                  onClick={() => handleWithdraw(req.request_id)}
+                                />
+                              )}
+                              {req.status === "Approved" && (
+                                <Button
+                                  text="Proceed"
+                                  onClick={() => handleProceed(req)}
+                                />
+                              )}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   )}
 
-                  <div className="text-center mt-4">
+                  <div className="draft-btn-container">
                     <Button
                       text="Draft New Request"
                       onClick={() => setShowModal(true)}
@@ -273,54 +281,176 @@ const FacCorrectionReq = () => {
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h2>Submit Correction Request</h2>
-            <Dropdown
-              label="Subject"
-              options={subjectOptions}
-              selectedValue={JSON.stringify(selectedSubject)}
-              onChange={(value) => {
-                const parsed = JSON.parse(value);
-                setSelectedSubject(parsed);
-                setComponent("");
-                setSubComponent("");
-              }}
-            />
+            {stage === 1 ? (
+              <>
+                <h2>Draft New Request</h2>
+                <Dropdown
+                  label="Form Status"
+                  options={[
+                    { value: "Regular", label: "Regular" },
+                    { value: "ATKT", label: "ATKT" },
+                  ]}
+                  selectedValue={draftStatus}
+                  onChange={(val) => {
+                    setDraftStatus(val);
+                    setComponent("");
+                    setSubComponent("");
+                  }}
+                />
 
-            <Dropdown
-              label="Component"
-              options={componentOptions.map((comp) => ({
-                value: comp,
-                label: comp,
-              }))}
-              selectedValue={component}
-              onChange={(value) => {
-                setComponent(value);
-                setSubComponent("");
-              }}
-            />
+                <Dropdown
+                  label="Subject"
+                  options={subjectOptions}
+                  selectedValue={JSON.stringify(selectedSubject)}
+                  onChange={(value) => {
+                    const parsed = JSON.parse(value);
+                    setSelectedSubject(parsed);
+                    setComponent("");
+                    setSubComponent("");
+                  }}
+                />
 
-            <Dropdown
-              label="Sub Component"
-              options={subComponentOptions.map((sub) => ({
-                value: sub,
-                label: sub,
-              }))}
-              selectedValue={subComponent}
-              onChange={setSubComponent}
-            />
+                {draftStatus === "Regular" && (
+                  <>
+                    <Dropdown
+                      label="Component"
+                      options={componentOptions.map((comp) => ({
+                        value: comp,
+                        label: comp,
+                      }))}
+                      selectedValue={component}
+                      onChange={(value) => {
+                        setComponent(value);
+                        setSubComponent("");
+                      }}
+                    />
 
-            <textarea
-              rows="8"
-             
-              placeholder="State the reason for your correction request..."
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-            ></textarea>
+                    <Dropdown
+                      label="Sub Component"
+                      options={subComponentOptions.map((sub) => ({
+                        value: sub,
+                        label: sub,
+                      }))}
+                      selectedValue={subComponent}
+                      onChange={setSubComponent}
+                    />
+                  </>
+                )}
 
-            <div className="modal-actions">
-              <Button text="Submit Request" onClick={handleSubmitRequest} />
-              <Button text="Cancel" onClick={() => setShowModal(false)} />
-            </div>
+                <div className="modal-actions">
+                  <Button
+                    text="Proceed"
+                    onClick={async () => {
+                      if (!draftStatus || !selectedSubject.subject_id) {
+                        toast.error("Please select all fields");
+                        return;
+                      }
+
+                      const query = new URLSearchParams({
+                        subject_id: selectedSubject.subject_id,
+                        subject_type: selectedSubject.subject_type,
+                        component_name: component,
+                        sub_component_name: subComponent,
+                        form_status: draftStatus,
+                      }).toString();
+
+                      const response = await fetch(
+                        `${BACKEND_URL}/api/req/form-check?${query}`,
+                        {
+                          headers: { authorization: token },
+                        }
+                      );
+
+                      const data = await response.json();
+
+                      if (!response.ok || !data.submitted) {
+                        toast.error("Form not submitted yet.");
+                        return;
+                      }
+
+                      setStage(2); // move to reason entry
+                    }}
+                  />
+                  <Button text="Cancel" onClick={() => setShowModal(false)} />
+                </div>
+              </>
+            ) : (
+              <>
+                <h2>Submit Correction Request</h2>
+                <p>
+                  <strong>Subject:</strong> {selectedSubject.subject_name}
+                </p>
+                <p>
+                  <strong>Type:</strong> {selectedSubject.subject_type}
+                </p>
+                <p>
+                  <strong>Status:</strong> {draftStatus}
+                </p>
+                {draftStatus === "Regular" && (
+                  <>
+                    <p>
+                      <strong>Component:</strong> {component}
+                    </p>
+                    <p>
+                      <strong>Sub-Component:</strong> {subComponent}
+                    </p>
+                  </>
+                )}
+
+                <textarea
+                  rows="6"
+                  placeholder="Enter reason..."
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                ></textarea>
+
+                <div className="modal-actions">
+                  <Button
+                    text="Submit Request"
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(
+                          `${BACKEND_URL}/api/req/submit-request`,
+                          {
+                            method: "POST",
+                            headers: {
+                              authorization: token,
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                              subject_id: selectedSubject.subject_id,
+                              subject_type: selectedSubject.subject_type,
+                              component_name:
+                                draftStatus === "Regular" ? component : null,
+                              sub_component_name:
+                                draftStatus === "Regular" ? subComponent : null,
+                              reason,
+                              form_status: draftStatus,
+                            }),
+                          }
+                        );
+
+                        const data = await res.json();
+                        if (!res.ok)
+                          throw new Error(data.error || "Submit failed");
+
+                        toast.success("Request submitted");
+                        setShowModal(false);
+                        setReason("");
+                        setStage(1);
+                        setDraftStatus("");
+                        setSelectedSubject({});
+                        setPastRequests((prev) => [data.newRequest, ...prev]); // optional: refresh manually
+                      } catch (err) {
+                        toast.error(err.message);
+                        console.error(err);
+                      }
+                    }}
+                  />
+                  <Button text="Back" onClick={() => setStage(1)} />
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -90,7 +90,7 @@ const getPastRequests = async (req, res) => {
   try {
     const requests = await db("marks_update_request")
       .where({ faculty_id })
-      .orderBy("created_at", "desc");
+      // .orderBy("created_at", "desc");
 
     res.status(200).json({ requests });
   } catch (error) {
@@ -98,6 +98,7 @@ const getPastRequests = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 const checkFormExists = async (req, res) => {
   const { subject_id, subject_type, form_status } = req.query;
