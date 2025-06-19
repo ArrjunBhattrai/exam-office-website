@@ -191,7 +191,6 @@ const studentBySubject = async (req, res) => {
   }
 };
 
-
 module.exports = {
   studentDataUpload,
   getStudentsForCourse,
