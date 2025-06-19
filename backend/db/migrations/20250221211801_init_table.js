@@ -238,6 +238,7 @@ exports.up = function (knex) {
       table.string("component_name").notNullable();
       table.string("sub_component_name").notNullable();
       table.text("reason");
+      table.enu("form_status", ["ATKT", "Regular"]);
       table
         .enu("status", ["Pending", "Approved", "Rejected"])
         .defaultTo("Pending");
