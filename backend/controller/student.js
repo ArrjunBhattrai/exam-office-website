@@ -4,11 +4,11 @@ const csv = require("csv-parser");
 
 // Uploading student data
 const studentDataUpload = async (req, res) => {
-  const { branch_id, course_id, specialization } = req.body;
+  const { branch_id, course_id, specialization, session_id } = req.body;
 
-  if (!req.file || !branch_id || !course_id || !specialization) {
+  if (!req.file || !branch_id || !course_id || !specialization || !session_id) {
     return res.status(400).json({
-      error: "CSV file and branch_id, course_id, specialization are required.",
+      error: "CSV file and branch_id, course_id, session_id and specialization are required.",
     });
   }
 
@@ -60,6 +60,7 @@ const studentDataUpload = async (req, res) => {
       }
 
       results.push([
+        session_id,
         enrollmentNo,
         studentName,
         branch_id,
@@ -87,7 +88,7 @@ const studentDataUpload = async (req, res) => {
 
         const rawQuery = `
           INSERT INTO student
-            (enrollment_no, student_name, branch_id, course_id, specialization, semester, status)
+            (session_id, enrollment_no, student_name, branch_id, course_id, specialization, semester, status)
           VALUES ${valuesPlaceholders}
           ON DUPLICATE KEY UPDATE
             student_name = VALUES(student_name),
@@ -119,11 +120,11 @@ const studentDataUpload = async (req, res) => {
 
 // Get students of a particular course of a branch
 const getStudentsForCourse = async (req, res) => {
-  const { branch_id, course_id, specialization, semester } = req.query;
+  const { branch_id, course_id, specialization, semester, session_id } = req.query;
 
-  if (!branch_id || !course_id || !specialization || !semester) {
+  if (!branch_id || !course_id || !specialization || !semester || !session_id) {
     return res.status(400).json({
-      error: "branch_id, course_id, specialization, and semester are required",
+      error: "branch_id, course_id, specialization, session_id, and semester are required",
     });
   }
 
@@ -134,6 +135,7 @@ const getStudentsForCourse = async (req, res) => {
         course_id,
         specialization,
         semester,
+        session_id,
       })
       .select("enrollment_no", "student_name", "status");
 
@@ -147,9 +149,9 @@ const getStudentsForCourse = async (req, res) => {
 // Get students enrolled in a subject
 const studentBySubject = async (req, res) => {
   try {
-    const { subject_id, subject_type } = req.query;
+    const { subject_id, subject_type , session_id} = req.query;
 
-    if (!subject_id || !subject_type) {
+    if (!subject_id || !subject_type || !session_id) {
       return res
         .status(400)
         .json({ error: "Subject ID and type are required" });
@@ -171,6 +173,7 @@ const studentBySubject = async (req, res) => {
         .where({
           "elective_data.subject_id": subject_id,
           "elective_data.subject_type": subject_type,
+          "elective_data.session_id": session_id,
         })
         .select("student.enrollment_no", "student.student_name");
     } else {

@@ -4,13 +4,18 @@ const csv = require("csv-parser");
 
 const getElectiveSubject = async (req, res) => {
   const { branch_id } = req.params;
+  const session_id = req.session_id;
+
   if (!branch_id) {
     res.status(400).json({ error: "Branch Id is required" });
   }
   try {
     const electives = await db("subject")
-      .where("branch_id", branch_id)
-      .andWhere("subject_type", "Elective")
+      .where({
+        branch_id,
+        subject_type: "Elective",
+        session_id,
+      })
       .select(
         "subject_id",
         "subject_type",
@@ -29,13 +34,14 @@ const getElectiveSubject = async (req, res) => {
 
 const uploadElectiveData = async (req, res) => {
   const { subject_id, subject_type } = req.body;
+  const session_id = req.session_id;
   
   if (!req.file || !subject_id || !subject_type) {
     return res.status(400).json({
       error: "CSV file, subject_id and subject_type are all required.",
     });
   }
-  const subj = await db("subject").where({ subject_id, subject_type }).first();
+  const subj = await db("subject").where({ subject_id, subject_type, session_id }).first();
 
   if (!subj) {
     return res
@@ -80,6 +86,7 @@ const uploadElectiveData = async (req, res) => {
         const ids = [...enrollmentNos];
         const existingStudents = await db("student")
           .whereIn("enrollment_no", ids)
+           .andWhere("session_id", session_id)
           .pluck("enrollment_no");
 
         const missing = ids.filter((x) => !existingStudents.includes(x));
@@ -92,7 +99,7 @@ const uploadElectiveData = async (req, res) => {
         }
 
         const duplicates = await db("elective_data")
-          .where({ subject_id, subject_type })
+          .where({ subject_id, subject_type, session_id })
           .whereIn("enrollment_no", ids)
           .pluck("enrollment_no");
 
@@ -109,6 +116,7 @@ const uploadElectiveData = async (req, res) => {
             enrollment_no: enr,
             subject_id,
             subject_type,
+            session_id,
           }));
           await trx("elective_data").insert(rows);
         });
