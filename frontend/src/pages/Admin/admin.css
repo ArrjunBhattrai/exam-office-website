@@ -411,6 +411,19 @@ td {
   margin-right: 20px;
 }
 
+.download-session {
+  padding: 1rem;
+}
+
+.download-session h4 {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.download-session button {
+  margin-left: 0rem;
+}
+
 @media (max-width: 1024px){
   .faculty-box{
     min-height: 350px;
