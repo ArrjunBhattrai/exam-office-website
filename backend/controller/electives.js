@@ -2,14 +2,26 @@ const db = require("../db/db");
 const fs = require("fs");
 const csv = require("csv-parser");
 
+const getLatestSessionId = async () => {
+  const latestSession = await db("session")
+    .orderBy("start_year", "desc")
+    .orderBy("start_month", "desc")
+    .first();
+
+  if (!latestSession) throw new Error("No active session found");
+  return latestSession.session_id;
+};
+
+
 const getElectiveSubject = async (req, res) => {
   const { branch_id } = req.params;
-  const session_id = req.session_id;
 
   if (!branch_id) {
     res.status(400).json({ error: "Branch Id is required" });
   }
   try {
+    const session_id = await getLatestSessionId();
+
     const electives = await db("subject")
       .where({
         branch_id,
@@ -34,13 +46,14 @@ const getElectiveSubject = async (req, res) => {
 
 const uploadElectiveData = async (req, res) => {
   const { subject_id, subject_type } = req.body;
-  const session_id = req.session_id;
   
   if (!req.file || !subject_id || !subject_type) {
     return res.status(400).json({
       error: "CSV file, subject_id and subject_type are all required.",
     });
   }
+
+  const session_id = await getLatestSessionId();
   const subj = await db("subject").where({ subject_id, subject_type, session_id }).first();
 
   if (!subj) {

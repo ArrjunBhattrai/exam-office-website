@@ -2,11 +2,22 @@ const db = require("../db/db");
 const fs = require("fs");
 const csv = require("csv-parser");
 
+// Get latest session_id
+const getLatestSessionId = async () => {
+  const latestSession = await db("session")
+    .orderBy("start_year", "desc")
+    .orderBy("start_month", "desc")
+    .first();
+
+  if (!latestSession) throw new Error("No active session found");
+  return latestSession.session_id;
+};
+
 // Uploading student data
 const studentDataUpload = async (req, res) => {
-  const { branch_id, course_id, specialization, session_id } = req.body;
+  const { branch_id, course_id, specialization } = req.body;
 
-  if (!req.file || !branch_id || !course_id || !specialization || !session_id) {
+  if (!req.file || !branch_id || !course_id || !specialization) {
     return res.status(400).json({
       error: "CSV file and branch_id, course_id, session_id and specialization are required.",
     });
@@ -29,6 +40,7 @@ const studentDataUpload = async (req, res) => {
     return res.status(500).json({ error: "Internal server error." });
   }
 
+  const session_id = await getLatestSessionId();
   const results = [];
   const filePath = req.file.path;
 
@@ -120,15 +132,17 @@ const studentDataUpload = async (req, res) => {
 
 // Get students of a particular course of a branch
 const getStudentsForCourse = async (req, res) => {
-  const { branch_id, course_id, specialization, semester, session_id } = req.query;
+  const { branch_id, course_id, specialization, semester } = req.query;
 
-  if (!branch_id || !course_id || !specialization || !semester || !session_id) {
+  if (!branch_id || !course_id || !specialization || !semester) {
     return res.status(400).json({
       error: "branch_id, course_id, specialization, session_id, and semester are required",
     });
   }
 
   try {
+    const session_id = await getLatestSessionId();
+
     const students = await db("student")
       .where({
         branch_id,
@@ -149,13 +163,15 @@ const getStudentsForCourse = async (req, res) => {
 // Get students enrolled in a subject
 const studentBySubject = async (req, res) => {
   try {
-    const { subject_id, subject_type , session_id} = req.query;
+    const { subject_id, subject_type } = req.query;
 
-    if (!subject_id || !subject_type || !session_id) {
+    if (!subject_id || !subject_type) {
       return res
         .status(400)
         .json({ error: "Subject ID and type are required" });
     }
+
+    const session_id = await getLatestSessionId();
 
     const subject = await db("subject")
       .where({ subject_id, subject_type })
