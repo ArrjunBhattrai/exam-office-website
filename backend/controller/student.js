@@ -4,7 +4,7 @@ const csv = require("csv-parser");
 
 // Uploading student data
 const studentDataUpload = async (req, res) => {
-  const { branch_id, course_id, specialization } = req.body;
+  const { branch_id, course_id, specialization, section } = req.body;
 
   if (!req.file || !branch_id || !course_id || !specialization) {
     return res.status(400).json({
@@ -12,8 +12,8 @@ const studentDataUpload = async (req, res) => {
     });
   }
 
-  // Check if the course exists
   try {
+    // Check if course exists
     const courseExists = await db("course")
       .where({ branch_id, course_id, specialization })
       .first();
@@ -24,97 +24,136 @@ const studentDataUpload = async (req, res) => {
           "Provided branch, course, and specialization combination does not exist.",
       });
     }
-  } catch (err) {
-    console.error("DB error checking course:", err);
-    return res.status(500).json({ error: "Internal server error." });
-  }
 
-  const results = [];
-  const filePath = req.file.path;
+    // If section is provided, check that it exists in the section table
+    if (section) {
+      const sectionExists = await db("section")
+        .where({ branch_id, course_id, specialization, section })
+        .first();
 
-  fs.createReadStream(filePath)
-    .pipe(
-      csv({ mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/, "") })
-    )
-    .on("data", (row) => {
-      const enrollmentNo = row["Enrollment No"]?.trim();
-      const studentName = row["Student Name"]?.trim();
-      const semester = parseInt(row["Semester"]);
-      const status = row["Status"]?.trim()?.toLowerCase();
-
-      const validStatuses = ["regular", "sem-back", "year-back"];
-
-      if (
-        !enrollmentNo ||
-        !studentName ||
-        isNaN(semester) ||
-        !validStatuses.includes(status)
-      ) {
-        console.warn("Skipping invalid row due to validation:", {
-          enrollmentNo,
-          studentName,
-          semester,
-          status,
+      if (!sectionExists) {
+        return res.status(400).json({
+          error: `Section '${section}' does not exist for the given course under the branch.`,
         });
-        return;
       }
-
-      results.push([
-        enrollmentNo,
-        studentName,
+    } else {
+      // If section is not provided, check if any section exists for the course
+      const existingSections = await db("section").where({
         branch_id,
         course_id,
         specialization,
-        semester,
-        status,
-      ]);
-    })
+      });
 
-    .on("end", async () => {
-      try {
+      if (existingSections.length > 0) {
+        return res.status(400).json({
+          error:
+            "Section is required since section-wise data exists for the given course.",
+        });
+      }
+    }
+    // Get latest session_id
+    const latestSession = await db("session")
+      .orderBy([
+        { column: "start_year", order: "desc" },
+        { column: "start_month", order: "desc" },
+      ])
+      .first();
+
+    if (!latestSession) {
+      return res.status(400).json({ error: "No academic session found." });
+    }
+
+    const session_id = latestSession.session_id;
+
+    const filePath = req.file.path;
+    const results = [];
+
+    fs.createReadStream(filePath)
+      .pipe(
+        csv({ mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/, "") })
+      )
+      .on("data", (row) => {
+        const enrollmentNo = row["Enrollment No"]?.trim();
+        const studentName = row["Student Name"]?.trim();
+        const semester = parseInt(row["Semester"]);
+        const status = row["Status"]?.trim()?.toLowerCase();
+
+        const validStatuses = ["regular", "sem-back", "year-back"];
+
+        if (
+          !enrollmentNo ||
+          !studentName ||
+          isNaN(semester) ||
+          !validStatuses.includes(status)
+        ) {
+          console.warn("Skipping invalid row due to validation:", {
+            enrollmentNo,
+            studentName,
+            semester,
+            status,
+          });
+          return;
+        }
+
+        results.push([
+          session_id,
+          enrollmentNo,
+          studentName,
+          branch_id,
+          course_id,
+          specialization,
+          section || null,
+          semester,
+          status,
+        ]);
+      })
+      .on("end", async () => {
+        fs.unlinkSync(filePath);
+
         if (results.length === 0) {
-          fs.unlinkSync(filePath);
           return res.status(400).json({ error: "No valid data found in CSV." });
         }
 
-        // Build raw insert query with ON DUPLICATE KEY UPDATE
-        // student columns: enrollment_no, student_name, branch_id, course_id, specialization, semester, status
+        // Check if any of the enrollment numbers already exist for the session
+        const enrollmentNos = results.map((r) => r[1]);
+        const existing = await db("student")
+          .whereIn("enrollment_no", enrollmentNos)
+          .andWhere("session_id", session_id);
 
-        const valuesPlaceholders = results
-          .map(() => "(?, ?, ?, ?, ?, ?, ?)")
-          .join(", ");
-        const flatValues = results.flat();
+        if (existing.length > 0) {
+          return res.status(400).json({
+            error: `One or more students already exist for session ${session_id}. Duplicate data not allowed.`,
+            duplicates: existing.map((e) => e.enrollment_no),
+          });
+        }
 
-        const rawQuery = `
-          INSERT INTO student
-            (enrollment_no, student_name, branch_id, course_id, specialization, semester, status)
-          VALUES ${valuesPlaceholders}
-          ON DUPLICATE KEY UPDATE
-            student_name = VALUES(student_name),
-            branch_id = VALUES(branch_id),
-            course_id = VALUES(course_id),
-            specialization = VALUES(specialization),
-            semester = VALUES(semester),
-            status = VALUES(status)
-        `;
+        // Insert all data
+        await db("student").insert(
+          results.map((row) => ({
+            session_id: row[0],
+            enrollment_no: row[1],
+            student_name: row[2],
+            branch_id: row[3],
+            course_id: row[4],
+            specialization: row[5],
+            section: row[6],
+            semester: row[7],
+            status: row[8],
+          }))
+        );
 
-        await db.raw(rawQuery, flatValues);
-
-        fs.unlinkSync(filePath);
-        res
+        return res
           .status(200)
           .json({ message: "Student data uploaded successfully!" });
-      } catch (err) {
-        console.error(err);
-        res
-          .status(500)
-          .json({ message: "DB Insert failed", error: err.message });
-      }
-    })
-    .on("error", (error) => {
-      console.error("CSV Parsing Error:", error.message);
-      res.status(500).json({ error: "Error processing CSV file." });
-    });
+      })
+      .on("error", (error) => {
+        console.error("CSV Parsing Error:", error.message);
+        res.status(500).json({ error: "Error processing CSV file." });
+      });
+  } catch (err) {
+    console.error("Internal error:", err);
+    return res.status(500).json({ error: "Internal server error." });
+  }
 };
 
 // Get students of a particular course of a branch
