@@ -117,7 +117,7 @@ exports.up = function (knex) {
       table.string("subject_type").notNullable();
 
       table
-        .foreign(["subject_id","subject_type"])
+        .foreign(["subject_id", "subject_type"])
         .references(["subject_id", "subject_type"])
         .inTable("subject")
         .onDelete("CASCADE");
@@ -207,7 +207,6 @@ exports.up = function (knex) {
         .references(["subject_id", "subject_type", "co_name"])
         .inTable("course_outcome")
         .onDelete("CASCADE");
-
     })
     .createTable("atkt_marks", (table) => {
       table.string("enrollment_no").notNullable();
@@ -236,7 +235,10 @@ exports.up = function (knex) {
       table.string("faculty_id").notNullable();
       table.string("subject_id").notNullable();
       table.string("subject_type").notNullable();
+      table.string("component_name").notNullable();
+      table.string("sub_component_name").notNullable();
       table.text("reason");
+      table.enu("form_status", ["ATKT", "Regular"]);
       table
         .enu("status", ["Pending", "Approved", "Rejected"])
         .defaultTo("Pending");

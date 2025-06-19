@@ -88,7 +88,7 @@ const HODViewDeptt = () => {
       setCourses(options);
 
       const subjectRes = await fetch(
-        `${BACKEND_URL}/api/subject/faculty-subject/${faculty.faculty_id}`, {
+        `${BACKEND_URL}/api/subject/faculty-subjects/${faculty.faculty_id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -123,7 +123,7 @@ const HODViewDeptt = () => {
   const handleViewStudents = async (subjectId, subjectType) => {
     try {
       const res = await fetch(
-        `${BACKEND_URL}/api/student/getStudents/${subjectId}/${subjectType}`,
+        `${BACKEND_URL}/api/student/getStudents?subject_id=${subjectId}&subject_type=${subjectType}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

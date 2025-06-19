@@ -224,7 +224,7 @@ const ATKTMarksFeed = () => {
           toast.error("No COs found for the selected subject.");
         }
       } else {
-        toast.error("No students found for the selected Subject");
+        toast("No ATKT students found for the selected Subject");
       }
     } catch (err) {
       toast.error(err.message || "An error occurred in proceeding");
