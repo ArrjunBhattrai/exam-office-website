@@ -24,6 +24,12 @@ exports.up = function (knex) {
 
       table.primary(["branch_id", "course_id", "specialization"]);
     })
+    .createTable("section", (table) => {
+      table.string("branch_id").notNullable();
+      table.string("course_id").notNullable();
+      table.string("specialization").notNullable();
+      table.string("section", 1).notNullable();
+    })
     .createTable("hod", (table) => {
       table.string("branch_id").primary().notNullable();
       table.string("hod_id").notNullable();
@@ -99,6 +105,7 @@ exports.up = function (knex) {
       table.string("subject_type").notNullable();
       table.string("faculty_id").notNullable();
       table.enu("assignment_type", ["primary", "secondary"]).notNullable();
+      table.string("section", 1);
 
       table
         .foreign("faculty_id")
@@ -119,6 +126,7 @@ exports.up = function (knex) {
       table.string("branch_id").notNullable();
       table.string("course_id").notNullable();
       table.string("specialization").notNullable();
+      table.string("section", 1);
       table.integer("semester").notNullable();
       table.enu("status", ["regular", "sem-back", "year-back"]).notNullable();
 
@@ -231,7 +239,7 @@ exports.up = function (knex) {
 
       table
         .foreign(["session_id", "enrollment_no"])
-        .references(["session_id","enrollment_no"])
+        .references(["session_id", "enrollment_no"])
         .inTable("student")
         .onDelete("CASCADE");
     })
@@ -379,6 +387,7 @@ exports.down = async function (knex) {
     .dropTableIfExists("faculty")
     .dropTableIfExists("faculty_registration_request")
     .dropTableIfExists("hod")
+    .dropTableIfExists("section")
     .dropTableIfExists("course")
     .dropTableIfExists("branch")
     .dropTableIfExists("admin");
