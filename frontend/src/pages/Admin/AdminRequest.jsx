@@ -10,16 +10,18 @@ import Button from "../../components/Button";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 
 const AdminRequest = () => {
-    const { userId, isAuthenticated, role, token } = useSelector(
-            (state) => state.auth
-          );
-      
-          if (!isAuthenticated || role != "admin") {
-            return <div>Please log in to access this page.</div>;
-          } 
+  const { userId, isAuthenticated, role, token } = useSelector(
+    (state) => state.auth
+  );
 
-          const [courses, setCourses] = useState([]);
-            const [branches, setBranches] = useState([]);
+  if (!isAuthenticated || role != "admin") {
+    return <div>Please log in to access this page.</div>;
+  }
+
+  const [courses, setCourses] = useState([]);
+  const [branches, setBranches] = useState([]);
+
+  const currentSession = useSelector((state) => state.session.currentSession);
 
   return (
     <div className="home-container">
@@ -30,7 +32,7 @@ const AdminRequest = () => {
 
           <div className="user-main">
             <div className="sidebars">
-            <Sidebar
+              <Sidebar
                 className="sidebar"
                 title="Admin Activities"
                 activities={[
@@ -61,15 +63,13 @@ const AdminRequest = () => {
                   { name: "Address Requests", path: "/admin/req" },
                 ]}
               />
-
-              
             </div>
 
             <div className="user-info">
               <div className="user-icons">
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/admin-home")}
+                  onClick={() => (window.location.href = "/admin/home")}
                 >
                   <FaHome className="icon" />
                   Home
@@ -92,11 +92,9 @@ const AdminRequest = () => {
                 </button>
               </div>
               <div className="user-sec">
-              <p>
+                <p>
                   <span>Welcome: </span>
-                  <span className="user-name">
-                    {userId && `[${userId}]`}
-                  </span>
+                  <span className="user-name">{userId && `[${userId}]`}</span>
                 </p>
                 <p>
                   <span className="user-role">Role: </span>
@@ -107,20 +105,25 @@ const AdminRequest = () => {
               </div>
 
               <div>
-                 {/* here */}
-                 <div className="fac-alloc">
-                <h3>Correction Request</h3>
-                <p className="session-text">Current Session: June 2025</p>
-
-                <span className="box-overlay-text">View request</span>
-
-                <div className="faculty-box">
-                  <p className="institute-text">
-                    <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
-                    TECHNOLOGY & SCIENCE
+                {/* here */}
+                <div className="fac-alloc">
+                  <h3>Correction Request</h3>
+                  <p className="session-text">
+                    Current Session:{" "}
+                    {currentSession
+                      ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                      : "Loading..."}
                   </p>
-                <div className="dropdown">
-                {/* <Dropdown
+
+                  <span className="box-overlay-text">View request</span>
+
+                  <div className="faculty-box">
+                    <p className="institute-text">
+                      <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
+                      TECHNOLOGY & SCIENCE
+                    </p>
+                    <div className="dropdown">
+                      {/* <Dropdown
                       label="Course"
                       options={courses.map((c) => c.course_name)}
                       selectedValue={selectedCourse}
@@ -133,19 +136,17 @@ const AdminRequest = () => {
                       onChange={setSelectedBranch}
                       disabled={!selectedCourse}
                     /> */}
+                    </div>
                   </div>
                 </div>
-                </div>
               </div>
-              </div>
-              
             </div>
           </div>
-
-          <RedFooter />
         </div>
+
+        <RedFooter />
       </div>
-    
+    </div>
   );
 };
 

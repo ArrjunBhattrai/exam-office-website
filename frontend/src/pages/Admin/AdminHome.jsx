@@ -1,5 +1,6 @@
-import React from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setSession } from "../../redux/sessionSlice";
 import "./admin.css";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
@@ -20,6 +21,25 @@ const AdminHome = () => {
       </div>
     );
   }
+
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const fetchCurrentSession = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/session/---`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        dispatch(setSession(data.session));
+      } catch (err) {
+        console.error("Session fetch failed", err);
+      }
+    };
+
+    fetchCurrentSession();
+  }, [token]);
+
+  const { currentSession } = useSelector((state) => state.session);
 
   return (
     <div className="home-container">
@@ -100,6 +120,15 @@ const AdminHome = () => {
                 <p>
                   <span className="user-role">Role: </span>
                   <span className="user-name">[{role && `${role}`}]</span>
+                </p>
+              </div>
+
+              <div className="fac-alloc">
+                <p className="session-text">
+                  Current Session:{" "}
+                  {currentSession
+                    ? `${currentSession.start_month}/${currentSession.start_year}`
+                    : "Loading..."}
                 </p>
               </div>
             </div>

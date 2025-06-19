@@ -1,5 +1,6 @@
 import React from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { setSession } from "../../redux/sessionSlice";
 import "./hod.css";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
@@ -20,6 +21,23 @@ const HODHome = () => {
       </div>
     );
   }
+
+  const dispatch = useDispatch();
+    useEffect(() => {
+      const fetchCurrentSession = async () => {
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/session/---`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const data = await res.json();
+          dispatch(setSession(data.session));
+        } catch (err) {
+          console.error("Session fetch failed", err);
+        }
+      };
+  
+      fetchCurrentSession();
+    }, [token]);
 
   return (
     <div className="home-container">

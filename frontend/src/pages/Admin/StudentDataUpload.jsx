@@ -8,7 +8,7 @@ import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
-import { FaHome,FaPen, FaSignOutAlt } from "react-icons/fa";
+import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 
 const StudentDataUpload = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -23,6 +23,7 @@ const StudentDataUpload = () => {
       </div>
     );
   }
+  const currentSession = useSelector((state) => state.session.currentSession);
 
   const [branches, setBranches] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -221,7 +222,12 @@ const StudentDataUpload = () => {
                 {/* here */}
                 <div className="fac-alloc">
                   <h3>Upload Student Data</h3>
-                  <p className="session-text">Current Session: June 2025</p>
+                  <p className="session-text">
+                    Current Session:{" "}
+                    {currentSession
+                      ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                      : "Loading..."}
+                  </p>
 
                   <span className="box-overlay-text">Upload</span>
 

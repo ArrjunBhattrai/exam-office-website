@@ -10,7 +10,8 @@ import Dropdown from "../../components/Dropdown";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 
 const HODCorrectionReq = () => {
-  const user = useSelector((state) => state.auth.user); // Get logged-in user
+  const user = useSelector((state) => state.auth.user);
+  const currentSession = useSelector((state) => state.session.currentSession);
 
   const [course, setCourse] = useState("");
   const [branch, setBranch] = useState("");
@@ -103,7 +104,12 @@ const HODCorrectionReq = () => {
 
               <div className="fac-alloc">
                 <h3>Correction Requests</h3>
-                <p className="session-text">Current Session: June 2025</p>
+                <p className="session-text">
+                  Current Session:{" "}
+                  {currentSession
+                    ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                    : "Loading..."}
+                </p>
 
                 <span className="box-overlay-text">
                   Select Option To View Details

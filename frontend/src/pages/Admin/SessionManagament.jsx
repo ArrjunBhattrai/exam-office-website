@@ -24,6 +24,7 @@ const SessionManagement = () => {
       </div>
     );
   }
+  const currentSession = useSelector((state) => state.session.currentSession);
 
   const [startMonth, setStartMonth] = useState("");
   const [startYear, setStartYear] = useState("");
@@ -108,9 +109,12 @@ const SessionManagement = () => {
         const sessionRes = await fetch(`${BACKEND_URL}/api/session`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const branchRes = await fetch(`${BACKEND_URL}/api/branch/get-branches`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const branchRes = await fetch(
+          `${BACKEND_URL}/api/branch/get-branches`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         const courseRes = await fetch(`${BACKEND_URL}/api/course/get-courses`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -211,7 +215,13 @@ const SessionManagement = () => {
               </div>
               <div className="fac-alloc">
                 <h3>Session Management</h3>
-                <p className="session-text">Current Session: June 2025</p>
+                <p className="session-text">
+                  Current Session:{" "}
+                  {currentSession
+                    ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                    : "Loading..."}
+                </p>
+
                 <span className="box-overlay-text">Add Details</span>
                 <div className="faculty-box">
                   <div className="session-form">

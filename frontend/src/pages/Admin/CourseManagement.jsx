@@ -6,7 +6,7 @@ import { BACKEND_URL } from "../../../config";
 import RedHeader from "../../components/RedHeader";
 import ActivityHeader from "../../components/ActivityHeader";
 import Sidebar from "../../components/Sidebar";
-import { FaHome,FaPen, FaSignOutAlt } from "react-icons/fa";
+import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import RedFooter from "../../components/RedFooter";
 import "./admin.css";
 
@@ -23,6 +23,8 @@ const CourseManagement = () => {
       </div>
     );
   }
+  const currentSession = useSelector((state) => state.session.currentSession);
+
   const [courses, setCourses] = useState([]);
   const [formData, setFormData] = useState({
     branch_id: "",
@@ -202,7 +204,13 @@ const CourseManagement = () => {
               </div>
               <div className="fac-alloc">
                 <h3>Course Management</h3>
-                <p className="session-text">Current Session: June 2025</p>
+                <p className="session-text">
+                  Current Session:{" "}
+                  {currentSession
+                    ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                    : "Loading..."}
+                </p>
+
                 <span className="box-overlay-text">Add Details</span>
                 <div className="faculty-box">
                   <div className="space-y-6">

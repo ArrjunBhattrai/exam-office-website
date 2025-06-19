@@ -22,6 +22,7 @@ const ViewSubjects = () => {
       </div>
     );
   }
+  const currentSession = useSelector((state) => state.session.currentSession);
 
   const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -183,7 +184,12 @@ const ViewSubjects = () => {
               <div>
                 <div className="fac-alloc">
                   <h3>View Assigned Subjects</h3>
-                  <p className="session-text">Current Session: June 2025</p>
+                  <p className="session-text">
+                    Current Session:{" "}
+                    {currentSession
+                      ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                      : "Loading..."}
+                  </p>
 
                   <span className="box-overlay-text">Select to view</span>
                   <div className="faculty-box">

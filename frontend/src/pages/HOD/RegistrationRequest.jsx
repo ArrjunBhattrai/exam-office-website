@@ -22,6 +22,7 @@ const RegistrationRequest = () => {
       </div>
     );
   }
+  const currentSession = useSelector((state) => state.session.currentSession);
 
   const [pendingRequests, setPendingRequests] = useState([]);
 
@@ -174,7 +175,12 @@ const RegistrationRequest = () => {
 
               <div className="fac-alloc">
                 <h3>Registration Requests</h3>
-                <p className="session-text">Current Session: June 2025</p>
+                <p className="session-text">
+                  Current Session:{" "}
+                  {currentSession
+                    ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                    : "Loading..."}
+                </p>
 
                 <span className="box-overlay-text">View Requests</span>
 

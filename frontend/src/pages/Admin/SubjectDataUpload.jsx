@@ -10,13 +10,20 @@ import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 
-
 const SubjectDataUpload = () => {
-  const { userId, isAuthenticated, role, token } = useSelector((state) => state.auth);
+  const { userId, isAuthenticated, role, token } = useSelector(
+    (state) => state.auth
+  );
 
   if (!isAuthenticated || role !== "admin") {
-    return <div>You are not authorized to view this page. Please login to get access to this page.</div>;
+    return (
+      <div>
+        You are not authorized to view this page. Please login to get access to
+        this page.
+      </div>
+    );
   }
+  const currentSession = useSelector((state) => state.session.currentSession);
 
   const [branches, setBranches] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -61,7 +68,7 @@ const SubjectDataUpload = () => {
   useEffect(() => {
     if (selectedBranch) {
       fetchCoursesByBranch(selectedBranch);
-      setSelectedCourse(""); 
+      setSelectedCourse("");
     }
   }, [selectedBranch]);
 
@@ -114,7 +121,7 @@ const SubjectDataUpload = () => {
         label: branch.branch_name,
       }))
     : [{ value: "", label: "No branches available" }];
-    console.log(branchOptions);
+  console.log(branchOptions);
 
   const courseOptions = courses.length
     ? courses.map((course) => ({
@@ -128,7 +135,7 @@ const SubjectDataUpload = () => {
 
   return (
     <div className="home-container">
-      <Toaster position="top-right" /> 
+      <Toaster position="top-right" />
       <div className="user-bg">
         <RedHeader />
         <div className="user-content">
@@ -169,7 +176,10 @@ const SubjectDataUpload = () => {
 
             <div className="user-info">
               <div className="user-icons">
-                <button className="icon-btn" onClick={() => (window.location.href = "/admin-home")}>
+                <button
+                  className="icon-btn"
+                  onClick={() => (window.location.href = "/admin-home")}
+                >
                   <FaHome className="icon" /> Home
                 </button>
                 <button
@@ -181,7 +191,10 @@ const SubjectDataUpload = () => {
                   <FaPen className="icon" />
                   Edit Info
                 </button>
-                <button className="icon-btn" onClick={() => (window.location.href = "/")}>
+                <button
+                  className="icon-btn"
+                  onClick={() => (window.location.href = "/")}
+                >
                   <FaSignOutAlt className="icon" /> Logout
                 </button>
               </div>
@@ -199,12 +212,19 @@ const SubjectDataUpload = () => {
 
               <div className="fac-alloc">
                 <h3>Upload Subject Data</h3>
-                <p className="session-text">Current Session: June 2025</p>
+                <p className="session-text">
+                  Current Session:{" "}
+                  {currentSession
+                    ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                    : "Loading..."}
+                </p>
+
                 <span className="box-overlay-text">Upload</span>
 
                 <div className="faculty-box">
                   <p className="institute-text">
-                    <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF TECHNOLOGY & SCIENCE
+                    <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
+                    TECHNOLOGY & SCIENCE
                   </p>
 
                   <div className="dropdown">

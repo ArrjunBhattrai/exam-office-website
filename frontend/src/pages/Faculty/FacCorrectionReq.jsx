@@ -24,6 +24,7 @@ const FacCorrectionReq = () => {
       </div>
     );
   }
+  const currentSession = useSelector((state) => state.session.currentSession);
 
   const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState({});
@@ -62,31 +63,31 @@ const FacCorrectionReq = () => {
   const subComponentOptions = component ? subComponentMap[component] || [] : [];
 
   const fetchAssignedSubjects = async () => {
-      try {
-        const response = await fetch(
-          `${BACKEND_URL}/api/faculty/assignedSubjects/${userId}`,
-          {
-            method: "GET",
-            headers: {
-              authorization: token,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-  
-        if (!response.ok) {
-          throw new Error("Failed to fetch assigned Subjects");
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/faculty/assignedSubjects/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
         }
-  
-        const data = await response.json();
-        setAssignedSubjects(data.subjects);
-      } catch (error) {
-        toast.error(error.message || "Failed to fetch Assigned Subjects");
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch assigned Subjects");
       }
-    };
-    useEffect(() => {
-        fetchAssignedSubjects();
-      }, [token]);
+
+      const data = await response.json();
+      setAssignedSubjects(data.subjects);
+    } catch (error) {
+      toast.error(error.message || "Failed to fetch Assigned Subjects");
+    }
+  };
+  useEffect(() => {
+    fetchAssignedSubjects();
+  }, [token]);
 
   const handleProceed = async () => {
     if (selectedSubject.subject_id && component && subComponent) {
@@ -122,7 +123,7 @@ const FacCorrectionReq = () => {
                     name: "ATKT Marks Feeding",
                     path: "/faculty/atkt-marks-feed",
                   },
-                  
+
                   {
                     name: "Make Correction Request",
                     path: "/faculty/correction-request",
@@ -130,7 +131,6 @@ const FacCorrectionReq = () => {
                   {
                     name: "Edit Personal Info",
                     path: "/faculty/edit-info",
-
                   },
                 ]}
               />
@@ -177,7 +177,12 @@ const FacCorrectionReq = () => {
                 {/* here */}
                 <div className="fac-alloc">
                   <h3>Correction Request</h3>
-                  <p className="session-text">Current Session: June 2025</p>
+                  <p className="session-text">
+                    Current Session:{" "}
+                    {currentSession
+                      ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                      : "Loading..."}
+                  </p>
 
                   <span className="box-overlay-text">Draft a request</span>
 
@@ -224,7 +229,6 @@ const FacCorrectionReq = () => {
                       />
                     </div>
 
-
                     {!showOptions ? (
                       <Button text="Proceed" onClick={handleProceed} />
                     ) : (
@@ -246,12 +250,11 @@ const FacCorrectionReq = () => {
                         <Button
                           text="Withdraw Waiting Requests"
                           // onClick={async () => {
-                            
+
                           // }}
                         />
                       </div>
                     )}
-
                   </div>
                 </div>
               </div>
