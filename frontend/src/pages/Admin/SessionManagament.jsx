@@ -10,6 +10,8 @@ import Dropdown from "../../components/Dropdown";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import RedFooter from "../../components/RedFooter";
 import "./admin.css";
+import { useDispatch } from "react-redux";
+import { setSession } from "../../redux/sessionSlice";
 
 const SessionManagement = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -25,6 +27,7 @@ const SessionManagement = () => {
     );
   }
   const currentSession = useSelector((state) => state.session.currentSession);
+  const dispatch = useDispatch();
 
   const [startMonth, setStartMonth] = useState("");
   const [startYear, setStartYear] = useState("");
@@ -77,7 +80,7 @@ const SessionManagement = () => {
     };
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/session/----`, {
+      const res = await fetch(`${BACKEND_URL}/api/session/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -95,6 +98,7 @@ const SessionManagement = () => {
         setStartYear("");
         setEndMonth("");
         setEndYear("");
+        dispatch(setSession(data.session));
       } else {
         toast.error(data.error || "Something went wrong.");
       }
@@ -106,7 +110,7 @@ const SessionManagement = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const sessionRes = await fetch(`${BACKEND_URL}/api/session`, {
+        const sessionRes = await fetch(`${BACKEND_URL}/api/session/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const branchRes = await fetch(
@@ -119,13 +123,24 @@ const SessionManagement = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        const sessions = await sessionRes.json();
+        const sessionsData = await sessionRes.json();
         const branches = await branchRes.json();
         const courses = await courseRes.json();
 
-        setAllSessions(sessions.sessions || []);
+        const allSessions = sessionsData.sessions || [];
+        setAllSessions(allSessions);
         setAllBranches(branches || []);
         setAllCourses(courses.courses || []); // Adjust based on actual response key
+
+        if (allSessions.length > 0) {
+        const sorted = [...allSessions].sort((a, b) => {
+          if (a.start_year !== b.start_year) {
+            return b.start_year - a.start_year;
+          }
+          return b.start_month - a.start_month;
+        });
+        dispatch(setSession(sorted[0]));
+      }
       } catch (err) {
         toast.error("Failed to load session, branch, or course data");
       }

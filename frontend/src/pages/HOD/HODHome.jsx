@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setSession } from "../../redux/sessionSlice";
 import "./hod.css";
@@ -26,7 +26,7 @@ const HODHome = () => {
     useEffect(() => {
       const fetchCurrentSession = async () => {
         try {
-          const res = await fetch(`${BACKEND_URL}/api/session/---`, {
+          const res = await fetch(`${BACKEND_URL}/api/session/`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           const data = await res.json();
