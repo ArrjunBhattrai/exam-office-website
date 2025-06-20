@@ -110,7 +110,7 @@ const SessionManagement = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         const branchRes = await fetch(
-          `${BACKEND_URL}/api/branch/get-branches`,
+          `${BACKEND_URL}/api/branch/`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

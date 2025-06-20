@@ -1,4 +1,4 @@
-import  { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Toaster, toast } from "react-hot-toast";
 import { useSelector } from "react-redux";
@@ -37,7 +37,7 @@ const CourseManagement = () => {
   // Fetch all courses
   const fetchCourses = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/course`, {
+      const response = await fetch(`${BACKEND_URL}/api/course/`, {
         method: "GET",
         headers: {
           authorization: token,
@@ -50,6 +50,7 @@ const CourseManagement = () => {
       }
 
       const data = await response.json();
+      console.log(data);
       setCourses(data.courses);
     } catch (error) {
       toast.error(error.message || "Failed to fetch courses");
@@ -75,6 +76,7 @@ const CourseManagement = () => {
         },
         body: JSON.stringify(formData),
       });
+      
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -121,6 +123,27 @@ const CourseManagement = () => {
       fetchCourses();
     } catch (error) {
       toast.error(error.message || "Failed to delete course");
+    }
+  };
+
+  const handleAddSection = async (branch_id, course_id, specialization) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/section/`, {
+        method: "POST",
+        headers: {
+          authorization: token,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ branch_id, course_id, specialization }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to add section");
+
+      toast.success("Section added successfully");
+      fetchCourses();
+    } catch (err) {
+      toast.error(err.message || "Failed to add section");
     }
   };
 
@@ -273,6 +296,7 @@ const CourseManagement = () => {
                               <th>Course Name</th>
                               <th>Specialization</th>
                               <th>Actions</th>
+                              <th>Sections</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -297,6 +321,24 @@ const CourseManagement = () => {
                                     className="text-red-600 hover:text-red-800"
                                   >
                                     <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </td>
+                                <td>
+                                  {course.sections && course.sections.length > 0
+                                    ? course.sections.join(", ")
+                                    : "No Section Created"}
+                                  <br />
+                                  <button
+                                    onClick={() =>
+                                      handleAddSection(
+                                        course.branch_id,
+                                        course.course_id,
+                                        course.specialization
+                                      )
+                                    }
+                                    className="text-blue-600 text-xs hover:underline mt-1"
+                                  >
+                                    + Add Section
                                   </button>
                                 </td>
                               </tr>

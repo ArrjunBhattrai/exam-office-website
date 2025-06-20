@@ -94,8 +94,30 @@ const getCourses = async (req, res) => {
     }
 
     const courses = await query;
+    console.log(courses);
 
-    return res.status(200).json({ courses });
+    // Fetch all sections relevant to the returned courses
+    const allSections = await db("section")
+      .select("branch_id", "course_id", "specialization", "section");
+
+    // Organize sections into a map for fast lookup
+    const sectionMap = {};
+    for (const sec of allSections) {
+      const key = `${sec.branch_id}-${sec.course_id}-${sec.specialization}`;
+      if (!sectionMap[key]) sectionMap[key] = [];
+      sectionMap[key].push(sec.section);
+    }
+
+    // Append sections to each course
+    const coursesWithSections = courses.map((course) => {
+      const key = `${course.branch_id}-${course.course_id}-${course.specialization}`;
+      return {
+        ...course,
+        sections: sectionMap[key] || ["No Sections Created"], // array of sections or empty
+      };
+    });
+
+    return res.status(200).json({ courses: coursesWithSections });
   } catch (error) {
     console.error("Get Courses Error:", error);
     return res.status(500).json({ error: "Error retrieving courses" });

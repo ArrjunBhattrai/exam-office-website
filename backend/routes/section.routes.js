@@ -3,7 +3,7 @@ const router = express.Router();
 const { authenticateUser, authorizeRole } = require("../middleware/auth");
 const sectionController = require("../controller/section");
 
-router.get(
+router.post(
   "/",
   authenticateUser,
   authorizeRole(["admin"]),

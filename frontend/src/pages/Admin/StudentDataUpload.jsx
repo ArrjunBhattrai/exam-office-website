@@ -31,6 +31,8 @@ const StudentDataUpload = () => {
   const [selectedBranch, setSelectedBranch] = useState("");
   const [file, setFile] = useState(null);
   const [fileInputKey, setFileInputKey] = useState(Date.now());
+  const [sections, setSections] = useState([]);
+  const [selectedSection, setSelectedSection] = useState("");
 
   // fetch branches
   const fetchBranches = async () => {
@@ -50,7 +52,7 @@ const StudentDataUpload = () => {
   const fetchCoursesByBranch = async (branchId) => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/course/?branch_id=${branchId}`,
+        `${BACKEND_URL}/api/course/`,
         {
           method: "GET",
           headers: { authorization: token, "Content-Type": "application/json" },
@@ -90,22 +92,21 @@ const StudentDataUpload = () => {
     formData.append("branch_id", selectedBranch);
     formData.append("course_id", course_id);
     formData.append("specialization", specialization);
+    formData.append("section", selectedSection || "");
 
     try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/student`,
-        {
-          method: "POST",
-          headers: { authorization: token },
-          body: formData,
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/api/student`, {
+        method: "POST",
+        headers: { authorization: token },
+        body: formData,
+      });
 
       const result = await response.json();
       if (response.ok) {
         toast.success(result.message || "Upload successful!");
         setSelectedBranch("");
         setSelectedCourse("");
+        setSelectedSection("");
         setFile(null);
         setFileInputKey(Date.now());
       } else {
@@ -134,6 +135,36 @@ const StudentDataUpload = () => {
             : course.course_name,
       }))
     : [{ value: "", label: "No courses available" }];
+
+  const fetchSections = async (branchId, courseId, specialization) => {
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/course/?branch_id=${branchId}`,
+        {
+          method: "GET",
+          headers: { authorization: token, "Content-Type": "application/json" },
+        }
+      );
+      const data = await response.json();
+      const courses = data.courses || [];
+       const matchedCourse = courses.find(
+      (c) =>
+        c.course_id === courseId &&
+        c.specialization === specialization
+    );
+
+    setSections(matchedCourse?.sections || []);
+    } catch (err) {
+      toast.error(err.message || "Failed to fetch sections");
+    }
+  };
+  useEffect(() => {
+    if (selectedCourse) {
+      const [course_id, specialization] = selectedCourse.split("___");
+      fetchSections(selectedBranch, course_id, specialization);
+      setSelectedSection(""); // reset on new course
+    }
+  }, [selectedCourse]);
 
   return (
     <div className="home-container">
@@ -249,6 +280,13 @@ const StudentDataUpload = () => {
                         selectedValue={selectedCourse}
                         onChange={setSelectedCourse}
                       />
+
+                      <Dropdown
+                        label="Section"
+                        options={sections.map((s) => ({ value: s, label: s }))}
+                        selectedValue={selectedSection}
+                        onChange={setSelectedSection}
+                      />
                     </div>
 
                     <div className="upload-container">
@@ -261,7 +299,7 @@ const StudentDataUpload = () => {
                       />
                       <button
                         className="upload-button"
-                        disabled={!selectedCourse || !selectedBranch}
+                        disabled={!selectedCourse || !selectedBranch || (sections.length > 0 && !selectedSection)}
                         onClick={handleUpload}
                       >
                         Upload
