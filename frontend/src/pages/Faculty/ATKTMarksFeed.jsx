@@ -24,6 +24,7 @@ const ATKTMarksFeed = () => {
       </div>
     );
   }
+  const currentSession = useSelector((state) => state.session.currentSession);
 
   const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState({});
@@ -525,17 +526,14 @@ const ATKTMarksFeed = () => {
         co_marks: combinedData[student.enrollment_no],
       }));
 
-      const response = await fetch(
-        `${BACKEND_URL}/api/atkt/submit-marks`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            authorization: token,
-          },
-          body: JSON.stringify({ data: payload }),
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/api/atkt/submit-marks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: token,
+        },
+        body: JSON.stringify({ data: payload }),
+      });
 
       if (!response.ok) throw new Error("Failed to submit marks");
 
@@ -613,7 +611,12 @@ const ATKTMarksFeed = () => {
               <div>
                 <div className="fac-alloc">
                   <h3>ATKT Marks Feeding</h3>
-                  <p className="session-text">Current Session: June 2025</p>
+                  <p className="session-text">
+                    Current Session:{" "}
+                    {currentSession
+                      ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                      : "Loading..."}
+                  </p>
 
                   <span className="box-overlay-text">Select to view</span>
                   <div className="faculty-box">

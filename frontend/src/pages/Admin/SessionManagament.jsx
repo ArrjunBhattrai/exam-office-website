@@ -24,144 +24,116 @@ const SessionManagement = () => {
       </div>
     );
   }
-  /*
-  // const [branches, setBranches] = useState([]);
-  const [formData, setFormData] = useState({
-    branch_name: "",
-    course_id: "",
-    hod_id: "",
-  });
-  const [isEditing, setIsEditing] = useState(false);
-  const [editBranchId, setEditBranchId] = useState(null);
-  const [branch, setBranch] = useState("SELECT");
-  // const { token } = useSelector((state) => state.auth);
+  const currentSession = useSelector((state) => state.session.currentSession);
 
-  // Fetch all branches
-  const fetchBranches = async () => {
+  const [startMonth, setStartMonth] = useState("");
+  const [startYear, setStartYear] = useState("");
+  const [endMonth, setEndMonth] = useState("");
+  const [endYear, setEndYear] = useState("");
+  const [sessions, setSessions] = useState([]);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [allSessions, setAllSessions] = useState([]);
+  const [allCourses, setAllCourses] = useState([]);
+  const [selectedSessionId, setSelectedSessionId] = useState("");
+  const [selectedBranchId, setSelectedBranchId] = useState("");
+  const [selectedCourseId, setSelectedCourseId] = useState("");
+  const [allBranches, setAllBranches] = useState([]);
+
+  const months = [
+    { label: "January", value: 1 },
+    { label: "February", value: 2 },
+    { label: "March", value: 3 },
+    { label: "April", value: 4 },
+    { label: "May", value: 5 },
+    { label: "June", value: 6 },
+    { label: "July", value: 7 },
+    { label: "August", value: 8 },
+    { label: "September", value: 9 },
+    { label: "October", value: 10 },
+    { label: "November", value: 11 },
+    { label: "December", value: 12 },
+  ];
+
+  const yearOptions = Array.from({ length: 5 }, (_, i) => {
+    const year = new Date().getFullYear() + i;
+    return { label: year.toString(), value: year };
+  });
+
+  const filteredCourses = selectedBranchId
+    ? allCourses.filter((course) => course.branch_id === selectedBranchId)
+    : [];
+
+  const handleAddSession = async () => {
+    if (!startMonth || !startYear || !endMonth || !endYear) {
+      toast.error("All fields are required!");
+      return;
+    }
+
+    const newSession = {
+      start_month: startMonth,
+      start_year: startYear,
+      end_month: endMonth,
+      end_year: endYear,
+    };
+
     try {
-      const response = await fetch(`${BACKEND_URL}/api/branch`, {
-        method: "GET",
+      const res = await fetch(`${BACKEND_URL}/api/session/----`, {
+        method: "POST",
         headers: {
-          authorization: token,
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify(newSession),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch branches");
-      }
+      const data = await res.json();
 
-      const data = await response.json();
-      setBranches(data);
+      if (res.ok) {
+        toast.success("Session added successfully!");
+        setSessions([...sessions, data.session]);
+        setStartMonth("");
+        setStartYear("");
+        setEndMonth("");
+        setEndYear("");
+      } else {
+        toast.error(data.error || "Something went wrong.");
+      }
     } catch (error) {
-      toast.error(error.message || "Failed to fetch branches");
+      toast.error("Server error");
     }
   };
 
   useEffect(() => {
-    fetchBranches();
+    const fetchData = async () => {
+      try {
+        const sessionRes = await fetch(`${BACKEND_URL}/api/session`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const branchRes = await fetch(
+          `${BACKEND_URL}/api/branch/get-branches`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const courseRes = await fetch(`${BACKEND_URL}/api/course/get-courses`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const sessions = await sessionRes.json();
+        const branches = await branchRes.json();
+        const courses = await courseRes.json();
+
+        setAllSessions(sessions.sessions || []);
+        setAllBranches(branches || []);
+        setAllCourses(courses.courses || []); // Adjust based on actual response key
+      } catch (err) {
+        toast.error("Failed to load session, branch, or course data");
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      console.log(token);
-      const url = isEditing
-        ? `${BACKEND_URL}/api/department/branches/${editBranchId}`
-        : `${BACKEND_URL}/api/department/branch`;
-
-      const method = isEditing ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method: method,
-        headers: {
-          authorization: token,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Operation failed");
-      }
-
-      toast.success(
-        isEditing
-          ? "Branch updated successfully"
-          : "Branch created successfully"
-      );
-
-      fetchBranches();
-      setFormData({ branch_name: "", course_id: "", hod_id: "" });
-      setIsEditing(false);
-      setEditBranchId(null);
-    } catch (error) {
-      toast.error(error.message || "Operation failed");
-    }
-  };
-
-  const handleEdit = (branch) => {
-    setFormData(branch);
-    setIsEditing(true);
-    setEditBranchId(branch.branch_id);
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/department/branches/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            authorization: token,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to delete branch");
-      }
-
-      toast.success("Branch deleted successfully");
-      fetchBranches();
-    } catch (error) {
-      toast.error(error.message || "Failed to delete branch");
-    }
-  };
-
-  const handleAssignHod = async (id) => {
-    try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/department/branches/${id}/assign-hod`,
-        {
-          method: "POST",
-          headers: {
-            authorization: token,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ hod_id: formData.hod_id }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to assign HOD");
-      }
-
-      toast.success("HOD assigned successfully");
-      fetchBranches();
-    } catch (error) {
-      toast.error(error.message || "Failed to assign HOD");
-    }
-  };
-*/
   return (
     <div className="home-container">
       <div className="user-bg">
@@ -243,124 +215,153 @@ const SessionManagement = () => {
               </div>
               <div className="fac-alloc">
                 <h3>Session Management</h3>
-                <p className="session-text">Current Session: June 2025</p>
+                <p className="session-text">
+                  Current Session:{" "}
+                  {currentSession
+                    ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                    : "Loading..."}
+                </p>
+
                 <span className="box-overlay-text">Add Details</span>
                 <div className="faculty-box">
-                  <p className="institute-text">
-                    <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
-                    TECHNOLOGY & SCIENCE
-                  </p>
-                  {/*
-                  <div className="bg-white p-4 rounded shadow mt-4">
-                    <form
-                      onSubmit={async (e) => {
-                        e.preventDefault();
-                        try {
-                          const response = await fetch(
-                            `${BACKEND_URL}/api/sessions`,
-                            {
-                              method: "POST",
-                              headers: {
-                                authorization: token,
-                                "Content-Type": "application/json",
-                              },
-                              body: JSON.stringify({
-                                start_date: formData.start_date,
-                                end_date: formData.end_date,
-                                branch_id: formData.branch_id,
-                                semester: formData.semester,
-                              }),
-                            }
-                          );
+                  <div className="session-form">
+                    <Dropdown
+                      label="Start Month"
+                      options={months}
+                      selectedValue={startMonth}
+                      onChange={(value) => setStartMonth(Number(value))}
+                    />
+                    <Dropdown
+                      label="Start Year"
+                      options={yearOptions}
+                      selectedValue={startYear}
+                      onChange={(value) => setStartYear(Number(value))}
+                    />
+                    <Dropdown
+                      label="End Month"
+                      options={months}
+                      selectedValue={endMonth}
+                      onChange={(value) => setEndMonth(Number(value))}
+                    />
+                    <Dropdown
+                      label="End Year"
+                      options={yearOptions}
+                      selectedValue={endYear}
+                      onChange={(value) => setEndYear(Number(value))}
+                    />
 
-                          if (!response.ok) {
-                            const errorData = await response.json();
-                            throw new Error(
-                              errorData.message || "Failed to create session"
-                            );
-                          }
-
-                          toast.success("Session created successfully");
-                          setFormData({
-                            start_date: "",
-                            end_date: "",
-                            branch_id: "",
-                            semester: "",
-                          });
-                        } catch (error) {
-                          toast.error(error.message || "Operation failed");
-                        }
-                      }}
-                      className="space-y-3"
+                    <button
+                      className="upload-button"
+                      onClick={handleAddSession}
                     >
-                      <div className="session">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Start Date:
-                        </label>
-                        <input
-                          type="date"
-                          name="start_date"
-                          value={formData.start_date}
-                          onChange={handleChange}
-                          className="w-full px-3 py-2 border rounded"
-                          required
-                        />
-                      </div>
-                      <div className="session">
-                        <label className="block text-sm font-medium text-gray-700">
-                          End Date:
-                        </label>
-                        <input
-                          type="date"
-                          name="end_date"
-                          value={formData.end_date}
-                          onChange={handleChange}
-                          className="w-full px-3 py-2 border rounded"
-                          required
-                        />
-                      </div>
-                      <div className="session">
-                        <div className="dropdown-container">
-                          <Dropdown
-                            label="Course"
-                            options={["B.Tech.", "B.Pharma", "M.tech", "MCA"]}
-                            selectedValue={formData.branch_id}
-                            onChange={(value) =>
-                              setFormData({ ...formData, branch_id: value })
-                            }
-                          />
-                        </div>
-                      </div>
-                      <div className="session">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Semester:
-                        </label>
-                        <input
-                          type="number"
-                          name="semester"
-                          value={formData.semester}
-                          onChange={handleChange}
-                          className="w-full px-3 py-2 border rounded"
-                          min="1"
-                          max="8"
-                          required
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-                      >
-                        Create Session
-                      </button>
-                    </form>
+                      Add Session
+                    </button>
                   </div>
-                  */}
+                  <div className="download-session">
+                    <h4>Download Previous Session Data:</h4>
+                    <button
+                      className="upload-button"
+                      onClick={() => setShowDownloadModal(true)}
+                    >
+                      Select Session to Download
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
         <RedFooter />
+
+        {showDownloadModal && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h2>Select Session and Course</h2>
+
+              <Dropdown
+                label="Session"
+                options={allSessions.map((s) => ({
+                  label: `${s.start_month}/${s.start_year} - ${s.end_month}/${s.end_year}`,
+                  value: s.session_id,
+                }))}
+                selectedValue={selectedSessionId}
+                onChange={setSelectedSessionId}
+              />
+
+              <Dropdown
+                label="Branch"
+                options={allBranches.map((b) => ({
+                  label: b.branch_name,
+                  value: b.branch_id,
+                }))}
+                selectedValue={selectedBranchId}
+                onChange={(branchId) => {
+                  setSelectedBranchId(branchId);
+                  setSelectedCourseId(""); // reset course when branch changes
+                }}
+              />
+
+              <Dropdown
+                label="Course"
+                options={filteredCourses.map((c) => ({
+                  label: `${c.course_name} ${c.specialization}`,
+                  value: c.course_id,
+                }))}
+                selectedValue={selectedCourseId}
+                onChange={setSelectedCourseId}
+              />
+
+              <div className="modal-actions">
+                <button
+                  className="upload-button"
+                  onClick={async () => {
+                    if (
+                      !selectedSessionId ||
+                      !selectedBranchId ||
+                      !selectedCourseId
+                    ) {
+                      toast.error("Please select session, branch, and course");
+                      return;
+                    }
+
+                    try {
+                      const res = await fetch(
+                        `${BACKEND_URL}/api/session/download-data?----`,
+                        {
+                          headers: { Authorization: `Bearer ${token}` },
+                        }
+                      );
+
+                      if (!res.ok) throw new Error("Download failed");
+
+                      const blob = await res.blob();
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = "session_data.zip";
+                      document.body.appendChild(a);
+                      a.click();
+                      a.remove();
+                      toast.success("Download started");
+                      setShowDownloadModal(false);
+                    } catch (error) {
+                      toast.error("Download failed");
+                    }
+                  }}
+                >
+                  Download
+                </button>
+
+                <button
+                  className="upload-button"
+                  onClick={() => setShowDownloadModal(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

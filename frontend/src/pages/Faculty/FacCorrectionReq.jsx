@@ -18,6 +18,7 @@ const FacCorrectionReq = () => {
   if (!isAuthenticated || role !== "faculty") {
     return <div>You are not authorized to view this page.</div>;
   }
+  const currentSession = useSelector((state) => state.session.currentSession);
 
   const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState({});
@@ -166,11 +167,16 @@ const FacCorrectionReq = () => {
                     name: "ATKT Marks Feeding",
                     path: "/faculty/atkt-marks-feed",
                   },
+
                   {
                     name: "Make Correction Request",
                     path: "/faculty/correction-request",
                   },
-                  { name: "Edit Personal Info", path: "/faculty/edit-info" },
+                  {
+                    name: "Edit Personal Info",
+                    path: "/faculty/edit-info",
+                  },
+
                 ]}
               />
             </div>
@@ -215,7 +221,12 @@ const FacCorrectionReq = () => {
 
               <div className="fac-alloc">
                 <h3>Correction Request</h3>
-                <p className="session-text">Current Session: June 2025</p>
+                <p className="session-text">
+                    Current Session:{" "}
+                    {currentSession
+                      ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                      : "Loading..."}
+                  </p>
                 <span className="box-overlay-text">Draft a request</span>
 
                 <div className="faculty-box">

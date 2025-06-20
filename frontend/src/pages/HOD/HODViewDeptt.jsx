@@ -25,6 +25,7 @@ const HODViewDeptt = () => {
       </div>
     );
   }
+  const currentSession = useSelector((state) => state.session.currentSession);
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedFaculty, setSelectedFaculty] = useState(null);
@@ -88,7 +89,8 @@ const HODViewDeptt = () => {
       setCourses(options);
 
       const subjectRes = await fetch(
-        `${BACKEND_URL}/api/subject/faculty-subjects/${faculty.faculty_id}`, {
+        `${BACKEND_URL}/api/subject/faculty-subjects/${faculty.faculty_id}`,
+        {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -222,7 +224,12 @@ const HODViewDeptt = () => {
 
               <div className="fac-alloc">
                 <h3>Department Details</h3>
-                <p className="session-text">Current Session: June 2025</p>
+                <p className="session-text">
+                  Current Session:{" "}
+                  {currentSession
+                    ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                    : "Loading..."}
+                </p>
 
                 <span className="box-overlay-text">
                   Select Option To View Details

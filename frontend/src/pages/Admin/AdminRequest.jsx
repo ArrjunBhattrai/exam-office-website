@@ -126,7 +126,7 @@ const AdminRequest = () => {
               <div className="user-icons">
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/admin-home")}
+                  onClick={() => (window.location.href = "/admin/home")}
                 >
                   <FaHome className="icon" />
                   Home
@@ -165,7 +165,13 @@ const AdminRequest = () => {
                 {/* here */}
                 <div className="fac-alloc">
                   <h3>Correction Request</h3>
-                  <p className="session-text">Current Session: June 2025</p>
+
+                  <p className="session-text">
+                    Current Session:{" "}
+                    {currentSession
+                      ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                      : "Loading..."}
+                  </p>
 
                   <span className="box-overlay-text">View request</span>
 
@@ -242,6 +248,7 @@ const AdminRequest = () => {
       )}
 
       <ToastContainer position="top-right" autoClose={3000} />
+
     </div>
   );
 };

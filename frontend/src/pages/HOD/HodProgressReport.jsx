@@ -12,6 +12,8 @@ import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 
 const HodProgressReport = () => {
   const user = useSelector((state) => state.auth.user);
+  const currentSession = useSelector((state) => state.session.currentSession);
+
   return (
     <div className="home-container">
       <div className="user-bg">
@@ -99,7 +101,12 @@ const HodProgressReport = () => {
 
               <div className="fac-alloc">
                 <h3>Progress Report</h3>
-                <p className="session-text">Current Session: June 2025</p>
+                <p className="session-text">
+                  Current Session:{" "}
+                  {currentSession
+                    ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                    : "Loading..."}
+                </p>
 
                 <span className="box-overlay-text">View Report</span>
 

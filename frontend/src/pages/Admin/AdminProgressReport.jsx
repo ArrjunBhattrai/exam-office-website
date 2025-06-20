@@ -7,11 +7,11 @@ import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
 import Button from "../../components/Button";
-import { FaHome,FaPen, FaSignOutAlt } from "react-icons/fa";
+import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 
 const AdminProgressReport = () => {
-      const { officer_name, user_type, token } = useSelector((state) => state.auth);
-  
+  const { officer_name, user_type, token } = useSelector((state) => state.auth);
+  const currentSession = useSelector((state) => state.session.currentSession);
 
   return (
     <div className="home-container">
@@ -82,7 +82,7 @@ const AdminProgressReport = () => {
                 </button>
               </div>
               <div className="user-sec">
-              <p>
+                <p>
                   <span>Welcome: </span>
                   <span className="user-name">
                     {officer_name && `[${officer_name}]`}
@@ -97,23 +97,26 @@ const AdminProgressReport = () => {
               </div>
 
               <div>
-                 {/* here */}
-                 <div className="fac-alloc">
-                <h3>Progress Report</h3>
-                <p className="session-text">Current Session: June 2025</p>
-
-                <span className="box-overlay-text">Select to view</span>
-
-                <div className="faculty-box">
-                  <p className="institute-text">
-                    <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
-                    TECHNOLOGY & SCIENCE
+                {/* here */}
+                <div className="fac-alloc">
+                  <h3>Progress Report</h3>
+                  <p className="session-text">
+                    Current Session:{" "}
+                    {currentSession
+                      ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                      : "Loading..."}
                   </p>
 
+                  <span className="box-overlay-text">Select to view</span>
+
+                  <div className="faculty-box">
+                    <p className="institute-text">
+                      <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
+                      TECHNOLOGY & SCIENCE
+                    </p>
+                  </div>
                 </div>
               </div>
-              </div>
-              
             </div>
           </div>
 

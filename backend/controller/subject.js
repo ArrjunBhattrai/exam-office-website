@@ -3,13 +3,24 @@ const db = require("../db/db");
 const csv = require("csv-parser");
 const fs = require("fs");
 
+// Fetch latest session_id
+const getLatestSessionId = async () => {
+  const latestSession = await db("session")
+    .orderBy("start_year", "desc")
+    .orderBy("start_month", "desc")
+    .first();
+
+  if (!latestSession) throw new Error("No active session found");
+  return latestSession.session_id;
+};
+
 // Upload subject data
 const subjectDataUpload = async (req, res) => {
   const { branch_id, course_id, specialization } = req.body;
 
   if (!req.file || !branch_id || !course_id || !specialization) {
     return res.status(400).json({
-      error: "CSV file and branch_id, course_id, specialization are required.",
+      error: "CSV file and session_id, branch_id, course_id, specialization are required.",
     });
   }
 
@@ -30,6 +41,8 @@ const subjectDataUpload = async (req, res) => {
     return res.status(500).json({ error: "Internal server error." });
   }
 
+  const session_id = await getLatestSessionId();
+
   const results = [];
   const filePath = req.file.path;
 
@@ -46,6 +59,7 @@ const subjectDataUpload = async (req, res) => {
       if (!subjectId || !subjectName || !subjectType || isNaN(semester)) return;
 
       results.push([
+        session_id,
         subjectId,
         subjectType,
         subjectName,
@@ -73,7 +87,7 @@ const subjectDataUpload = async (req, res) => {
 
         const rawQuery = `
             INSERT INTO subject 
-              (subject_id, subject_type, subject_name, semester, branch_id, course_id, specialization)
+              (session_id, subject_id, subject_type, subject_name, semester, branch_id, course_id, specialization)
             VALUES ${valuesPlaceholders}
             ON DUPLICATE KEY UPDATE
               subject_name = VALUES(subject_name),
@@ -104,7 +118,7 @@ const subjectDataUpload = async (req, res) => {
 
 // Get subjects for particular course of a branch
 const getSubjectsForCourse = async (req, res) => {
-  const { branch_id, course_id, specialization, semester } = req.query;
+  const { branch_id, course_id, specialization, semester} = req.query;
 
   if (!branch_id || !course_id || !specialization || !semester) {
     return res.status(400).json({
@@ -113,12 +127,15 @@ const getSubjectsForCourse = async (req, res) => {
   }
 
   try {
+    const session_id = await getLatestSessionId();
+
     const subjects = await db("subject")
       .where({
         branch_id,
         course_id,
         specialization,
         semester,
+        session_id,
       })
       .select("subject_id", "subject_name", "subject_type");
 
@@ -135,16 +152,16 @@ const getAssignedSubject = async (req, res) => {
     const { faculty_id } = req.params;
 
     if (!faculty_id) {
-      return res.status(400).json({ error: "Faculty ID is required" });
+      return res.status(400).json({ error: "Faculty IDis required" });
     }
+
+    const session_id = await getLatestSessionId();
 
     const subjects = await db("faculty_subject")
       .join("subject", function () {
-        this.on("faculty_subject.subject_id", "=", "subject.subject_id").andOn(
-          "faculty_subject.subject_type",
-          "=",
-          "subject.subject_type"
-        );
+        this.on("faculty_subject.subject_id", "=", "subject.subject_id")
+        .andOn( "faculty_subject.subject_type", "=", "subject.subject_type")
+        .andOn("faculty_subject.session_id", "=", "subject.session_id");
       })
       .leftJoin("course_outcome", function () {
         this.on(
@@ -155,9 +172,11 @@ const getAssignedSubject = async (req, res) => {
           "faculty_subject.subject_type",
           "=",
           "course_outcome.subject_type"
-        );
+        )
+        .andOn("faculty_subject.session_id", "=", "course_outcome.session_id");
       })
       .where("faculty_subject.faculty_id", faculty_id)
+      .andWhere("faculty_subject.session_id", session_id)
       .groupBy(
         "subject.subject_id",
         "subject.subject_type",
@@ -199,8 +218,10 @@ const getCourseOutcomes = async (req, res) => {
         .json({ error: "Subject ID and Subject Type are required." });
     }
 
+    const session_id = await getLatestSessionId();
+
     const coList = await db("course_outcome")
-      .where({ subject_id, subject_type })
+      .where({ subject_id, subject_type, session_id })
       .pluck("co_name");
 
     res.status(200).json(coList);
@@ -224,11 +245,14 @@ const assignCO = async (req, res) => {
       return res.status(400).json({ error: "Invalid input" });
     }
 
+    const session_id = await getLatestSessionId();
+
     const insertedCOs = await db("course_outcome").insert(
       co_names.map((name) => ({
         co_name: name,
         subject_id,
         subject_type,
+        session_id,
       }))
     );
 
@@ -244,24 +268,28 @@ const getAllSubjectsForCourse = async (req, res) => {
 
   if (!branch_id || !course_id || !specialization) {
     return res.status(400).json({
-      error: "branch_id, course_id and specialization are required",
+      error: "branch_id, course_id, session_id and specialization are required",
     });
   }
 
   try {
+    const session_id = await getLatestSessionId();
+
     const rows = await db("subject as s")
       .leftJoin("faculty_subject as fs", function () {
         this.on("s.subject_id", "=", "fs.subject_id").andOn(
           "s.subject_type",
           "=",
           "fs.subject_type"
-        );
+        )
+        andOn("s.session_id", "=", "fs.session_id");
       })
       .leftJoin("faculty as f", "fs.faculty_id", "f.faculty_id")
       .where({
         "s.branch_id": branch_id,
         "s.course_id": course_id,
         "s.specialization": specialization,
+        "s.session_id": session_id
       })
       .select(
         "s.subject_id",

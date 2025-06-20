@@ -23,6 +23,7 @@ const ElectiveDataUpload = () => {
       </div>
     );
   }
+  const currentSession = useSelector((state) => state.session.currentSession);
 
   const [subjects, setSubjects] = useState([]);
   const [electiveOptions, setElectiveOptions] = useState([]);
@@ -74,10 +75,7 @@ const ElectiveDataUpload = () => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("subject_id", selectedSubjectData.subject_id);
-    formData.append(
-      "subject_type",
-      selectedSubjectData.subject_type
-    );
+    formData.append("subject_type", selectedSubjectData.subject_type);
 
     try {
       const res = await fetch(`${BACKEND_URL}/api/elective/upload`, {
@@ -172,7 +170,12 @@ const ElectiveDataUpload = () => {
                 {/* here */}
                 <div className="fac-alloc">
                   <h3>Upload Elective Data </h3>
-                  <p className="session-text">Current Session: June 2025</p>
+                  <p className="session-text">
+                    Current Session:{" "}
+                    {currentSession
+                      ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                      : "Loading..."}
+                  </p>
 
                   <span className="box-overlay-text">Upload</span>
 

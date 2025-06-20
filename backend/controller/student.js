@@ -2,13 +2,24 @@ const db = require("../db/db");
 const fs = require("fs");
 const csv = require("csv-parser");
 
+// Get latest session_id
+const getLatestSessionId = async () => {
+  const latestSession = await db("session")
+    .orderBy("start_year", "desc")
+    .orderBy("start_month", "desc")
+    .first();
+
+  if (!latestSession) throw new Error("No active session found");
+  return latestSession.session_id;
+};
+
 // Uploading student data
 const studentDataUpload = async (req, res) => {
   const { branch_id, course_id, specialization } = req.body;
 
   if (!req.file || !branch_id || !course_id || !specialization) {
     return res.status(400).json({
-      error: "CSV file and branch_id, course_id, specialization are required.",
+      error: "CSV file and branch_id, course_id, session_id and specialization are required.",
     });
   }
 
@@ -29,6 +40,7 @@ const studentDataUpload = async (req, res) => {
     return res.status(500).json({ error: "Internal server error." });
   }
 
+  const session_id = await getLatestSessionId();
   const results = [];
   const filePath = req.file.path;
 
@@ -60,6 +72,7 @@ const studentDataUpload = async (req, res) => {
       }
 
       results.push([
+        session_id,
         enrollmentNo,
         studentName,
         branch_id,
@@ -87,7 +100,7 @@ const studentDataUpload = async (req, res) => {
 
         const rawQuery = `
           INSERT INTO student
-            (enrollment_no, student_name, branch_id, course_id, specialization, semester, status)
+            (session_id, enrollment_no, student_name, branch_id, course_id, specialization, semester, status)
           VALUES ${valuesPlaceholders}
           ON DUPLICATE KEY UPDATE
             student_name = VALUES(student_name),
@@ -123,17 +136,20 @@ const getStudentsForCourse = async (req, res) => {
 
   if (!branch_id || !course_id || !specialization || !semester) {
     return res.status(400).json({
-      error: "branch_id, course_id, specialization, and semester are required",
+      error: "branch_id, course_id, specialization, session_id, and semester are required",
     });
   }
 
   try {
+    const session_id = await getLatestSessionId();
+
     const students = await db("student")
       .where({
         branch_id,
         course_id,
         specialization,
         semester,
+        session_id,
       })
       .select("enrollment_no", "student_name", "status");
 
@@ -155,6 +171,8 @@ const studentBySubject = async (req, res) => {
         .json({ error: "Subject ID and type are required" });
     }
 
+    const session_id = await getLatestSessionId();
+
     const subject = await db("subject")
       .where({ subject_id, subject_type })
       .first();
@@ -171,6 +189,7 @@ const studentBySubject = async (req, res) => {
         .where({
           "elective_data.subject_id": subject_id,
           "elective_data.subject_type": subject_type,
+          "elective_data.session_id": session_id,
         })
         .select("student.enrollment_no", "student.student_name");
     } else {
@@ -190,7 +209,6 @@ const studentBySubject = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
-
 
 module.exports = {
   studentDataUpload,

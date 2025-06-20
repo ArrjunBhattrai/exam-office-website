@@ -10,12 +10,18 @@ import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 
-
 const ATKTDataUpload = () => {
-  const { userId, isAuthenticated, role, token } = useSelector((state) => state.auth);
+  const { userId, isAuthenticated, role, token } = useSelector(
+    (state) => state.auth
+  );
 
   if (!isAuthenticated || role !== "admin") {
-    return <div>You are not authorized to view this page. Please login to get access to this page.</div>;
+    return (
+      <div>
+        You are not authorized to view this page. Please login to get access to
+        this page.
+      </div>
+    );
   }
 
   const [branches, setBranches] = useState([]);
@@ -24,6 +30,7 @@ const ATKTDataUpload = () => {
   const [selectedCourse, setSelectedCourse] = useState("");
   const [file, setFile] = useState(null);
   const [fileInputKey, setFileInputKey] = useState(Date.now());
+  const currentSession = useSelector((state) => state.session.currentSession);
 
   const fetchBranches = async () => {
     try {
@@ -61,7 +68,7 @@ const ATKTDataUpload = () => {
   useEffect(() => {
     if (selectedBranch) {
       fetchCoursesByBranch(selectedBranch);
-      setSelectedCourse(""); 
+      setSelectedCourse("");
     }
   }, [selectedBranch]);
 
@@ -83,14 +90,11 @@ const ATKTDataUpload = () => {
     formData.append("specialization", specialization);
 
     try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/atkt/upload`,
-        {
-          method: "POST",
-          headers: { authorization: token },
-          body: formData,
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/api/atkt/upload`, {
+        method: "POST",
+        headers: { authorization: token },
+        body: formData,
+      });
 
       const result = await response.json();
       if (response.ok) {
@@ -114,7 +118,7 @@ const ATKTDataUpload = () => {
         label: branch.branch_name,
       }))
     : [{ value: "", label: "No branches available" }];
-    console.log(branchOptions);
+  console.log(branchOptions);
 
   const courseOptions = courses.length
     ? courses.map((course) => ({
@@ -128,7 +132,7 @@ const ATKTDataUpload = () => {
 
   return (
     <div className="home-container">
-      <Toaster position="top-right" /> 
+      <Toaster position="top-right" />
       <div className="user-bg">
         <RedHeader />
         <div className="user-content">
@@ -169,10 +173,16 @@ const ATKTDataUpload = () => {
 
             <div className="user-info">
               <div className="user-icons">
-                <button className="icon-btn" onClick={() => (window.location.href = "/admin-home")}>
+                <button
+                  className="icon-btn"
+                  onClick={() => (window.location.href = "/admin-home")}
+                >
                   <FaHome className="icon" /> Home
                 </button>
-                <button className="icon-btn" onClick={() => (window.location.href = "/")}>
+                <button
+                  className="icon-btn"
+                  onClick={() => (window.location.href = "/")}
+                >
                   <FaSignOutAlt className="icon" /> Logout
                 </button>
               </div>
@@ -190,12 +200,19 @@ const ATKTDataUpload = () => {
 
               <div className="fac-alloc">
                 <h3>ATKT Data Upload</h3>
-                <p className="session-text">Current Session: June 2025</p>
+                <p className="session-text">
+                  Current Session:{" "}
+                  {currentSession
+                    ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                    : "Loading..."}
+                </p>
+
                 <span className="box-overlay-text">Upload</span>
 
                 <div className="faculty-box">
                   <p className="institute-text">
-                    <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF TECHNOLOGY & SCIENCE
+                    <strong>Institute:</strong> [801] SHRI G.S. INSTITUTE OF
+                    TECHNOLOGY & SCIENCE
                   </p>
 
                   <div className="dropdown">
