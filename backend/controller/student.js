@@ -188,52 +188,79 @@ const getStudentsForCourse = async (req, res) => {
 // Get students enrolled in a subject
 const studentBySubject = async (req, res) => {
   try {
-    const { subject_id, subject_type } = req.query;
+    const { subject_id, subject_type, section } = req.query;
 
     if (!subject_id || !subject_type) {
-      return res
-        .status(400)
-        .json({ error: "Subject ID and type are required" });
+      return res.status(400).json({ error: "Subject ID and type are required" });
     }
 
     const session_id = await getLatestSessionId();
 
     const subject = await db("subject")
-      .where({ subject_id, subject_type })
+      .where({ subject_id, subject_type, session_id })
       .first();
 
     if (!subject) {
       return res.status(404).json({ error: "Subject not found" });
     }
 
+    // Check for section bifurcation
+    const existingSections = await db("section")
+      .where({
+        branch_id: subject.branch_id,
+        course_id: subject.course_id,
+        specialization: subject.specialization,
+      });
+
+    const isSectioned = existingSections.length > 0;
+
+    if (isSectioned && !section) {
+      return res.status(400).json({
+        error: "Section is required because section-wise bifurcation exists.",
+      });
+    }
+
     let students;
 
     if (subject_type.toLowerCase() === "elective") {
-      students = await db("elective_data")
+      // Elective subjects
+      const query = db("elective_data")
         .join("student", "elective_data.enrollment_no", "student.enrollment_no")
         .where({
           "elective_data.subject_id": subject_id,
           "elective_data.subject_type": subject_type,
           "elective_data.session_id": session_id,
-        })
-        .select("student.enrollment_no", "student.student_name");
+        });
+
+      if (isSectioned && section) {
+        query.andWhere("student.section", section);
+      }
+
+      students = await query.select("student.enrollment_no", "student.student_name");
     } else {
-      students = await db("student")
-        .where({
-          branch_id: subject.branch_id,
-          course_id: subject.course_id,
-          specialization: subject.specialization,
-          semester: subject.semester,
-        })
-        .select("enrollment_no", "student_name");
+      // Regular subjects
+      const query = db("student").where({
+        branch_id: subject.branch_id,
+        course_id: subject.course_id,
+        specialization: subject.specialization,
+        semester: subject.semester,
+        session_id,
+      });
+
+      if (isSectioned && section) {
+        query.andWhere("section", section);
+      }
+
+      students = await query.select("enrollment_no", "student_name");
     }
 
     return res.json(students);
   } catch (err) {
-    console.error(err);
+    console.error("Error in studentBySubject:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 module.exports = {
   studentDataUpload,
