@@ -34,7 +34,7 @@ const ATKTDataUpload = () => {
 
   const fetchBranches = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/branch/get-branches`, {
+      const response = await fetch(`${BACKEND_URL}/api/branch/`, {
         method: "GET",
         headers: { authorization: token, "Content-Type": "application/json" },
       });
