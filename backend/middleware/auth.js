@@ -20,6 +20,11 @@ const authenticateUser = async (req, res, next) => {
 
     if (!user) return res.status(403).json({ error: "Invalid token or user does not exist" });
 
+     req.user = {
+      userId: decoded.userId,
+      role: decoded.role,
+      branchId: user.branch_id || null, // Only present for hod/faculty
+    };
     next();
   } catch (error) {
     console.error("Authentication Error:", error);

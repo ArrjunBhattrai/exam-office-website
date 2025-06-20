@@ -5,7 +5,7 @@ const { upload } = require("../middleware/upload");
 const studentController = require("../controller/student");
 
 router.post(
-  "/upload/student-data",
+  "/",
   authenticateUser,
   authorizeRole(["admin"]),
   upload.single("file"),

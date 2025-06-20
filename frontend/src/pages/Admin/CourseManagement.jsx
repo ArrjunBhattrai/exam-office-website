@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Toaster, toast } from "react-hot-toast";
 import { useSelector } from "react-redux";
@@ -37,7 +37,7 @@ const CourseManagement = () => {
   // Fetch all courses
   const fetchCourses = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/course/get-courses`, {
+      const response = await fetch(`${BACKEND_URL}/api/course`, {
         method: "GET",
         headers: {
           authorization: token,
@@ -67,7 +67,7 @@ const CourseManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${BACKEND_URL}/api/course/create-course`, {
+      const response = await fetch(`${BACKEND_URL}/api/course`, {
         method: "POST",
         headers: {
           authorization: token,
@@ -98,7 +98,7 @@ const CourseManagement = () => {
   const handleDelete = async (branch_id, course_id, specialization) => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/course/delete-course?branch_id=${encodeURIComponent(
+        `${BACKEND_URL}/api/course/?branch_id=${encodeURIComponent(
           branch_id
         )}&course_id=${encodeURIComponent(
           course_id

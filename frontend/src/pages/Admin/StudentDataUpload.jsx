@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Toaster, toast } from "react-hot-toast";
 import { BACKEND_URL } from "../../../config";
@@ -35,7 +35,7 @@ const StudentDataUpload = () => {
   // fetch branches
   const fetchBranches = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/branch/get-branches`, {
+      const response = await fetch(`${BACKEND_URL}/api/branch`, {
         method: "GET",
         headers: { authorization: token, "Content-Type": "application/json" },
       });
@@ -50,14 +50,13 @@ const StudentDataUpload = () => {
   const fetchCoursesByBranch = async (branchId) => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/course/get-courses-by-branch?branch_id=${branchId}`,
+        `${BACKEND_URL}/api/course/?branch_id=${branchId}`,
         {
           method: "GET",
           headers: { authorization: token, "Content-Type": "application/json" },
         }
       );
       const data = await response.json();
-      console.log(data);
       setCourses(data.courses || []);
     } catch (error) {
       toast.error(error.message || "Failed to fetch courses");
@@ -94,7 +93,7 @@ const StudentDataUpload = () => {
 
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/student/upload/student-data`,
+        `${BACKEND_URL}/api/student`,
         {
           method: "POST",
           headers: { authorization: token },

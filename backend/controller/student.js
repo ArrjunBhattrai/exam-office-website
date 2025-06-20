@@ -2,6 +2,16 @@ const db = require("../db/db");
 const fs = require("fs");
 const csv = require("csv-parser");
 
+const getLatestSessionId = async () => {
+  const latestSession = await db("session")
+    .orderBy("start_year", "desc")
+    .orderBy("start_month", "desc")
+    .first();
+
+  if (!latestSession) throw new Error("No academic session found");
+  return latestSession.session_id;
+};
+
 // Uploading student data
 const studentDataUpload = async (req, res) => {
   const { branch_id, course_id, specialization, section } = req.body;
@@ -51,19 +61,7 @@ const studentDataUpload = async (req, res) => {
         });
       }
     }
-    // Get latest session_id
-    const latestSession = await db("session")
-      .orderBy([
-        { column: "start_year", order: "desc" },
-        { column: "start_month", order: "desc" },
-      ])
-      .first();
-
-    if (!latestSession) {
-      return res.status(400).json({ error: "No academic session found." });
-    }
-
-    const session_id = latestSession.session_id;
+    const session_id = await getLatestSessionId();
 
     const filePath = req.file.path;
     const results = [];
