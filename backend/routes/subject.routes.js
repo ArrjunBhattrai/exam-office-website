@@ -12,6 +12,12 @@ router.post(
   subjectController.subjectDataUpload
 );
 router.get(
+  "/",
+  authenticateUser,
+  authorizeRole(["hod"]),
+  subjectController.getAllSubjectsForCourse
+);
+router.get(
   "/get-subject-byCourse",
   authenticateUser,
   authorizeRole(["hod"]),
@@ -34,12 +40,6 @@ router.get(
   authenticateUser,
   authorizeRole(["faculty"]),
   subjectController.getCourseOutcomes
-);
-router.get(
-  "/get-subjects-by-course",
-  authenticateUser,
-  authorizeRole(["hod"]),
-  subjectController.getAllSubjectsForCourse
 );
 
 module.exports = router;

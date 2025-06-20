@@ -61,7 +61,7 @@ const FacultyAllocation = () => {
 
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/subject/get-subjects-by-course${query}`,
+        `${BACKEND_URL}/api/subject/${query}`,
         {
           method: "GET",
           headers: {
@@ -88,7 +88,7 @@ const FacultyAllocation = () => {
   const fetchFaculties = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/faculty/get-faculties?branch_id=${branchId}`,
+        `${BACKEND_URL}/api/faculty`,
         {
           method: "GET",
           headers: {
@@ -117,7 +117,7 @@ const FacultyAllocation = () => {
   const fetchCourses = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/course/get-courses-by-branch?branch_id=${branchId}`,
+        `${BACKEND_URL}/api/course`,
         {
           method: "GET",
           headers: {
@@ -157,7 +157,7 @@ const FacultyAllocation = () => {
 
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/faculty/assign-faculties`,
+        `${BACKEND_URL}/api/faculty/assign`,
         {
           method: "POST",
           headers: {
