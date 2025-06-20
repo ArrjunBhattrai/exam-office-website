@@ -2,7 +2,18 @@ const db = require("../db/db");
 const fs = require("fs");
 const csv = require("csv-parser");
 
-// ATKT data upload
+// Fetch latest session_id
+const getLatestSessionId = async () => {
+  const latestSession = await db("session")
+    .orderBy("start_year", "desc")
+    .orderBy("start_month", "desc")
+    .first();
+
+  if (!latestSession) throw new Error("No active session found");
+  return latestSession.session_id;
+};
+
+// Upload atkt data
 const atktStudentUpload = async (req, res) => {
   const { branch_id, course_id, specialization } = req.body;
 
@@ -11,6 +22,7 @@ const atktStudentUpload = async (req, res) => {
     "Student Name",
     "Subject ID",
     "Subject Type",
+    "Subject Session"
   ];
 
   if (!req.file || !branch_id || !course_id || specialization === undefined) {
@@ -41,22 +53,20 @@ const atktStudentUpload = async (req, res) => {
   let headerError = null;
 
   try {
-    // CSV PARSING
+    const session_id = await getLatestSessionId();
+
+    const monthMap = {
+      jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6,
+      jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12
+    };
+
     await new Promise((resolve, reject) => {
       fs.createReadStream(filePath)
-        .pipe(
-          csv({
-            mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/, ""),
-          })
-        )
+        .pipe(csv({ mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/, "") }))
         .on("headers", (headers) => {
-          const invalidHeaders = expectedHeaders.filter(
-            (h) => !headers.includes(h)
-          );
+          const invalidHeaders = expectedHeaders.filter((h) => !headers.includes(h));
           if (invalidHeaders.length > 0) {
-            headerError = `Invalid or missing headers: ${invalidHeaders.join(
-              ", "
-            )}`;
+            headerError = `Invalid or missing headers: ${invalidHeaders.join(", ")}`;
             return reject(new Error(headerError));
           }
         })
@@ -65,15 +75,27 @@ const atktStudentUpload = async (req, res) => {
           const student_name = row["Student Name"]?.trim();
           const subject_id = row["Subject ID"]?.trim();
           const subject_type = row["Subject Type"]?.trim();
+          const subject_session_str = row["Subject Session"]?.trim();
 
-          if (!enrollment_no || !student_name || !subject_id || !subject_type)
-            return;
+          if (!enrollment_no || !student_name || !subject_id || !subject_type || !subject_session_str) return;
 
           const key = `${enrollment_no}|${subject_id}|${subject_type}`;
           if (seenSet.has(key)) return;
           seenSet.add(key);
 
+          const match = subject_session_str.match(/^(\w+) (\d{4}) - (\w+) (\d{4})$/i);
+          if (!match) return;
+
+          const [_, startMonthStr, startYearStr, endMonthStr, endYearStr] = match;
+          const start_month = monthMap[startMonthStr.toLowerCase()];
+          const start_year = parseInt(startYearStr);
+          const end_month = monthMap[endMonthStr.toLowerCase()];
+          const end_year = parseInt(endYearStr);
+
+          if (!start_month || !start_year || !end_month || !end_year) return;
+
           results.push({
+            session_id,
             enrollment_no,
             student_name,
             branch_id,
@@ -81,6 +103,7 @@ const atktStudentUpload = async (req, res) => {
             specialization,
             subject_id,
             subject_type,
+            subject_session_data: { start_month, start_year, end_month, end_year }
           });
         })
         .on("end", resolve)
@@ -92,15 +115,30 @@ const atktStudentUpload = async (req, res) => {
       return res.status(400).json({ error: "No valid or unique data in CSV." });
     }
 
-    // DUPLICATE CHECK IN DB
-    const duplicateQuery = db("atkt_students");
+    for (const entry of results) {
+      const ss = await db("session")
+        .where(entry.subject_session_data)
+        .first();
+
+      if (!ss) {
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        return res.status(400).json({
+          error: `Session not found for subject session: ${entry.subject_session_data.start_month}/${entry.subject_session_data.start_year} - ${entry.subject_session_data.end_month}/${entry.subject_session_data.end_year}`
+        });
+      }
+
+      entry.subject_session = ss.session_id;
+      delete entry.subject_session_data;
+    }
+
+    const duplicateQuery = db("atkt_students").where("session_id", session_id);
     results.forEach((r, i) => {
       const clause = {
         enrollment_no: r.enrollment_no,
         subject_id: r.subject_id,
         subject_type: r.subject_type,
       };
-      if (i === 0) duplicateQuery.where(clause);
+      if (i === 0) duplicateQuery.andWhere(clause);
       else duplicateQuery.orWhere(clause);
     });
 
@@ -109,7 +147,7 @@ const atktStudentUpload = async (req, res) => {
     if (existing.length > 0) {
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
       return res.status(409).json({
-        error: "Upload failed: Some entries already exist in the database.",
+        error: "Upload failed: Some entries already exist for the latest session.",
         duplicates: existing.map((e) => ({
           enrollment_no: e.enrollment_no,
           subject_id: e.subject_id,
@@ -118,13 +156,10 @@ const atktStudentUpload = async (req, res) => {
       });
     }
 
-    // INSERT INTO DB
     await db("atkt_students").insert(results);
 
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-    return res
-      .status(200)
-      .json({ message: "ATKT student data uploaded successfully!" });
+    return res.status(200).json({ message: "ATKT student data uploaded successfully!" });
   } catch (err) {
     console.error("Processing error:", err.message || err);
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);

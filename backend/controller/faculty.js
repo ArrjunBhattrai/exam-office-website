@@ -90,7 +90,7 @@ const rejectFacultyRequest = async (req, res) => {
 
 // Get faculties of a particular branch
 const getFaculties = async (req, res) => {
-  const { branch_id } = req.query;
+  const branch_id = req.user.branchId;
 
   if (!branch_id) {
     return res.status(400).json({ error: "branch_id is required" });
@@ -154,8 +154,11 @@ const assignFaculties = async (req, res) => {
       }
     } else {
       // If no section provided but section-wise bifurcation exists
-      const existingSections = await db("section")
-        .where({ branch_id, course_id, specialization });
+      const existingSections = await db("section").where({
+        branch_id,
+        course_id,
+        specialization,
+      });
 
       if (existingSections.length > 0) {
         return res.status(400).json({
@@ -180,7 +183,12 @@ const assignFaculties = async (req, res) => {
     // Transaction: remove old + insert new assignments
     await db.transaction(async (trx) => {
       await trx("faculty_subject")
-        .where({ subject_id, subject_type, session_id, section: section || null })
+        .where({
+          subject_id,
+          subject_type,
+          session_id,
+          section: section || null,
+        })
         .del();
 
       const assignments = faculty_ids.map((faculty_id, index) => ({

@@ -4,25 +4,25 @@ const { authenticateUser, authorizeRole } = require("../middleware/auth");
 const facultyController = require("../controller/faculty");
 
 router.get(
-  "/registration-requests",
+  "/request",
   authenticateUser,
   authorizeRole(["hod"]),
   facultyController.getPendingFacultyRequests
 );
 router.post(
-  "/approve-request",
+  "/request",
   authenticateUser,
   authorizeRole(["hod"]),
   facultyController.approveFacultyRequest
 );
 router.delete(
-  "/reject-request",
+  "/request",
   authenticateUser,
   authorizeRole(["hod"]),
   facultyController.rejectFacultyRequest
 );
 router.get(
-    "/get-faculties",
+    "/",
     authenticateUser,
     authorizeRole(["hod"]),
     facultyController.getFaculties

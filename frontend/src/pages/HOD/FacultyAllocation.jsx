@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
@@ -61,13 +61,16 @@ const FacultyAllocation = () => {
     const query = `?branch_id=${branchId}&course_id=${course_id}&specialization=${specialization}&section=${section}`;
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/subject/${query}`, {
-        method: "GET",
-        headers: {
-          authorization: token,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${BACKEND_URL}/api/subject/${query}`,
+        {
+          method: "GET",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch subjects");
@@ -85,13 +88,16 @@ const FacultyAllocation = () => {
 
   const fetchFaculties = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/faculty`, {
-        method: "GET",
-        headers: {
-          authorization: token,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${BACKEND_URL}/api/faculty`,
+        {
+          method: "GET",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch faculties");
@@ -111,13 +117,16 @@ const FacultyAllocation = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/course`, {
-        method: "GET",
-        headers: {
-          authorization: token,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${BACKEND_URL}/api/course`,
+        {
+          method: "GET",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch courses");
@@ -160,15 +169,18 @@ const FacultyAllocation = () => {
     };
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/faculty/assign`, {
-        method: "POST",
-        headers: {
-          authorization: token,
-          "Content-Type": "application/json",
-          "Cache-Control": "no-cache",
-        },
-        body: JSON.stringify(body),
-      });
+      const response = await fetch(
+        `${BACKEND_URL}/api/faculty/assign`,
+        {
+          method: "POST",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache",
+          },
+          body: JSON.stringify(body),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to assign faculty");

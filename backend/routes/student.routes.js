@@ -12,16 +12,17 @@ router.post(
   studentController.studentDataUpload
 );
 router.get(
+  "/",
+  authenticateUser,
+  authorizeRole(["faculty", "hod"]),
+  studentController.studentBySubject
+);
+router.get(
   "/get-student-byCourse",
   authenticateUser,
   authorizeRole(["hod"]),
   studentController.getStudentsForCourse
 );
-router.get(
-  "/getStudents",
-  authenticateUser,
-  authorizeRole(["faculty", "hod"]),
-  studentController.studentBySubject
-);
+
 
 module.exports = router;

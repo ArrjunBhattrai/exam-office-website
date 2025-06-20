@@ -34,7 +34,7 @@ const ATKTDataUpload = () => {
 
   const fetchBranches = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/branch/`, {
+      const response = await fetch(`${BACKEND_URL}/api/branch`, {
         method: "GET",
         headers: { authorization: token, "Content-Type": "application/json" },
       });
@@ -47,7 +47,7 @@ const ATKTDataUpload = () => {
   const fetchCoursesByBranch = async (branchId) => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/course/get-courses-by-branch?branch_id=${branchId}`,
+        `${BACKEND_URL}/api/course/?branch_id=${branchId}`,
         {
           method: "GET",
           headers: { authorization: token, "Content-Type": "application/json" },
@@ -90,7 +90,7 @@ const ATKTDataUpload = () => {
     formData.append("specialization", specialization);
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/atkt/upload`, {
+      const response = await fetch(`${BACKEND_URL}/api/atkt`, {
         method: "POST",
         headers: { authorization: token },
         body: formData,

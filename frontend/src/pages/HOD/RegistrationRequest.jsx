@@ -29,7 +29,7 @@ const RegistrationRequest = () => {
   const fetchRequests = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/faculty/registration-requests`,
+        `${BACKEND_URL}/api/faculty/request`,
         {
           method: "GET",
           headers: {
@@ -56,20 +56,17 @@ const RegistrationRequest = () => {
 
   const handleAction = async (faculty_id, action) => {
     try {
-      let endpoint = "";
       let method = "";
 
       if (action === "approve") {
-        endpoint = "/api/faculty/approve-request";
         method = "POST";
       } else if (action === "reject") {
-        endpoint = "/api/faculty/reject-request";
         method = "DELETE";
       } else {
         throw new Error("Invalid action type");
       }
 
-      const response = await fetch(`${BACKEND_URL}${endpoint}`, {
+      const response = await fetch(`${BACKEND_URL}/api/faculty/request`, {
         method: method,
         headers: {
           authorization: token,
