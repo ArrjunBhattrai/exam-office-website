@@ -12,6 +12,7 @@ module.exports = function (app) {
   app.use("/api/semester", require("../routes/semester.routes"));
   app.use("/api/atkt", require("../routes/atkt.routes"));
   app.use("/api/session", require("../routes/session.routes"));
+  app.use("/api/req", require("../routes/request.routes"));
 
   app.use((_req, _res, next) => {
     const error = new Error();
