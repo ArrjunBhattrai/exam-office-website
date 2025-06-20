@@ -122,16 +122,19 @@ const subjectDataUpload = async (req, res) => {
 
 // Get subject data for a course of a branch
 const getAllSubjectsForCourse = async (req, res) => {
-  const { branch_id, course_id, specialization } = req.query;
+  const { branch_id, course_id, specialization, section } = req.query;
 
-  if (!branch_id || !course_id || !specialization) {
+  if (!branch_id || !course_id || !specialization || !section) {
     return res.status(400).json({
-      error: "branch_id, course_id, session_id and specialization are required",
+      error: "branch_id, course_id and section specialization are required",
     });
   }
 
   try {
     const session_id = await getLatestSessionId();
+    if(!session_id) {
+      return res.status(400).json({ error: "Session Not Found"});
+    }
 
     const rows = await db("subject as s")
       .leftJoin("faculty_subject as fs", function () {
@@ -147,6 +150,7 @@ const getAllSubjectsForCourse = async (req, res) => {
         "s.branch_id": branch_id,
         "s.course_id": course_id,
         "s.specialization": specialization,
+        "s.section": section,
         "s.session_id": session_id
       })
       .select(

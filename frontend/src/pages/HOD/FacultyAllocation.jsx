@@ -55,9 +55,10 @@ const FacultyAllocation = () => {
     const selected = courses.find((c) => c.value === selectedCourse);
     if (!selected) return;
 
-    const [course_id, specialization] = selectedCourse.split("|");
+    const [course_id, specialization, section, branch_id] =
+      selectedCourse.split("|");
 
-    const query = `?branch_id=${branchId}&course_id=${course_id}&specialization=${specialization}`;
+    const query = `?branch_id=${branchId}&course_id=${course_id}&specialization=${specialization}&section=${section}`;
 
     try {
       const response = await fetch(
@@ -132,10 +133,16 @@ const FacultyAllocation = () => {
       }
 
       const data = await response.json();
-      const formatted = data.courses.map((c) => ({
-        label: `${c.course_name} (${c.specialization})`,
-        value: `${c.course_id}|${c.specialization}`,
-      }));
+      const formatted = [];
+
+      data.courses.forEach((course) => {
+        course.sections.forEach((section) => {
+          formatted.push({
+            label: `${course.branch_id} - ${course.course_name} - ${section}`,
+            value: `${course.course_id}|${course.specialization}|${section}|${course.branch_id}`,
+          });
+        });
+      });
 
       setCourses(formatted);
     } catch (error) {
@@ -147,12 +154,18 @@ const FacultyAllocation = () => {
   }, [token]);
 
   const handleAssignment = async (facultyIds, subject_id, subject_type) => {
-    if (!selectedSubject) return;
+    if (!selectedSubject || !selectedCourse) return;
+
+    const parts = selectedCourse.split("|");
+    const course_id = parts[0];
+    const specialization = parts[1];
+    const section = parts[2] || null;
 
     const body = {
       faculty_ids: facultyIds,
       subject_id,
       subject_type,
+      section,
     };
 
     try {
