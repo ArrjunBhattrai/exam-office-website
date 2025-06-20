@@ -17,4 +17,12 @@ router.get(
   sessionController.createSession
 );
 
+router.get(
+  "/download",
+  authenticateUser,
+  authorizeRole(["admin"]),
+  sessionController.downloadSessionData
+);
+
+
 module.exports = router

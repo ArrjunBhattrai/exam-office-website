@@ -110,7 +110,7 @@ const SessionManagement = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const sessionRes = await fetch(`${BACKEND_URL}/api/session/`, {
+        const sessionRes = await fetch(`${BACKEND_URL}/api/session/download?session_id=${selectedSessionId}&branch_id=${selectedBranchId}&course_id=${selectedCourseId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const branchRes = await fetch(
