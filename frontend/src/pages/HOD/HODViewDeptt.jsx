@@ -30,7 +30,7 @@ const HODViewDeptt = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedFaculty, setSelectedFaculty] = useState(null);
   const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState({});
+  const [selectedCourse, setSelectedCourse] = useState("");
   const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [filteredSubjects, setFilteredSujects] = useState([]);
   const [faculties, setFaculties] = useState([]);
@@ -71,7 +71,7 @@ const HODViewDeptt = () => {
 
     try {
       const res = await fetch(
-        `${BACKEND_URL}/api/course/get-courses-by-branch?branch_id=${branchId}`,
+        `${BACKEND_URL}/api/course`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -106,9 +106,8 @@ const HODViewDeptt = () => {
   };
 
   const handleCourseChange = async (value) => {
+    setSelectedCourse(value);
     const { course_id, specialization } = JSON.parse(value);
-
-    setSelectedCourse({ course_id, specialization });
 
     const filtered = assignedSubjects.filter(
       (subj) =>
@@ -274,7 +273,7 @@ const HODViewDeptt = () => {
         <Dropdown
           label="Select Course"
           options={courses}
-          selectedValue={JSON.stringify(selectedCourse)}
+          selectedValue={selectedCourse}
           onChange={handleCourseChange}
         />
 

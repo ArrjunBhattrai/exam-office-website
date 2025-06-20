@@ -28,7 +28,7 @@ router.get(
     facultyController.getFaculties
   );
 router.post(
-  "/assign-faculties",
+  "/assign",
   authenticateUser,
   authorizeRole(["hod"]),
   facultyController.assignFaculties
