@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";

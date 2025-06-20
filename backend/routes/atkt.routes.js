@@ -5,7 +5,7 @@ const { upload } = require("../middleware/upload");
 const atktController = require("../controller/atkt");
 
 router.post(
-  "/upload",
+  "/",
   authenticateUser,
   authorizeRole(["admin"]),
   upload.single("file"),

@@ -39,8 +39,9 @@ const HODViewDeptt = () => {
     const fetchFaculties = async () => {
       try {
         const res = await fetch(
-          `${BACKEND_URL}/api/faculty/get-faculties?branch_id=${branchId}`,
+          `${BACKEND_URL}/api/faculty`,
           {
+            method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -71,8 +72,9 @@ const HODViewDeptt = () => {
 
     try {
       const res = await fetch(
-        `${BACKEND_URL}/api/course/get-courses-by-branch?branch_id=${branchId}`,
+        `${BACKEND_URL}/api/course`,
         {
+          method:"GET",
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -89,8 +91,9 @@ const HODViewDeptt = () => {
       setCourses(options);
 
       const subjectRes = await fetch(
-        `${BACKEND_URL}/api/subject/faculty-subjects/${faculty.faculty_id}`,
+        `${BACKEND_URL}/api/subject/${faculty.faculty_id}`,
         {
+          method:"GET",
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -125,8 +128,9 @@ const HODViewDeptt = () => {
   const handleViewStudents = async (subjectId, subjectType) => {
     try {
       const res = await fetch(
-        `${BACKEND_URL}/api/student/getStudents?subject_id=${subjectId}&subject_type=${subjectType}`,
+        `${BACKEND_URL}/api/student/?subject_id=${subjectId}&subject_type=${subjectType}`,
         {
+          method:"GET",
           headers: {
             Authorization: `Bearer ${token}`,
           },

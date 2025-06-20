@@ -5,7 +5,7 @@ const { upload } = require("../middleware/upload");
 const subjectController = require("../controller/subject");
 
 router.post(
-  "/upload/subject-data",
+  "/",
   authenticateUser,
   authorizeRole(["admin"]),
   upload.single("file"),
@@ -18,7 +18,7 @@ router.get(
   subjectController.getSubjectsForCourse
 );
 router.get(
-  "/faculty-subjects/:faculty_id",
+  "/:faculty_id",
   authenticateUser,
   authorizeRole(["faculty", "hod"]),
   subjectController.getAssignedSubject
