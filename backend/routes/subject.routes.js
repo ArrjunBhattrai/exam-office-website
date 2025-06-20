@@ -18,28 +18,28 @@ router.get(
   subjectController.getAllSubjectsForCourse
 );
 router.get(
-  "/get-subject-byCourse",
-  authenticateUser,
-  authorizeRole(["hod"]),
-  subjectController.getSubjectsForCourse
-);
-router.get(
   "/:faculty_id",
   authenticateUser,
   authorizeRole(["faculty", "hod"]),
   subjectController.getAssignedSubject
 );
 router.post(
-  "/assign-cos",
+  "/assign-co",
   authenticateUser,
   authorizeRole(["faculty"]),
   subjectController.assignCO
 );
 router.get(
-  "/get-co/:subject_id/:subject_type",
+  "/co/:subject_id/:subject_type",
   authenticateUser,
   authorizeRole(["faculty"]),
   subjectController.getCourseOutcomes
+);
+router.get(
+  "/get-subject-byCourse",
+  authenticateUser,
+  authorizeRole(["hod"]),
+  subjectController.getSubjectsForCourse
 );
 
 module.exports = router;

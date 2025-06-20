@@ -189,36 +189,6 @@ const getAllSubjectsForCourse = async (req, res) => {
   }
 };
 
-// Get subjects for particular course of a branch
-const getSubjectsForCourse = async (req, res) => {
-  const { branch_id, course_id, specialization, semester} = req.query;
-
-  if (!branch_id || !course_id || !specialization || !semester) {
-    return res.status(400).json({
-      error: "branch_id, course_id, specialization, and semester are required",
-    });
-  }
-
-  try {
-    const session_id = await getLatestSessionId();
-
-    const subjects = await db("subject")
-      .where({
-        branch_id,
-        course_id,
-        specialization,
-        semester,
-        session_id,
-      })
-      .select("subject_id", "subject_name", "subject_type");
-
-    return res.status(200).json({ subjects });
-  } catch (error) {
-    console.error("Error fetching subjects:", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-};
-
 // Get assigned subject data
 const getAssignedSubject = async (req, res) => {
   try {
@@ -332,6 +302,37 @@ const assignCO = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+// Get subjects for particular course of a branch
+const getSubjectsForCourse = async (req, res) => {
+  const { branch_id, course_id, specialization, semester} = req.query;
+
+  if (!branch_id || !course_id || !specialization || !semester) {
+    return res.status(400).json({
+      error: "branch_id, course_id, specialization, and semester are required",
+    });
+  }
+
+  try {
+    const session_id = await getLatestSessionId();
+
+    const subjects = await db("subject")
+      .where({
+        branch_id,
+        course_id,
+        specialization,
+        semester,
+        session_id,
+      })
+      .select("subject_id", "subject_name", "subject_type");
+
+    return res.status(200).json({ subjects });
+  } catch (error) {
+    console.error("Error fetching subjects:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 
 module.exports = {
   subjectDataUpload,
