@@ -2,6 +2,7 @@ const db = require("../db/db");
 const fs = require("fs");
 const csv = require("csv-parser");
 
+// Get latest session_id
 const getLatestSessionId = async () => {
   const latestSession = await db("session")
     .orderBy("start_year", "desc")
@@ -18,7 +19,7 @@ const studentDataUpload = async (req, res) => {
 
   if (!req.file || !branch_id || !course_id || !specialization) {
     return res.status(400).json({
-      error: "CSV file and branch_id, course_id, specialization are required.",
+      error: "CSV file and branch_id, course_id, session_id and specialization are required.",
     });
   }
 
@@ -160,17 +161,20 @@ const getStudentsForCourse = async (req, res) => {
 
   if (!branch_id || !course_id || !specialization || !semester) {
     return res.status(400).json({
-      error: "branch_id, course_id, specialization, and semester are required",
+      error: "branch_id, course_id, specialization, session_id, and semester are required",
     });
   }
 
   try {
+    const session_id = await getLatestSessionId();
+
     const students = await db("student")
       .where({
         branch_id,
         course_id,
         specialization,
         semester,
+        session_id,
       })
       .select("enrollment_no", "student_name", "status");
 
@@ -192,6 +196,8 @@ const studentBySubject = async (req, res) => {
         .json({ error: "Subject ID and type are required" });
     }
 
+    const session_id = await getLatestSessionId();
+
     const subject = await db("subject")
       .where({ subject_id, subject_type })
       .first();
@@ -208,6 +214,7 @@ const studentBySubject = async (req, res) => {
         .where({
           "elective_data.subject_id": subject_id,
           "elective_data.subject_type": subject_type,
+          "elective_data.session_id": session_id,
         })
         .select("student.enrollment_no", "student.student_name");
     } else {
