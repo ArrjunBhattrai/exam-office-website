@@ -39,7 +39,7 @@ router.get(
 );
 
 router.get(
-  "/marks",
+  "/marks/:request_id",
   authenticateUser,
   authorizeRole(["faculty"]),
   requestController.fetchMarksData

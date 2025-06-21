@@ -202,7 +202,7 @@ const ATKTDataUpload = () => {
                 <h3>ATKT Data Upload</h3>
                 <p className="session-text">
                   <SessionDisplay className="session-text" />
-
+                </p>
                 <span className="box-overlay-text">Upload</span>
 
                 <div className="faculty-box">

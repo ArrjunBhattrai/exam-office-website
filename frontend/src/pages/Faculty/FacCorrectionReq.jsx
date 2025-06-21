@@ -65,6 +65,33 @@ const FacCorrectionReq = () => {
 
   const subComponentOptions = component ? subComponentMap[component] || [] : [];
 
+  const fetchAssignedSubjects = async () => {
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/subject/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch assigned Subjects");
+      }
+
+      const data = await response.json();
+      setAssignedSubjects(data.subjects);
+    } catch (error) {
+      toast.error(error.message || "Failed to fetch Assigned Subjects");
+    }
+  };
+  useEffect(() => {
+    fetchAssignedSubjects();
+  }, [token]);
+
   useEffect(() => {
     const fetchPastRequests = async () => {
       try {
@@ -292,7 +319,7 @@ const FacCorrectionReq = () => {
                       <tbody>
                         {pastRequests.map((req) => (
                           <tr key={req.request_id}>
-                            <td>{req.subject_name}</td>
+                            <td>{req.subject_id}</td>
                             <td>{req.subject_type}</td>
                             <td>{req.component_name || "-"}</td>
                             <td>{req.sub_component_name || "-"}</td>
@@ -419,7 +446,7 @@ const FacCorrectionReq = () => {
 
                       const data = await response.json();
 
-                      if (!response.ok || !data.submitted) {
+                      if (!response.ok ) {
                         toast.error("Form not submitted yet.");
                         return;
                       }
@@ -464,7 +491,6 @@ const FacCorrectionReq = () => {
                   onChange={(e) => setReason(e.target.value)}
                 ></textarea>
 
-                <h5>Select Students (Enrollment Numbers)</h5>
                 <h4>Select Students (Enrollment Numbers)</h4>
                 <div className="student-checkbox-list">
                   {students.map((stu) => (
