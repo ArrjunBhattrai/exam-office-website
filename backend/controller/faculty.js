@@ -90,7 +90,7 @@ const rejectFacultyRequest = async (req, res) => {
 
 // Get faculties of a particular branch
 const getFaculties = async (req, res) => {
-  const { branch_id } = req.query;
+  const branch_id = req.user.branchId;
 
   if (!branch_id) {
     return res.status(400).json({ error: "branch_id is required" });
@@ -112,7 +112,7 @@ const getFaculties = async (req, res) => {
 const assignFaculties = async (req, res) => {
   try {
     const branch_id = req.user.branchId;
-    const { faculty_ids, subject_id, subject_type } = req.body;
+    const { faculty_ids, subject_id, subject_type, section } = req.body;
 
     if (!branch_id) {
       return res.status(403).json({ message: "Unauthorized" });
@@ -123,19 +123,52 @@ const assignFaculties = async (req, res) => {
       faculty_ids.length === 0 ||
       faculty_ids.length > 2
     ) {
-      return res.status(400).json({ message: "Please provide 1 or 2 faculty IDs" });
+      return res
+        .status(400)
+        .json({ message: "Please provide 1 or 2 faculty IDs" });
     }
 
-    // Validate that the subject exists in the branch
+    // Validate subject existence
     const subject = await db("subject")
       .where({ subject_id, subject_type, branch_id })
       .first();
 
     if (!subject) {
-      return res.status(404).json({ message: "Subject not found in your branch" });
+      return res
+        .status(404)
+        .json({ message: "Subject not found in your branch" });
     }
 
-    // Fetch latest session ID
+    const { course_id, specialization } = subject;
+
+    // Validate section if provided
+    if (section) {
+      const sectionExists = await db("section")
+        .where({ branch_id, course_id, specialization, section })
+        .first();
+
+      if (!sectionExists) {
+        return res.status(400).json({
+          message: `Section '${section}' does not exist for the given course.`,
+        });
+      }
+    } else {
+      // If no section provided but section-wise bifurcation exists
+      const existingSections = await db("section").where({
+        branch_id,
+        course_id,
+        specialization,
+      });
+
+      if (existingSections.length > 0) {
+        return res.status(400).json({
+          message:
+            "Section is required because the course has section-wise assignments.",
+        });
+      }
+    }
+
+    // Get latest session
     const latestSession = await db("session")
       .orderBy("start_year", "desc")
       .orderBy("start_month", "desc")
@@ -147,9 +180,15 @@ const assignFaculties = async (req, res) => {
 
     const session_id = latestSession.session_id;
 
+    // Transaction: remove old + insert new assignments
     await db.transaction(async (trx) => {
       await trx("faculty_subject")
-        .where({ subject_id, subject_type, session_id })
+        .where({
+          subject_id,
+          subject_type,
+          session_id,
+          section: section || null,
+        })
         .del();
 
       const assignments = faculty_ids.map((faculty_id, index) => ({
@@ -158,6 +197,7 @@ const assignFaculties = async (req, res) => {
         subject_type,
         session_id,
         assignment_type: index === 0 ? "primary" : "secondary",
+        section: section || null,
       }));
 
       await trx("faculty_subject").insert(assignments);
@@ -169,7 +209,6 @@ const assignFaculties = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 
 module.exports = {
   getPendingFacultyRequests,

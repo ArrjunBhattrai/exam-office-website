@@ -5,11 +5,17 @@ const { upload } = require("../middleware/upload");
 const studentController = require("../controller/student");
 
 router.post(
-  "/upload/student-data",
+  "/",
   authenticateUser,
   authorizeRole(["admin"]),
   upload.single("file"),
   studentController.studentDataUpload
+);
+router.get(
+  "/",
+  authenticateUser,
+  authorizeRole(["faculty", "hod"]),
+  studentController.studentBySubject
 );
 router.get(
   "/get-student-byCourse",
@@ -17,11 +23,6 @@ router.get(
   authorizeRole(["hod"]),
   studentController.getStudentsForCourse
 );
-router.get(
-  "/getStudents",
-  authenticateUser,
-  authorizeRole(["faculty", "hod"]),
-  studentController.studentBySubject
-);
+
 
 module.exports = router;

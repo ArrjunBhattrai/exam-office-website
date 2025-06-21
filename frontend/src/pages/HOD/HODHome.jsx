@@ -1,4 +1,4 @@
-import React from "react";
+import {useEffect} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setSession } from "../../redux/sessionSlice";
 import "./hod.css";
@@ -23,21 +23,53 @@ const HODHome = () => {
   }
 
   const dispatch = useDispatch();
-    useEffect(() => {
-      const fetchCurrentSession = async () => {
-        try {
-          const res = await fetch(`${BACKEND_URL}/api/session/---`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          const data = await res.json();
-          dispatch(setSession(data.session));
-        } catch (err) {
-          console.error("Session fetch failed", err);
-        }
-      };
-  
-      fetchCurrentSession();
-    }, [token]);
+  useEffect(() => {
+    const fetchCurrentSession = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/session/---`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        dispatch(
+          setSession({
+            start_month: data.start_month,
+            start_year: data.start_year,
+            end_month: data.end_month,
+            end_year: data.end_year,
+          })
+        );
+      } catch (err) {
+        console.error("Session fetch failed", err);
+      }
+    };
+
+    fetchCurrentSession();
+  }, [token, dispatch]);
+
+  const { start_month, start_year, end_month, end_year } = useSelector(
+    (state) => state.session
+  );
+
+  const monthNames = [
+    "",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  const currentSession =
+    start_month && start_year && end_month && end_year
+      ? `${monthNames[start_month]} ${start_year} - ${monthNames[end_month]} ${end_year}`
+      : null;
 
   return (
     <div className="home-container">
@@ -112,6 +144,11 @@ const HODHome = () => {
                 <p>
                   <span className="user-role">Role: </span>
                   <span className="user-name">[{role && `${role}`}]</span>
+                </p>
+              </div>
+              <div className="fac-alloc">
+                <p className="session-text">
+                  Current Session: {currentSession || "Loading..."}
                 </p>
               </div>
             </div>

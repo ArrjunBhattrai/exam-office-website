@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, UserPlus } from "lucide-react";
 import { Toaster, toast } from "react-hot-toast";
 import { BACKEND_URL } from "../../../config";
@@ -110,7 +110,7 @@ const SessionManagement = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         const branchRes = await fetch(
-          `${BACKEND_URL}/api/branch/get-branches`,
+          `${BACKEND_URL}/api/branch/`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

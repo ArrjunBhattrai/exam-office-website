@@ -20,11 +20,10 @@ const subjectDataUpload = async (req, res) => {
 
   if (!req.file || !branch_id || !course_id || !specialization) {
     return res.status(400).json({
-      error: "CSV file and session_id, branch_id, course_id, specialization are required.",
+      error: "CSV file and branch_id, course_id, specialization are required.",
     });
   }
 
-  // Check if the course exists
   try {
     const courseExists = await db("course")
       .where({ branch_id, course_id, specialization })
@@ -32,114 +31,162 @@ const subjectDataUpload = async (req, res) => {
 
     if (!courseExists) {
       return res.status(400).json({
-        error:
-          "Provided branch, course, and specialization combination does not exist.",
+        error: "Provided branch, course, and specialization combination does not exist.",
       });
     }
-  } catch (err) {
-    console.error("DB error checking course:", err);
-    return res.status(500).json({ error: "Internal server error." });
-  }
 
-  const session_id = await getLatestSessionId();
+    const session_id = await getLatestSessionId();
 
-  const results = [];
-  const filePath = req.file.path;
+    const results = [];
+    const subjectKeySet = new Set();
+    const filePath = req.file.path;
 
-  fs.createReadStream(filePath)
-    .pipe(
-      csv({ mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/, "") })
-    )
-    .on("data", (row) => {
-      const subjectId = row["Subject Id"]?.trim();
-      const subjectName = row["Subject Name"]?.trim();
-      const subjectType = row["Subject Type"]?.trim();
-      const semester = parseInt(row["Semester"]);
+    fs.createReadStream(filePath)
+      .pipe(csv({ mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/, "") }))
+      .on("data", (row) => {
+        const subjectId = row["Subject Id"]?.trim();
+        const subjectName = row["Subject Name"]?.trim();
+        const subjectType = row["Subject Type"]?.trim();
+        const semester = parseInt(row["Semester"]);
 
-      if (!subjectId || !subjectName || !subjectType || isNaN(semester)) return;
+        if (!subjectId || !subjectName || !subjectType || isNaN(semester)) return;
 
-      results.push([
-        session_id,
-        subjectId,
-        subjectType,
-        subjectName,
-        semester,
-        branch_id,
-        course_id,
-        specialization,
-      ]);
-    })
-    .on("end", async () => {
-      try {
-        if (results.length === 0) {
-          fs.unlinkSync(filePath);
-          return res.status(400).json({ error: "No valid data found in CSV." });
-        }
+        results.push([
+          session_id,
+          subjectId,
+          subjectType,
+          subjectName,
+          semester,
+          branch_id,
+          course_id,
+          specialization,
+        ]);
 
-        // Build raw insert query with ON DUPLICATE KEY UPDATE
-        // subject columns: subject_id, subject_type, subject_name, semester, branch_id, course_id, specialization
+        subjectKeySet.add(`${subjectId}|||${subjectType}`);
+      })
+      .on("end", async () => {
+        try {
+          if (results.length === 0) {
+            fs.unlinkSync(filePath);
+            return res.status(400).json({ error: "No valid data found in CSV." });
+          }
 
-        const valuesPlaceholders = results
-          .map(() => "(?, ?, ?, ?, ?, ?, ?)")
-          .join(", ");
+          const subjectKeys = Array.from(subjectKeySet).map((key) => {
+            const [subject_id, subject_type] = key.split("|||");
+            return { subject_id, subject_type };
+          });
 
-        const flatValues = results.flat();
+          // Check for existing entries in DB for current session
+          const existingSubjects = await db("subject")
+            .where("session_id", session_id)
+            .whereIn(
+              db.raw("(subject_id, subject_type)"),
+              subjectKeys.map(({ subject_id, subject_type }) => [subject_id, subject_type])
+            );
 
-        const rawQuery = `
+          if (existingSubjects.length > 0) {
+            fs.unlinkSync(filePath);
+            return res.status(409).json({
+              error: "Some subjects already exist for this session. Upload aborted.",
+              existingSubjects,
+            });
+          }
+
+          const valuesPlaceholders = results.map(() => "(?, ?, ?, ?, ?, ?, ?, ?)").join(", ");
+          const flatValues = results.flat();
+
+          const rawQuery = `
             INSERT INTO subject 
               (session_id, subject_id, subject_type, subject_name, semester, branch_id, course_id, specialization)
             VALUES ${valuesPlaceholders}
-            ON DUPLICATE KEY UPDATE
-              subject_name = VALUES(subject_name),
-              semester = VALUES(semester),
-              branch_id = VALUES(branch_id),
-              course_id = VALUES(course_id),
-              specialization = VALUES(specialization)
           `;
 
-        await db.raw(rawQuery, flatValues);
+          await db.raw(rawQuery, flatValues);
 
-        fs.unlinkSync(filePath);
-        res
-          .status(200)
-          .json({ message: "Academic scheme uploaded successfully!" });
-      } catch (err) {
-        console.error(err);
-        res
-          .status(500)
-          .json({ message: "DB Insert failed", error: err.message });
-      }
-    })
-    .on("error", (error) => {
-      console.error("CSV Parsing Error:", error.message);
-      res.status(500).json({ error: "Error processing CSV file." });
-    });
+          fs.unlinkSync(filePath);
+          return res.status(200).json({ message: "Academic scheme uploaded successfully!" });
+        } catch (err) {
+          console.error("Insert Error:", err);
+          return res.status(500).json({ message: "DB Insert failed", error: err.message });
+        }
+      })
+      .on("error", (error) => {
+        console.error("CSV Parsing Error:", error.message);
+        return res.status(500).json({ error: "Error processing CSV file." });
+      });
+  } catch (err) {
+    console.error("Course Check Error:", err);
+    return res.status(500).json({ error: "Internal server error." });
+  }
 };
 
-// Get subjects for particular course of a branch
-const getSubjectsForCourse = async (req, res) => {
-  const { branch_id, course_id, specialization, semester} = req.query;
+// Get subject data for a course of a branch
+const getAllSubjectsForCourse = async (req, res) => {
+  const { branch_id, course_id, specialization, section } = req.query;
 
-  if (!branch_id || !course_id || !specialization || !semester) {
+  if (!branch_id || !course_id || !specialization || !section) {
     return res.status(400).json({
-      error: "branch_id, course_id, specialization, and semester are required",
+      error: "branch_id, course_id and section specialization are required",
     });
   }
 
   try {
     const session_id = await getLatestSessionId();
+    if(!session_id) {
+      return res.status(400).json({ error: "Session Not Found"});
+    }
 
-    const subjects = await db("subject")
-      .where({
-        branch_id,
-        course_id,
-        specialization,
-        semester,
-        session_id,
+    const rows = await db("subject as s")
+      .leftJoin("faculty_subject as fs", function () {
+        this.on("s.subject_id", "=", "fs.subject_id").andOn(
+          "s.subject_type",
+          "=",
+          "fs.subject_type"
+        )
+        andOn("s.session_id", "=", "fs.session_id");
       })
-      .select("subject_id", "subject_name", "subject_type");
+      .leftJoin("faculty as f", "fs.faculty_id", "f.faculty_id")
+      .where({
+        "s.branch_id": branch_id,
+        "s.course_id": course_id,
+        "s.specialization": specialization,
+        "s.section": section,
+        "s.session_id": session_id
+      })
+      .select(
+        "s.subject_id",
+        "s.subject_name",
+        "s.subject_type",
+        "s.semester",
+        "fs.faculty_id",
+        "f.faculty_name"
+      )
+      .orderBy("s.semester");
 
-    return res.status(200).json({ subjects });
+    // Group by subject and accumulate faculty info
+    const subjectsMap = new Map();
+
+    for (const row of rows) {
+      const key = `${row.subject_id}-${row.subject_type}`;
+      if (!subjectsMap.has(key)) {
+        subjectsMap.set(key, {
+          subject_id: row.subject_id,
+          subject_name: row.subject_name,
+          subject_type: row.subject_type,
+          semester: row.semester,
+          faculty_ids: [],
+          faculty_names: [],
+        });
+      }
+
+      const subject = subjectsMap.get(key);
+      if (row.faculty_id && !subject.faculty_ids.includes(row.faculty_id)) {
+        subject.faculty_ids.push(row.faculty_id);
+        subject.faculty_names.push(row.faculty_name);
+      }
+    }
+
+    return res.status(200).json({ subjects: Array.from(subjectsMap.values()) });
   } catch (error) {
     console.error("Error fetching subjects:", error);
     return res.status(500).json({ error: "Internal server error" });
@@ -152,7 +199,7 @@ const getAssignedSubject = async (req, res) => {
     const { faculty_id } = req.params;
 
     if (!faculty_id) {
-      return res.status(400).json({ error: "Faculty IDis required" });
+      return res.status(400).json({ error: "Faculty ID is required" });
     }
 
     const session_id = await getLatestSessionId();
@@ -160,20 +207,13 @@ const getAssignedSubject = async (req, res) => {
     const subjects = await db("faculty_subject")
       .join("subject", function () {
         this.on("faculty_subject.subject_id", "=", "subject.subject_id")
-        .andOn( "faculty_subject.subject_type", "=", "subject.subject_type")
-        .andOn("faculty_subject.session_id", "=", "subject.session_id");
+          .andOn("faculty_subject.subject_type", "=", "subject.subject_type")
+          .andOn("faculty_subject.session_id", "=", "subject.session_id");
       })
       .leftJoin("course_outcome", function () {
-        this.on(
-          "faculty_subject.subject_id",
-          "=",
-          "course_outcome.subject_id"
-        ).andOn(
-          "faculty_subject.subject_type",
-          "=",
-          "course_outcome.subject_type"
-        )
-        .andOn("faculty_subject.session_id", "=", "course_outcome.session_id");
+        this.on("faculty_subject.subject_id", "=", "course_outcome.subject_id")
+          .andOn("faculty_subject.subject_type", "=", "course_outcome.subject_type")
+          .andOn("faculty_subject.session_id", "=", "course_outcome.session_id");
       })
       .where("faculty_subject.faculty_id", faculty_id)
       .andWhere("faculty_subject.session_id", session_id)
@@ -181,7 +221,11 @@ const getAssignedSubject = async (req, res) => {
         "subject.subject_id",
         "subject.subject_type",
         "subject.subject_name",
-        "subject.semester"
+        "subject.semester",
+        "subject.course_id",
+        "subject.specialization",
+        "subject.branch_id",         
+        "faculty_subject.section"    
       )
       .select(
         "subject.subject_id",
@@ -190,6 +234,8 @@ const getAssignedSubject = async (req, res) => {
         "subject.semester",
         "subject.course_id",
         "subject.specialization",
+        "subject.branch_id",         
+        "faculty_subject.section",
         db.raw("GROUP_CONCAT(course_outcome.co_name) as co_names")
       );
 
@@ -197,8 +243,6 @@ const getAssignedSubject = async (req, res) => {
       ...subject,
       co_names: subject.co_names ? subject.co_names.split(",") : [],
     }));
-
-    console.log(formattedSubjects);
 
     res.status(200).json({ subjects: formattedSubjects });
   } catch (error) {
@@ -263,73 +307,36 @@ const assignCO = async (req, res) => {
   }
 };
 
-const getAllSubjectsForCourse = async (req, res) => {
-  const { branch_id, course_id, specialization } = req.query;
+// Get subjects for particular course of a branch
+const getSubjectsForCourse = async (req, res) => {
+  const { branch_id, course_id, specialization, semester} = req.query;
 
-  if (!branch_id || !course_id || !specialization) {
+  if (!branch_id || !course_id || !specialization || !semester) {
     return res.status(400).json({
-      error: "branch_id, course_id, session_id and specialization are required",
+      error: "branch_id, course_id, specialization, and semester are required",
     });
   }
 
   try {
     const session_id = await getLatestSessionId();
 
-    const rows = await db("subject as s")
-      .leftJoin("faculty_subject as fs", function () {
-        this.on("s.subject_id", "=", "fs.subject_id").andOn(
-          "s.subject_type",
-          "=",
-          "fs.subject_type"
-        )
-        andOn("s.session_id", "=", "fs.session_id");
-      })
-      .leftJoin("faculty as f", "fs.faculty_id", "f.faculty_id")
+    const subjects = await db("subject")
       .where({
-        "s.branch_id": branch_id,
-        "s.course_id": course_id,
-        "s.specialization": specialization,
-        "s.session_id": session_id
+        branch_id,
+        course_id,
+        specialization,
+        semester,
+        session_id,
       })
-      .select(
-        "s.subject_id",
-        "s.subject_name",
-        "s.subject_type",
-        "s.semester",
-        "fs.faculty_id",
-        "f.faculty_name"
-      )
-      .orderBy("s.semester");
+      .select("subject_id", "subject_name", "subject_type");
 
-    // Group by subject and accumulate faculty info
-    const subjectsMap = new Map();
-
-    for (const row of rows) {
-      const key = `${row.subject_id}-${row.subject_type}`;
-      if (!subjectsMap.has(key)) {
-        subjectsMap.set(key, {
-          subject_id: row.subject_id,
-          subject_name: row.subject_name,
-          subject_type: row.subject_type,
-          semester: row.semester,
-          faculty_ids: [],
-          faculty_names: [],
-        });
-      }
-
-      const subject = subjectsMap.get(key);
-      if (row.faculty_id && !subject.faculty_ids.includes(row.faculty_id)) {
-        subject.faculty_ids.push(row.faculty_id);
-        subject.faculty_names.push(row.faculty_name);
-      }
-    }
-
-    return res.status(200).json({ subjects: Array.from(subjectsMap.values()) });
+    return res.status(200).json({ subjects });
   } catch (error) {
     console.error("Error fetching subjects:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 module.exports = {
   subjectDataUpload,

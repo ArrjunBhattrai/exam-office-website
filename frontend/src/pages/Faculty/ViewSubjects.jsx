@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Toaster, toast } from "react-hot-toast";
 import Sidebar from "../../components/Sidebar";
@@ -43,7 +43,7 @@ const ViewSubjects = () => {
   const fetchAssignedSubjects = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/subject/faculty-subjects/${userId}`,
+        `${BACKEND_URL}/api/subject/${userId}`,
         {
           method: "GET",
           headers: {
@@ -81,7 +81,7 @@ const ViewSubjects = () => {
     );
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/subject/assign-cos`, {
+      const response = await fetch(`${BACKEND_URL}/api/subject/assign-co`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

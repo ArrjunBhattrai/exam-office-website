@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Toaster, toast } from "react-hot-toast";
 import Sidebar from "../../components/Sidebar";
@@ -78,7 +78,7 @@ const ATKTMarksFeed = () => {
   const fetchCos = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/subject/get-co/${selectedSubject.subject_id}/${selectedSubject.subject_type}`,
+        `${BACKEND_URL}/api/subject/co/${selectedSubject.subject_id}/${selectedSubject.subject_type}`,
         {
           method: "GET",
           headers: {
@@ -104,7 +104,7 @@ const ATKTMarksFeed = () => {
 
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/atkt/get-atkt-students?subject_id=${selectedSubject.subject_id}&subject_type=${selectedSubject.subject_type}`,
+        `${BACKEND_URL}/api/atkt/students?subject_id=${selectedSubject.subject_id}&subject_type=${selectedSubject.subject_type}`,
         {
           method: "GET",
           headers: {
@@ -137,7 +137,7 @@ const ATKTMarksFeed = () => {
       }).toString();
 
       const marksRes = await fetch(
-        `${BACKEND_URL}/api/atkt/fetch-atkt-marks-data?${queryParams}`,
+        `${BACKEND_URL}/api/atkt/fetch-marks?${queryParams}`,
         {
           method: "GET",
           headers: {
@@ -184,7 +184,7 @@ const ATKTMarksFeed = () => {
       }
 
       const testDetailsRes = await fetch(
-        `${BACKEND_URL}/api/atkt/fetch-test-details?${queryParams}`,
+        `${BACKEND_URL}/api/atkt/test-details?${queryParams}`,
         {
           method: "GET",
           headers: {
@@ -266,7 +266,7 @@ const ATKTMarksFeed = () => {
 
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/atkt/insert-test-details`,
+        `${BACKEND_URL}/api/atkt/test-details`,
         {
           method: "POST",
           headers: {
@@ -447,7 +447,7 @@ const ATKTMarksFeed = () => {
         }).toString();
 
         const deleteRes = await fetch(
-          `${BACKEND_URL}/api/atkt/delete-test-details?${queryParams}`,
+          `${BACKEND_URL}/api/atkt/test-details?${queryParams}`,
           {
             method: "DELETE",
             headers: {

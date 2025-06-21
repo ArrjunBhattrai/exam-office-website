@@ -5,7 +5,7 @@ const {
   loginUser,
   forgotPassword,
   resetPassword,
-  infoUpdate
+  infoUpdate,
 } = require("../controller/user");
 
 // Register an user
@@ -15,12 +15,12 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 
 // Forgot Password
-router.post('/forgot-password', forgotPassword);
+router.post("/forgot-password", forgotPassword);
 
 // Reset Password
-router.post('/reset-password', resetPassword);
+router.post("/reset-password", resetPassword);
 
 //update user info
-router.post('/info-update', infoUpdate);
+router.post("/info-update", infoUpdate);
 
 module.exports = router;

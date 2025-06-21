@@ -30,7 +30,7 @@ const HODViewDeptt = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedFaculty, setSelectedFaculty] = useState(null);
   const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState({});
+  const [selectedCourse, setSelectedCourse] = useState("");
   const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [filteredSubjects, setFilteredSujects] = useState([]);
   const [faculties, setFaculties] = useState([]);
@@ -38,14 +38,12 @@ const HODViewDeptt = () => {
   useEffect(() => {
     const fetchFaculties = async () => {
       try {
-        const res = await fetch(
-          `${BACKEND_URL}/api/faculty/get-faculties?branch_id=${branchId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const res = await fetch(`${BACKEND_URL}/api/faculty`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (!res.ok) {
           throw new Error("Failed to fetch faculties");
         }
@@ -70,14 +68,12 @@ const HODViewDeptt = () => {
     setAssignedSubjects([]);
 
     try {
-      const res = await fetch(
-        `${BACKEND_URL}/api/course/get-courses-by-branch?branch_id=${branchId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await fetch(`${BACKEND_URL}/api/course`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const data = await res.json();
       const options = data.courses.map((course) => ({
         value: JSON.stringify({
@@ -89,8 +85,9 @@ const HODViewDeptt = () => {
       setCourses(options);
 
       const subjectRes = await fetch(
-        `${BACKEND_URL}/api/subject/faculty-subjects/${faculty.faculty_id}`,
+        `${BACKEND_URL}/api/subject/${faculty.faculty_id}`,
         {
+          method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -106,9 +103,8 @@ const HODViewDeptt = () => {
   };
 
   const handleCourseChange = async (value) => {
+    setSelectedCourse(value);
     const { course_id, specialization } = JSON.parse(value);
-
-    setSelectedCourse({ course_id, specialization });
 
     const filtered = assignedSubjects.filter(
       (subj) =>
@@ -122,11 +118,14 @@ const HODViewDeptt = () => {
   const [enrolledStudents, setEnrolledStudents] = useState([]);
   const [studentsModalOpen, setStudentsModalOpen] = useState(false);
 
-  const handleViewStudents = async (subjectId, subjectType) => {
+  const handleViewStudents = async (subjectId, subjectType, section) => {
     try {
       const res = await fetch(
-        `${BACKEND_URL}/api/student/getStudents?subject_id=${subjectId}&subject_type=${subjectType}`,
+        `${BACKEND_URL}/api/student/?subject_id=${subjectId}&subject_type=${subjectType}${
+          section ? `&section=${section}` : ""
+        }`,
         {
+          method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -274,7 +273,7 @@ const HODViewDeptt = () => {
         <Dropdown
           label="Select Course"
           options={courses}
-          selectedValue={JSON.stringify(selectedCourse)}
+          selectedValue={selectedCourse}
           onChange={handleCourseChange}
         />
 
@@ -289,6 +288,7 @@ const HODViewDeptt = () => {
                     <th>Type</th>
                     <th>Semester</th>
                     <th>COs</th>
+                    <th>Section</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -300,12 +300,14 @@ const HODViewDeptt = () => {
                       <td>{subject.subject_type}</td>
                       <td>{subject.semester}</td>
                       <td>{subject.co_names.length}</td>
+                      <td>{subject.section || "—"}</td>
                       <td>
                         <button
                           onClick={() =>
                             handleViewStudents(
                               subject.subject_id,
-                              subject.subject_type
+                              subject.subject_type,
+                              subject.section
                             )
                           }
                           className="view-btn"

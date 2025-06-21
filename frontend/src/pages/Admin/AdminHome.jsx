@@ -26,20 +26,50 @@ const AdminHome = () => {
   useEffect(() => {
     const fetchCurrentSession = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/session/---`, {
+        const res = await fetch(`${BACKEND_URL}/api/session/latest`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        dispatch(setSession(data.session));
+        dispatch(
+          setSession({
+            start_month: data.start_month,
+            start_year: data.start_year,
+            end_month: data.end_month,
+            end_year: data.end_year,
+          })
+        );
       } catch (err) {
         console.error("Session fetch failed", err);
       }
     };
 
     fetchCurrentSession();
-  }, [token]);
+  }, [token, dispatch]);
 
-  const { currentSession } = useSelector((state) => state.session);
+  const { start_month, start_year, end_month, end_year } = useSelector(
+    (state) => state.session
+  );
+
+  const monthNames = [
+    "",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  const currentSession =
+    start_month && start_year && end_month && end_year
+      ? `${monthNames[start_month]} ${start_year} - ${monthNames[end_month]} ${end_year}`
+      : null;
 
   return (
     <div className="home-container">
@@ -125,10 +155,7 @@ const AdminHome = () => {
 
               <div className="fac-alloc">
                 <p className="session-text">
-                  Current Session:{" "}
-                  {currentSession
-                    ? `${currentSession.start_month}/${currentSession.start_year}`
-                    : "Loading..."}
+                  Current Session: {currentSession || "Loading..."}
                 </p>
               </div>
             </div>

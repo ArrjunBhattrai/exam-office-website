@@ -34,7 +34,7 @@ const SubjectDataUpload = () => {
 
   const fetchBranches = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/branch/get-branches`, {
+      const response = await fetch(`${BACKEND_URL}/api/branch`, {
         method: "GET",
         headers: { authorization: token, "Content-Type": "application/json" },
       });
@@ -91,7 +91,7 @@ const SubjectDataUpload = () => {
 
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/subject/upload/subject-data`,
+        `${BACKEND_URL}/api/subject`,
         {
           method: "POST",
           headers: { authorization: token },

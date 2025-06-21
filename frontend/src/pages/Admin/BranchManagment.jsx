@@ -35,7 +35,7 @@ const BranchManagement = () => {
   // Fetch all branches
   const fetchBranches = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/branch/get-branches`, {
+      const response = await fetch(`${BACKEND_URL}/api/branch`, {
         method: "GET",
         headers: {
           authorization: token,
@@ -66,7 +66,7 @@ const BranchManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${BACKEND_URL}/api/branch/create-branch`, {
+      const response = await fetch(`${BACKEND_URL}/api/branch`, {
         method: "POST",
         headers: {
           authorization: token,
@@ -91,7 +91,7 @@ const BranchManagement = () => {
   const handleDelete = async (id) => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/branch/delete-branch/${id}`,
+        `${BACKEND_URL}/api/branch/${id}`,
         {
           method: "DELETE",
           headers: {
