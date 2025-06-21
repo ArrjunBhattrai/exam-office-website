@@ -94,18 +94,19 @@ const fetchTestDetails = async (req, res) => {
 
 // Delete test details
 const deleteTestDetails = async (req, res) => {
-  const { subject_id, subject_type, component_name, sub_component_name } = req.query;
+  const { subject_id, subject_type, component_name, sub_component_name } =
+    req.query;
 
   if (!subject_id || !subject_type || !component_name || !sub_component_name) {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
   try {
-    const session_id = await getLatestSessionId(); 
+    const session_id = await getLatestSessionId();
 
     const deletedRows = await db("test_details")
       .where({
-        session_id, 
+        session_id,
         subject_id,
         subject_type,
         component_name,
@@ -114,9 +115,13 @@ const deleteTestDetails = async (req, res) => {
       .del();
 
     if (deletedRows > 0) {
-      return res.status(200).json({ message: "Test details deleted successfully" });
+      return res
+        .status(200)
+        .json({ message: "Test details deleted successfully" });
     } else {
-      return res.status(404).json({ message: "No matching test details found" });
+      return res
+        .status(404)
+        .json({ message: "No matching test details found" });
     }
   } catch (error) {
     console.error("Error deleting test details:", error);
@@ -272,11 +277,13 @@ const submitMarks = async (req, res) => {
 
 // Check if marks exist
 const fetchMarksData = async (req, res) => {
-  const { subject_id, subject_type, component_name, sub_component_name } = req.query;
+  const { subject_id, subject_type, component_name, sub_component_name } =
+    req.query;
 
   if (!subject_id || !subject_type || !component_name || !sub_component_name) {
     return res.status(400).json({
-      error: "Subject ID, Subject Type, Component Name, and Sub Component Name are required",
+      error:
+        "Subject ID, Subject Type, Component Name, and Sub Component Name are required",
     });
   }
 
@@ -290,10 +297,14 @@ const fetchMarksData = async (req, res) => {
       .select("section");
 
     if (facultyAssignments.length === 0) {
-      return res.status(403).json({ error: "Unauthorized: Faculty not assigned to this subject" });
+      return res
+        .status(403)
+        .json({ error: "Unauthorized: Faculty not assigned to this subject" });
     }
 
-    const assignedSections = facultyAssignments.map(row => row.section).filter(Boolean);
+    const assignedSections = facultyAssignments
+      .map((row) => row.section)
+      .filter(Boolean);
 
     // Fetch subject info to get branch, course, specialization, semester
     const subjectData = await db("subject")
@@ -398,6 +409,19 @@ const fetchMarksData = async (req, res) => {
   }
 };
 
+const getAssessmentComponent = async (req, res) => {
+  try {
+    const components = await db("marks")
+      .distinct("component_name", "sub_component_name")
+      .whereNotNull("component_name");
+
+    res.json({ components });
+  } catch (err) {
+    console.error("Error fetching components:", err);
+    res.status(500).json({ error: "Failed to fetch assessment components" });
+  }
+};
+
 module.exports = {
   insertTestDetails,
   deleteTestDetails,
@@ -405,4 +429,5 @@ module.exports = {
   saveMarks,
   submitMarks,
   fetchMarksData,
+  getAssessmentComponent,
 };

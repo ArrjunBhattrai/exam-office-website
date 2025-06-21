@@ -39,5 +39,11 @@ router.get(
   authorizeRole(["faculty"]),
   assesmentController.fetchMarksData
 );
+router.get(
+  "/components",
+  authenticateUser,
+  authorizeRole(["admin", "hod", "faculty"]),
+  assesmentController.getAssessmentComponent
+);
 
 module.exports = router;
