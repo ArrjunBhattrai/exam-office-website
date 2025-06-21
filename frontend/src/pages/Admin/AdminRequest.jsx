@@ -19,6 +19,22 @@ const AdminRequest = () => {
   if (!isAuthenticated || role != "admin") {
     return <div>Please log in to access this page.</div>;
   }
+  const currentSession = useSelector((state) => state.session.currentSession);
+  const monthNames = [
+    "", // monthNames[0] will be unused since months start from 1
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
 
   const [requests, setRequests] = useState([]);
   const [selectedReason, setSelectedReason] = useState("");
@@ -166,6 +182,7 @@ const AdminRequest = () => {
                   <h3>Correction Request</h3>
 
                   <SessionDisplay className="session-text" />
+
 
                   <span className="box-overlay-text">View request</span>
 
