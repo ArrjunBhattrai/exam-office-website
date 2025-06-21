@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import "./admin.css";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
-import Dropdown from "../../components/Dropdown";
 import Button from "../../components/Button";
 import { BACKEND_URL } from "../../../config";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
@@ -24,11 +23,12 @@ const AdminRequest = () => {
   const [selectedReason, setSelectedReason] = useState("");
   const [selectedRequestId, setSelectedRequestId] = useState(null);
   const [showReasonModal, setShowReasonModal] = useState(false);
+  const [selectedEnrollmentNos, setSelectedEnrollmentNos] = useState([]);
 
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/req/correction-requests`, {
+        const res = await fetch(`${BACKEND_URL}/api/request`, {
           method: "GET",
           headers: {
             authorization: token,
@@ -46,17 +46,14 @@ const AdminRequest = () => {
 
   const handleUpdateStatus = async (request_id, newStatus) => {
     try {
-      const res = await fetch(
-        `${BACKEND_URL}/api/req/correction-requests/${request_id}/status`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            authorization: token,
-          },
-          body: JSON.stringify({ status: newStatus }),
-        }
-      );
+      const res = await fetch(`${BACKEND_URL}/api/request/${request_id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: token,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
 
       if (!res.ok) {
         toast.error("Failed to update status");
@@ -78,6 +75,7 @@ const AdminRequest = () => {
     setSelectedReason(reason);
     setSelectedRequestId(request_id);
     setShowReasonModal(true);
+    setSelectedEnrollmentNos(enrollment_nos || []);
   };
 
   return (
@@ -166,12 +164,12 @@ const AdminRequest = () => {
                 <div className="fac-alloc">
                   <h3>Correction Request</h3>
 
-                  <p className="session-text">
+                  {/* <p className="session-text">
                     Current Session:{" "}
                     {currentSession
                       ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
                       : "Loading..."}
-                  </p>
+                  </p> */}
 
                   <span className="box-overlay-text">View request</span>
 
@@ -205,7 +203,11 @@ const AdminRequest = () => {
                               <Button
                                 text="View"
                                 onClick={() =>
-                                  handleView(req.reason, req.request_id)
+                                  handleView(
+                                    req.reason,
+                                    req.request_id,
+                                    req.enrollment_nos
+                                  )
                                 }
                               />
                               <Button
@@ -240,6 +242,15 @@ const AdminRequest = () => {
           <div className="modal-content">
             <h2>Reason for Request #{selectedRequestId}</h2>
             <p>{selectedReason}</p>
+
+            <div style={{ marginTop: "10px" }}>
+              <strong>Enrollment Numbers:</strong>
+              <ul>
+                {selectedEnrollmentNos.map((enr, index) => (
+                  <li key={index}>{enr}</li>
+                ))}
+              </ul>
+            </div>
             <div className="modal-actions">
               <Button text="Close" onClick={() => setShowReasonModal(false)} />
             </div>
@@ -248,7 +259,6 @@ const AdminRequest = () => {
       )}
 
       <ToastContainer position="top-right" autoClose={3000} />
-
     </div>
   );
 };
