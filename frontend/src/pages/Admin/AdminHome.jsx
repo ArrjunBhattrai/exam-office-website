@@ -26,7 +26,7 @@ const AdminHome = () => {
   useEffect(() => {
     const fetchCurrentSession = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/session/---`, {
+        const res = await fetch(`${BACKEND_URL}/api/session/latest`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();

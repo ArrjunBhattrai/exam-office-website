@@ -24,7 +24,6 @@ import RegistrationRequest from "./pages/HOD/RegistrationRequest";
 import FacultyAllocation from "./pages/HOD/FacultyAllocation";
 import ElectiveDataUpload from "./pages/HOD/ElectiveDataUpload";
 import HODCorrectionReq from "./pages/HOD/HODCorrectionReq";
-import HodProgressReport from "./pages/HOD/HodProgressReport";
 
 import FacultyHome from "./pages/Faculty/FacultyHome";
 import ViewSubjects from "./pages/Faculty/ViewSubjects";
@@ -84,7 +83,6 @@ function App() {
             path="/hod/correction-request"
             element={<HODCorrectionReq />}
           />
-          <Route path="/hod/progress-report" element={<HodProgressReport />} />
           <Route
             path="/hod/registration-request"
             element={<RegistrationRequest />}
