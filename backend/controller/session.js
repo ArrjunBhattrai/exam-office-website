@@ -62,30 +62,61 @@ const getLatestSession = async (req, res) => {
   }
 };
 
+const getAllSessions = async (req, res) => {
+  try {
+    const sessions = await db("session").orderBy("start_year", "desc").orderBy("start_month", "desc");
+    res.status(200).json({ sessions });
+  } catch (err) {
+    console.error("Error fetching sessions:", err);
+    res.status(500).json({ error: "Failed to fetch sessions" });
+  }
+}
+
 const downloadSessionData = async (req, res) => {
   try {
     const {
       session_id,
       branch_id,
       course_id,
-      subjects,
-      electives,
-      subjectCOs,
-      testMarks,
-      coMarks, // alias of testMarks technically
-      atktMarks,
+      specialization,
       students,
-      studentElectives,
+      subjects,
+      atkt,
+      electives,
+      marks,
+      atktMarks
     } = req.query;
 
-    if (!session_id || !branch_id || !course_id) {
+    if (!session_id || !branch_id || !course_id || !specialization) {
       return res.status(400).json({ error: "All parameters are required" });
     }
 
     const allData = [];
     const shouldInclude = (val) => val === "true";
 
-    // Subjects + COs
+    // Check if sections exist
+    const sectionsExist = await db("section")
+      .where({ branch_id, course_id, specialization })
+      .first();
+
+    // Students
+    if (shouldInclude(students)) {
+      const studentData = await db("student")
+        .where({ session_id, branch_id, course_id, specialization });
+
+      allData.push(
+        ...studentData.map((s) => ({
+          Type: "Student",
+          Enrollment: s.enrollment_no,
+          Name: s.student_name,
+          Semester: s.semester,
+          Status: s.status,
+          Section: sectionsExist ? s.section : "—"
+        }))
+      );
+    }
+
+    // Subjects
     if (shouldInclude(subjects)) {
       const subjectData = await db("subject")
         .leftJoin("faculty_subject", function () {
@@ -102,6 +133,7 @@ const downloadSessionData = async (req, res) => {
         .where("subject.session_id", session_id)
         .andWhere("subject.branch_id", branch_id)
         .andWhere("subject.course_id", course_id)
+        .andWhere("subject.specialization", specialization)
         .select(
           "subject.subject_id",
           "subject.subject_name",
@@ -126,51 +158,69 @@ const downloadSessionData = async (req, res) => {
           "faculty.faculty_name"
         );
 
-      const formattedSubjects = subjectData.map((s) => ({
-        Type: "Subject",
-        "Subject ID": s.subject_id,
-        "Subject Name": s.subject_name,
-        "Subject Type": s.subject_type,
-        Semester: s.semester,
-        "Branch ID": s.branch_id,
-        "Course ID": s.course_id,
-        Specialization: s.specialization,
-        Section: s.section || "—",
-        "Faculty Name": s.faculty_name || "Not Assigned",
-        COs: s.cos || "None",
-        "Is ATKT": s.subject_type.toLowerCase() === "atkt" ? "Yes" : "No",
-      }));
-
-      allData.push(...formattedSubjects);
+      allData.push(
+        ...subjectData.map((s) => ({
+          Type: "Subject",
+          "Subject ID": s.subject_id,
+          "Subject Name": s.subject_name,
+          "Subject Type": s.subject_type,
+          Semester: s.semester,
+          Section: sectionsExist ? s.section || "—" : "—",
+          "Faculty Name": s.faculty_name || "Not Assigned",
+          COs: s.cos || "Not Assigned",
+          "Is ATKT": s.subject_type.toLowerCase() === "atkt" ? "Yes" : "No"
+        }))
+      );
     }
 
+    // ATKT Data
+    if (shouldInclude(atkt)) {
+      const data = await db("atkt_students")
+        .join("student", "student.enrollment_no", "=", "atkt_students.enrollment_no")
+        .where("student.session_id", session_id)
+        .andWhere("student.branch_id", branch_id)
+        .andWhere("student.course_id", course_id)
+        .andWhere("student.specialization", specialization);
+
+      allData.push(
+        ...data.map((a) => ({
+          Type: "ATKT",
+          Enrollment: a.enrollment_no,
+          Name: a.student_name,
+          SubjectID: a.subject_id,
+          SubjectType: a.subject_type,
+          SubjectSession: a.subject_session
+        }))
+      );
+    }
+
+    // Elective Data
     if (shouldInclude(electives)) {
-      const data = await db("elective_data").where("session_id", session_id);
+      const data = await db("elective_data")
+        .where({ session_id, branch_id, course_id, specialization });
       allData.push(
         ...data.map((e) => ({
           Type: "Elective",
-          Enrollment: e.enrollment_no,
           SubjectID: e.subject_id,
           SubjectType: e.subject_type,
+          Enrollment: e.enrollment_no
         }))
       );
     }
 
-    if (shouldInclude(subjectCOs)) {
-      const data = await db("course_outcome").where("session_id", session_id);
-      allData.push(
-        ...data.map((c) => ({
-          Type: "Subject CO",
-          SubjectID: c.subject_id,
-          SubjectType: c.subject_type,
-          CO: c.co_name,
-          FacultyID: c.faculty_id,
-        }))
-      );
-    }
+    // Marks Data
+    if (shouldInclude(marks)) {
+      const data = await db("marks")
+        .join("subject", function () {
+          this.on("marks.subject_id", "=", "subject.subject_id")
+            .andOn("marks.subject_type", "=", "subject.subject_type")
+            .andOn("marks.session_id", "=", "subject.session_id");
+        })
+        .where("marks.session_id", session_id)
+        .andWhere("subject.branch_id", branch_id)
+        .andWhere("subject.course_id", course_id)
+        .andWhere("subject.specialization", specialization);
 
-    if (shouldInclude(testMarks)) {
-      const data = await db("marks").where("session_id", session_id);
       allData.push(
         ...data.map((m) => ({
           Type: "Marks",
@@ -180,14 +230,25 @@ const downloadSessionData = async (req, res) => {
           Component: m.component_name,
           SubComponent: m.sub_component_name,
           CO: m.co_name,
-          Marks: m.marks_obtained,
-          Status: m.status,
+          Marks: m.marks_obtained || "",
+          Status: m.status
         }))
       );
     }
 
+    // ATKT Marks Data
     if (shouldInclude(atktMarks)) {
-      const data = await db("atkt_marks").where("session_id", session_id);
+      const data = await db("atkt_marks")
+        .join("subject", function () {
+          this.on("atkt_marks.subject_id", "=", "subject.subject_id")
+            .andOn("atkt_marks.subject_type", "=", "subject.subject_type")
+            .andOn("atkt_marks.session_id", "=", "subject.session_id");
+        })
+        .where("atkt_marks.session_id", session_id)
+        .andWhere("subject.branch_id", branch_id)
+        .andWhere("subject.course_id", course_id)
+        .andWhere("subject.specialization", specialization);
+
       allData.push(
         ...data.map((a) => ({
           Type: "ATKT Marks",
@@ -195,37 +256,8 @@ const downloadSessionData = async (req, res) => {
           SubjectID: a.subject_id,
           SubjectType: a.subject_type,
           CO: a.co_name,
-          Marks: a.marks_obtained,
-          Status: a.status,
-        }))
-      );
-    }
-
-    if (shouldInclude(students)) {
-      const data = await db("student")
-        .where("session_id", session_id)
-        .andWhere("branch_id", branch_id)
-        .andWhere("course_id", course_id);
-      allData.push(
-        ...data.map((s) => ({
-          Type: "Student",
-          Enrollment: s.enrollment_no,
-          Name: s.student_name,
-          Section: s.section,
-          Semester: s.semester,
-          Status: s.status,
-        }))
-      );
-    }
-
-    if (shouldInclude(studentElectives)) {
-      const data = await db("elective_data").where("session_id", session_id);
-      allData.push(
-        ...data.map((e) => ({
-          Type: "Student Elective",
-          Enrollment: e.enrollment_no,
-          SubjectID: e.subject_id,
-          SubjectType: e.subject_type,
+          Marks: a.marks_obtained || "",
+          Status: a.status
         }))
       );
     }
@@ -247,16 +279,6 @@ const downloadSessionData = async (req, res) => {
     res.status(500).json({ error: "Failed to generate session data" });
   }
 };
-
-const getAllSessions = async (req, res) => {
-  try {
-    const sessions = await db("session").orderBy("start_year", "desc").orderBy("start_month", "desc");
-    res.status(200).json({ sessions });
-  } catch (err) {
-    console.error("Error fetching sessions:", err);
-    res.status(500).json({ error: "Failed to fetch sessions" });
-  }
-}
 
 module.exports = {
   createSession,

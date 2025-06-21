@@ -11,13 +11,6 @@ router.post(
 );
 
 router.get(
-  "/",
-  authenticateUser,
-  authorizeRole(["admin", "hod", "faculty"]),
-  sessionController.createSession
-);
-
-router.get(
   "/download",
   authenticateUser,
   authorizeRole(["admin"]),
