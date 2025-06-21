@@ -213,7 +213,6 @@ exports.up = function (knex) {
       table.integer("session_id").unsigned().notNullable();
       table.string("subject_id").notNullable();
       table.string("subject_type").notNullable();
-      table.integer("subject_session").unsigned().notNullable();
       table.string("co_name").notNullable();
       table.integer("max_marks").notNullable();
 
@@ -248,7 +247,6 @@ exports.up = function (knex) {
       table.string("enrollment_no").notNullable();
       table.string("subject_id").notNullable();
       table.string("subject_type").notNullable();
-      table.string("subject_session").notNullable();
       table.string("co_name").notNullable();
       table.integer("marks_obtained").notNullable();
       table
@@ -263,8 +261,8 @@ exports.up = function (knex) {
         .onDelete("CASCADE");
     })
     .createTable("marks_update_request", (table) => {
-      table.integer("session_id").unsigned().notNullable();
       table.increments("request_id").primary();
+      table.integer("session_id").unsigned().notNullable();
       table.string("faculty_id").notNullable();
       table.string("subject_id").notNullable();
       table.string("subject_type").notNullable();
@@ -275,6 +273,7 @@ exports.up = function (knex) {
       table
         .enu("status", ["Pending", "Approved", "Rejected"])
         .defaultTo("Pending");
+      table.timestamp("created_at").defaultTo(knex.fn.now());
 
       table
         .foreign("faculty_id")
@@ -283,9 +282,21 @@ exports.up = function (knex) {
         .onDelete("CASCADE");
 
       table
-        .foreign(["session_id"])
-        .references(["session_id"])
+        .foreign("session_id")
+        .references("session_id")
         .inTable("session")
+        .onDelete("CASCADE");
+    })
+    .createTable("marks_update_students", (table) => {
+      table.integer("request_id").unsigned().notNullable();
+      table.string("enrollment_no").notNullable();
+
+      table.primary(["request_id", "enrollment_no"]);
+
+      table
+        .foreign("request_id")
+        .references("request_id")
+        .inTable("marks_update_request")
         .onDelete("CASCADE");
     })
     .createTable("update_logs", (table) => {
@@ -302,6 +313,10 @@ exports.up = function (knex) {
 
 exports.down = async function (knex) {
   await knex.schema.alterTable("update_logs", (table) => {
+    table.dropForeign("request_id");
+  });
+
+  await knex.schema.alterTable("marks_update_students", (table) => {
     table.dropForeign("request_id");
   });
 
@@ -373,6 +388,7 @@ exports.down = async function (knex) {
   // Drop tables in reverse creation order
   await knex.schema
     .dropTableIfExists("update_logs")
+    .dropTableIfExists("marks_update_students")
     .dropTableIfExists("marks_update_request")
     .dropTableIfExists("atkt_marks")
     .dropTableIfExists("marks")

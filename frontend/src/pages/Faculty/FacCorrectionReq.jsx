@@ -64,7 +64,7 @@ const FacCorrectionReq = () => {
     const fetchPastRequests = async () => {
       try {
         const response = await fetch(
-          `${BACKEND_URL}/api/req/past-requests/${userId}`,
+          `${BACKEND_URL}/api/req/request/?faculty_id=${userId}`,
           {
             method: "GET",
             headers: {
@@ -90,9 +90,9 @@ const FacCorrectionReq = () => {
   const handleWithdraw = async (requestId) => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/req/withdraw/${requestId}`,
+        `${BACKEND_URL}/api/req/request/${requestId}`,
         {
-          method: "POST",
+          method: "DELETE",
           headers: {
             authorization: token,
           },
