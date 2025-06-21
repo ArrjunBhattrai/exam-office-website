@@ -29,7 +29,12 @@ const FacCorrectionReq = () => {
   const [draftStatus, setDraftStatus] = useState("");
   const [stage, setStage] = useState(1);
   const [pastRequests, setPastRequests] = useState([]);
-
+  const [students, setStudents] = useState([]);
+  const [selectedEnrollments, setSelectedEnrollments] = useState([]);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingRequest, setEditingRequest] = useState(null);
+  const [marks, setMarks] = useState([]);
+  const [testDetails, setTestDetails] = useState([]);
 
   const componentMap = {
     Theory: ["CW", "Theory"],
@@ -63,15 +68,12 @@ const FacCorrectionReq = () => {
   useEffect(() => {
     const fetchPastRequests = async () => {
       try {
-        const response = await fetch(
-          `${BACKEND_URL}/api/req/request/?faculty_id=${userId}`,
-          {
-            method: "GET",
-            headers: {
-              authorization: token,
-            },
-          }
-        );
+        const response = await fetch(`${BACKEND_URL}/api/request/`, {
+          method: "GET",
+          headers: {
+            authorization: token,
+          },
+        });
 
         const data = await response.json();
         if (!response.ok)
@@ -89,15 +91,12 @@ const FacCorrectionReq = () => {
 
   const handleWithdraw = async (requestId) => {
     try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/req/request/${requestId}`,
-        {
-          method: "DELETE",
-          headers: {
-            authorization: token,
-          },
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/api/request/${requestId}`, {
+        method: "DELETE",
+        headers: {
+          authorization: token,
+        },
+      });
 
       const data = await response.json();
       if (!response.ok)
@@ -113,34 +112,86 @@ const FacCorrectionReq = () => {
 
   const handleProceed = async (req) => {
     try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/request/marks/${req.request_id}`,
+        {
+          headers: { authorization: token },
+        }
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || "Failed to fetch marks");
+        return;
+      }
+
+      setEditingRequest(req);
+      setMarks(data.marks || []);
+      setTestDetails(data.test_details || []);
+      setEditModalOpen(true);
+    } catch (err) {
+      toast.error("Error loading mark data");
+      console.error(err);
+    }
+  };
+
+  const fetchRegularStudents = async () => {
+    try {
       const query = new URLSearchParams({
-        subject_id: req.subject_id,
-        subject_type: req.subject_type,
-        component_name: req.component_name,
-        sub_component_name: req.sub_component_name,
-        form_status: req.form_status,
+        subject_id: selectedSubject.subject_id,
+        subject_type: selectedSubject.subject_type,
+        faculty_id: userId,
+      }).toString();
+
+      const response = await fetch(`${BACKEND_URL}/api/student?${query}`, {
+        headers: { authorization: token },
+      });
+
+      const data = await response.json();
+      setStudents(data || []);
+      setSelectedEnrollments([]);
+    } catch (err) {
+      toast.error("Could not fetch students");
+      console.error(err);
+    }
+  };
+
+  const fetchATKTStudents = async () => {
+    try {
+      const query = new URLSearchParams({
+        subject_id: selectedSubject.subject_id,
+        subject_type: selectedSubject.subject_type,
       }).toString();
 
       const response = await fetch(
-        `${BACKEND_URL}/api/req/form-check?${query}`,
+        `${BACKEND_URL}/api/atkt/students?${query}`,
         {
-          method: "GET",
           headers: { authorization: token },
         }
       );
 
       const data = await response.json();
-
-      if (!response.ok || !data.submitted) {
-        toast.error("Form not found or not submitted");
-        return;
-      }
-
-      window.location.href = `/faculty/edit-form?subject_id=${req.subject_id}&subject_type=${req.subject_type}&component=${req.component_name}&sub_component=${req.sub_component_name}&status=${req.form_status}`;
+      setStudents(data || []);
+      setSelectedEnrollments([]);
     } catch (err) {
-      toast.error("Error proceeding to form");
+      toast.error("Could not fetch ATKT students");
       console.error(err);
     }
+  };
+
+  const handleMarkChange = (value, index) => {
+    const updated = [...marks];
+    const coName = updated[index].co_name;
+    const maxMark = testDetails.find((t) => t.co_name === coName)?.max_marks;
+
+    const newVal = Number(value);
+    if (newVal > maxMark) {
+      toast.error(`Marks for ${coName} cannot exceed max (${maxMark})`);
+      return;
+    }
+
+    updated[index].marks_obtained = newVal;
+    setMarks(updated);
   };
 
   return (
@@ -176,7 +227,6 @@ const FacCorrectionReq = () => {
                     name: "Edit Personal Info",
                     path: "/faculty/edit-info",
                   },
-
                 ]}
               />
             </div>
@@ -222,11 +272,11 @@ const FacCorrectionReq = () => {
               <div className="fac-alloc">
                 <h3>Correction Request</h3>
                 <p className="session-text">
-                    Current Session:{" "}
-                    {currentSession
-                      ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
-                      : "Loading..."}
-                  </p>
+                  Current Session:{" "}
+                  {currentSession
+                    ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                    : "Loading..."}
+                </p>
                 <span className="box-overlay-text">Draft a request</span>
 
                 <div className="faculty-box">
@@ -366,7 +416,7 @@ const FacCorrectionReq = () => {
                       }).toString();
 
                       const response = await fetch(
-                        `${BACKEND_URL}/api/req/form-check?${query}`,
+                        `${BACKEND_URL}/api/request/check?${query}`,
                         {
                           headers: { authorization: token },
                         }
@@ -378,8 +428,12 @@ const FacCorrectionReq = () => {
                         toast.error("Form not submitted yet.");
                         return;
                       }
-
-                      setStage(2); // move to reason entry
+                      if (draftStatus === "Regular") {
+                        await fetchRegularStudents();
+                      } else {
+                        await fetchATKTStudents();
+                      }
+                      setStage(2);
                     }}
                   />
                   <Button text="Cancel" onClick={() => setShowModal(false)} />
@@ -415,31 +469,59 @@ const FacCorrectionReq = () => {
                   onChange={(e) => setReason(e.target.value)}
                 ></textarea>
 
+                <h5>Select Students (Enrollment Numbers)</h5>
+                <h4>Select Students (Enrollment Numbers)</h4>
+                <div className="student-checkbox-list">
+                  {students.map((stu) => (
+                    <label key={stu.enrollment_no}>
+                      <input
+                        type="checkbox"
+                        value={stu.enrollment_no}
+                        checked={selectedEnrollments.includes(
+                          stu.enrollment_no
+                        )}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          const value = e.target.value;
+                          setSelectedEnrollments((prev) =>
+                            checked
+                              ? [...prev, value]
+                              : prev.filter((val) => val !== value)
+                          );
+                        }}
+                      />
+                      {stu.enrollment_no} - {stu.student_name}
+                    </label>
+                  ))}
+                </div>
+
                 <div className="modal-actions">
                   <Button
                     text="Submit Request"
                     onClick={async () => {
                       try {
-                        const res = await fetch(
-                          `${BACKEND_URL}/api/req/submit-request`,
-                          {
-                            method: "POST",
-                            headers: {
-                              authorization: token,
-                              "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({
-                              subject_id: selectedSubject.subject_id,
-                              subject_type: selectedSubject.subject_type,
-                              component_name:
-                                draftStatus === "Regular" ? component : null,
-                              sub_component_name:
-                                draftStatus === "Regular" ? subComponent : null,
-                              reason,
-                              form_status: draftStatus,
-                            }),
-                          }
-                        );
+                        if (selectedEnrollments.length === 0) {
+                          toast.error("Please select at least one student");
+                          return;
+                        }
+                        const res = await fetch(`${BACKEND_URL}/api/request/`, {
+                          method: "POST",
+                          headers: {
+                            authorization: token,
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            subject_id: selectedSubject.subject_id,
+                            subject_type: selectedSubject.subject_type,
+                            component_name:
+                              draftStatus === "Regular" ? component : null,
+                            sub_component_name:
+                              draftStatus === "Regular" ? subComponent : null,
+                            reason,
+                            form_status: draftStatus,
+                            enrollment_nos: selectedEnrollments,
+                          }),
+                        });
 
                         const data = await res.json();
                         if (!res.ok)
@@ -462,6 +544,107 @@ const FacCorrectionReq = () => {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {editModalOpen && editingRequest && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Edit Marks - {editingRequest.subject_name}</h2>
+            <table className="request-table">
+              <thead>
+                <tr>
+                  <th>Enrollment No</th>
+                  <th>CO Name</th>
+                  <th>Max Marks</th>
+                  <th>Marks Obtained</th>
+                </tr>
+              </thead>
+              <tbody>
+                {marks.map((entry, index) => (
+                  <tr key={index}>
+                    <td>{entry.enrollment_no}</td>
+                    <td>{entry.co_name}</td>
+                    <td>
+                      {testDetails.find((t) => t.co_name === entry.co_name)
+                        ?.max_marks || "-"}
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        value={entry.marks_obtained}
+                        onChange={(e) => handleMarkChange(e.target.value, index)}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="modal-actions">
+              <Button
+                text="Resubmit"
+                onClick={async () => {
+                  try {
+                    const res = await fetch(
+                      `${BACKEND_URL}/api/request/resubmit`,
+                      {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          authorization: token,
+                        },
+                        body: JSON.stringify({
+                          request_id: editingRequest.request_id,
+                          subject_id: editingRequest.subject_id,
+                          subject_type: editingRequest.subject_type,
+                          component_name:
+                            editingRequest.form_status === "Regular"
+                              ? editingRequest.component_name
+                              : null,
+                          sub_component_name:
+                            editingRequest.form_status === "Regular"
+                              ? editingRequest.sub_component_name
+                              : null,
+                          form_status: editingRequest.form_status,
+                          updatedMarks: marks,
+                        }),
+                      }
+                    );
+
+                    const data = await res.json();
+                    if (!res.ok)
+                      throw new Error(data.error || "Resubmit failed");
+
+                    toast.success("Form resubmitted successfully");
+                    setEditModalOpen(false);
+                    setEditingRequest(null);
+                    setMarks([]);
+                    setTestDetails([]);
+                    setPastRequests((prev) =>
+                      prev.map((r) =>
+                        r.request_id === editingRequest.request_id
+                          ? { ...r, status: "Resubmitted" }
+                          : r
+                      )
+                    );
+                  } catch (err) {
+                    toast.error(err.message || "Resubmit failed");
+                    console.error(err);
+                  }
+                }}
+              />
+              <Button
+                text="Cancel"
+                onClick={() => {
+                  setEditModalOpen(false);
+                  setEditingRequest(null);
+                  setMarks([]);
+                  setTestDetails([]);
+                }}
+              />
+            </div>
           </div>
         </div>
       )}
