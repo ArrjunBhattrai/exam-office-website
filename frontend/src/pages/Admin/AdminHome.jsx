@@ -7,6 +7,7 @@ import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
+import SessionDisplay from "../../components/SessionDisplay";
 
 const AdminHome = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -50,27 +51,7 @@ const AdminHome = () => {
     (state) => state.session
   );
 
-  const monthNames = [
-    "",
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-
-  const currentSession =
-    start_month && start_year && end_month && end_year
-      ? `${monthNames[start_month]} ${start_year} - ${monthNames[end_month]} ${end_year}`
-      : null;
-
+ 
   return (
     <div className="home-container">
       <div className="user-bg">
@@ -154,9 +135,7 @@ const AdminHome = () => {
               </div>
 
               <div className="fac-alloc">
-                <p className="session-text">
-                  Current Session: {currentSession || "Loading..."}
-                </p>
+               <SessionDisplay className="session-text" />
               </div>
             </div>
           </div>

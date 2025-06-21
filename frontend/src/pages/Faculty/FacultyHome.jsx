@@ -7,6 +7,7 @@ import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
+import SessionDisplay from "../../components/SessionDisplay";
 
 const FacultyHome = () => {
   const { userId, isAuthenticated, role, token, branchId } = useSelector(
@@ -21,24 +22,6 @@ const FacultyHome = () => {
       </div>
     );
   }
-
-  const dispatch = useDispatch();
-  useEffect(() => {
-    const fetchCurrentSession = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/session/---`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        dispatch(setSession(data.session));
-      } catch (err) {
-        console.error("Session fetch failed", err);
-      }
-    };
-
-    fetchCurrentSession();
-  }, [token]);
-
   return (
     <div className="home-container">
       <div className="user-bg">

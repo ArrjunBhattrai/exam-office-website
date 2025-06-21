@@ -9,6 +9,7 @@ import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
+import SessionDisplay from "../../components/SessionDisplay";
 
 const ATKTDataUpload = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -30,8 +31,7 @@ const ATKTDataUpload = () => {
   const [selectedCourse, setSelectedCourse] = useState("");
   const [file, setFile] = useState(null);
   const [fileInputKey, setFileInputKey] = useState(Date.now());
-  const currentSession = useSelector((state) => state.session.currentSession);
-
+  
   const fetchBranches = async () => {
     try {
       const response = await fetch(`${BACKEND_URL}/api/branch`, {
@@ -201,11 +201,7 @@ const ATKTDataUpload = () => {
               <div className="fac-alloc">
                 <h3>ATKT Data Upload</h3>
                 <p className="session-text">
-                  Current Session:{" "}
-                  {currentSession
-                    ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
-                    : "Loading..."}
-                </p>
+                  <SessionDisplay className="session-text" />
 
                 <span className="box-overlay-text">Upload</span>
 

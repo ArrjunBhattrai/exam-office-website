@@ -9,6 +9,7 @@ import Sidebar from "../../components/Sidebar";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import RedFooter from "../../components/RedFooter";
 import "./admin.css";
+import SessionDisplay from "../../components/SessionDisplay";
 
 const BranchManagement = () => {
   const { userId, role, token, isAuthenticated } = useSelector(
@@ -194,12 +195,7 @@ const BranchManagement = () => {
               </div>
               <div className="fac-alloc">
                 <h3>Branch Management</h3>
-                <p className="session-text">
-                  Current Session:{" "}
-                  {currentSession
-                    ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
-                    : "Loading..."}
-                </p>
+                <SessionDisplay className="session-text" />
 
                 <span className="box-overlay-text">Add Details</span>
                 <div className="faculty-box">

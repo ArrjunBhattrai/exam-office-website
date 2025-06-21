@@ -9,6 +9,7 @@ import Dropdown from "../../components/Dropdown";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 import { BACKEND_URL } from "../../../config";
 import { Toaster, toast } from "react-hot-toast";
+import SessionDisplay from "../../components/SessionDisplay";
 
 const ElectiveDataUpload = () => {
   const { userId, isAuthenticated, role, token, branchId } = useSelector(
@@ -23,8 +24,7 @@ const ElectiveDataUpload = () => {
       </div>
     );
   }
-  const currentSession = useSelector((state) => state.session.currentSession);
-
+  
   const [subjects, setSubjects] = useState([]);
   const [electiveOptions, setElectiveOptions] = useState([]);
   const [selectedElective, setSelectedElective] = useState("");
@@ -170,12 +170,7 @@ const ElectiveDataUpload = () => {
                 {/* here */}
                 <div className="fac-alloc">
                   <h3>Upload Elective Data </h3>
-                  <p className="session-text">
-                    Current Session:{" "}
-                    {currentSession
-                      ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
-                      : "Loading..."}
-                  </p>
+                  <SessionDisplay className="session-text" />
 
                   <span className="box-overlay-text">Upload</span>
 

@@ -10,6 +10,7 @@ import Dropdown from "../../components/Dropdown";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import RedFooter from "../../components/RedFooter";
 import "./admin.css";
+import SessionDisplay from "../../components/SessionDisplay";
 
 const SessionManagement = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -24,8 +25,7 @@ const SessionManagement = () => {
       </div>
     );
   }
-  const currentSession = useSelector((state) => state.session.currentSession);
-
+  
   const [startMonth, setStartMonth] = useState("");
   const [startYear, setStartYear] = useState("");
   const [endMonth, setEndMonth] = useState("");
@@ -215,12 +215,7 @@ const SessionManagement = () => {
               </div>
               <div className="fac-alloc">
                 <h3>Session Management</h3>
-                <p className="session-text">
-                  Current Session:{" "}
-                  {currentSession
-                    ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
-                    : "Loading..."}
-                </p>
+                <SessionDisplay className="session-text" />
 
                 <span className="box-overlay-text">Add Details</span>
                 <div className="faculty-box">

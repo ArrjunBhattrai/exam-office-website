@@ -11,6 +11,7 @@ import Button from "../../components/Button";
 import ReactModal from "react-modal";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import { Toaster, toast } from "react-hot-toast";
+import SessionDisplay from "../../components/SessionDisplay";
 
 const HODViewDeptt = () => {
   const { userId, isAuthenticated, role, token, branchId } = useSelector(
@@ -25,7 +26,6 @@ const HODViewDeptt = () => {
       </div>
     );
   }
-  const currentSession = useSelector((state) => state.session.currentSession);
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedFaculty, setSelectedFaculty] = useState(null);
@@ -223,12 +223,7 @@ const HODViewDeptt = () => {
 
               <div className="fac-alloc">
                 <h3>Department Details</h3>
-                <p className="session-text">
-                  Current Session:{" "}
-                  {currentSession
-                    ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
-                    : "Loading..."}
-                </p>
+                <SessionDisplay className="session-text" />
 
                 <span className="box-overlay-text">
                   Select Option To View Details

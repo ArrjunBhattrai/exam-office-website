@@ -8,6 +8,7 @@ import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import { BACKEND_URL } from "../../../config";
+import SessionDisplay from "../../components/SessionDisplay";
 
 const RegistrationRequest = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -22,8 +23,7 @@ const RegistrationRequest = () => {
       </div>
     );
   }
-  const currentSession = useSelector((state) => state.session.currentSession);
-
+  
   const [pendingRequests, setPendingRequests] = useState([]);
 
   const fetchRequests = async () => {
@@ -172,12 +172,7 @@ const RegistrationRequest = () => {
 
               <div className="fac-alloc">
                 <h3>Registration Requests</h3>
-                <p className="session-text">
-                  Current Session:{" "}
-                  {currentSession
-                    ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
-                    : "Loading..."}
-                </p>
+                <SessionDisplay className="session-text" />
 
                 <span className="box-overlay-text">View Requests</span>
 

@@ -10,6 +10,7 @@ import Button from "../../components/Button";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 import { BACKEND_URL } from "../../../config";
 import "./faculty.css";
+import SessionDisplay from "../../components/SessionDisplay";
 
 const ATKTMarksFeed = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -24,8 +25,7 @@ const ATKTMarksFeed = () => {
       </div>
     );
   }
-  const currentSession = useSelector((state) => state.session.currentSession);
-
+  
   const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState({});
   const [showModal, setShowModal] = useState(false);
@@ -611,12 +611,7 @@ const ATKTMarksFeed = () => {
               <div>
                 <div className="fac-alloc">
                   <h3>ATKT Marks Feeding</h3>
-                  <p className="session-text">
-                    Current Session:{" "}
-                    {currentSession
-                      ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
-                      : "Loading..."}
-                  </p>
+                  <SessionDisplay className="session-text" />
 
                   <span className="box-overlay-text">Select to view</span>
                   <div className="faculty-box">
