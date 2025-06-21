@@ -8,11 +8,10 @@ import RedHeader from "../../components/RedHeader";
 import Button from "../../components/Button";
 import Dropdown from "../../components/Dropdown";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
+import SessionDisplay from "../../components/SessionDisplay";
 
 const HODCorrectionReq = () => {
   const user = useSelector((state) => state.auth.user);
-  const currentSession = useSelector((state) => state.session.currentSession);
-
   const [course, setCourse] = useState("");
   const [branch, setBranch] = useState("");
   const [semester, setSemester] = useState("");
@@ -104,12 +103,7 @@ const HODCorrectionReq = () => {
 
               <div className="fac-alloc">
                 <h3>Correction Requests</h3>
-                <p className="session-text">
-                  Current Session:{" "}
-                  {currentSession
-                    ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
-                    : "Loading..."}
-                </p>
+                <SessionDisplay className="session-text" />
 
                 <span className="box-overlay-text">
                   Select Option To View Details

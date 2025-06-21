@@ -10,9 +10,7 @@ import Dropdown from "../../components/Dropdown";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import RedFooter from "../../components/RedFooter";
 import "./admin.css";
-import { useDispatch } from "react-redux";
-import { setSession } from "../../redux/sessionSlice";
-import { label } from "framer-motion/client";
+import SessionDisplay from "../../components/SessionDisplay";
 
 const SessionManagement = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -27,24 +25,7 @@ const SessionManagement = () => {
       </div>
     );
   }
-  const currentSession = useSelector((state) => state.session.currentSession);
-  const dispatch = useDispatch();
-  const monthNames = [
-    "", // monthNames[0] will be unused since months start from 1
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-
+  
   const [startMonth, setStartMonth] = useState("");
   const [startYear, setStartYear] = useState("");
   const [endMonth, setEndMonth] = useState("");
@@ -291,17 +272,7 @@ const SessionManagement = () => {
               </div>
               <div className="fac-alloc">
                 <h3>Session Management</h3>
-                <p className="session-text">
-                  Current Session:{" "}
-                  {currentSession
-                    ? `${monthNames[currentSession.start_month]} ${
-                        currentSession.start_year
-                      } - ${monthNames[currentSession.end_month]} ${
-                        currentSession.end_year
-                      }`
-                    : "Loading..."}
-                </p>
-
+                <SessionDisplay className="session-text" />
                 <span className="box-overlay-text">Add Details</span>
                 <div className="faculty-box">
                   <div className="session-form">

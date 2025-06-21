@@ -11,6 +11,7 @@ import Button from "../../components/Button";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import "./faculty.css";
 import { BACKEND_URL } from "../../../config";
+import SessionDisplay from "../../components/SessionDisplay";
 
 function MarksFeed() {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -25,8 +26,6 @@ function MarksFeed() {
       </div>
     );
   }
-  const currentSession = useSelector((state) => state.session.currentSession);
-
   const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState({});
   const [component, setComponent] = useState("");
@@ -653,12 +652,7 @@ function MarksFeed() {
               <div>
                 <div className="fac-alloc">
                   <h3>Marks Feeding</h3>
-                  <p className="session-text">
-                    Current Session:{" "}
-                    {currentSession
-                      ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
-                      : "Loading..."}
-                  </p>
+                  <SessionDisplay className="session-text" />
 
                   <span className="box-overlay-text">Enter details</span>
 

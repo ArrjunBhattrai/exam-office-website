@@ -9,6 +9,7 @@ import Button from "../../components/Button";
 import { BACKEND_URL } from "../../../config";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
+import SessionDisplay from "../../components/SessionDisplay";
 
 const AdminRequest = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -180,16 +181,8 @@ const AdminRequest = () => {
                 <div className="fac-alloc">
                   <h3>Correction Request</h3>
 
-                  {/* <p className="session-text">
-                    Current Session:{" "}
-                    {currentSession
-                      ? `${monthNames[currentSession.start_month]} ${
-                          currentSession.start_year
-                        } - ${monthNames[currentSession.end_month]} ${
-                          currentSession.end_year
-                        }`
-                      : "Loading..."}
-                  </p> */}
+                  <SessionDisplay className="session-text" />
+
 
                   <span className="box-overlay-text">View request</span>
 
