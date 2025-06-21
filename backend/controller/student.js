@@ -94,7 +94,7 @@ const studentDataUpload = async (req, res) => {
         // student columns: enrollment_no, student_name, branch_id, course_id, specialization, semester, status
 
         const valuesPlaceholders = results
-          .map(() => "(?, ?, ?, ?, ?, ?, ?)")
+          .map(() => "(?, ?, ?, ?, ?, ?, ?, ?)")
           .join(", ");
         const flatValues = results.flat();
 

@@ -80,7 +80,7 @@ const subjectDataUpload = async (req, res) => {
         // subject columns: subject_id, subject_type, subject_name, semester, branch_id, course_id, specialization
 
         const valuesPlaceholders = results
-          .map(() => "(?, ?, ?, ?, ?, ?, ?)")
+          .map(() => "(?, ?, ?, ?, ?, ?, ?, ?)")
           .join(", ");
 
         const flatValues = results.flat();

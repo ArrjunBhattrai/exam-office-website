@@ -12,6 +12,7 @@ import RedFooter from "../../components/RedFooter";
 import "./admin.css";
 import { useDispatch } from "react-redux";
 import { setSession } from "../../redux/sessionSlice";
+import { label } from "framer-motion/client";
 
 const SessionManagement = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -28,6 +29,21 @@ const SessionManagement = () => {
   }
   const currentSession = useSelector((state) => state.session.currentSession);
   const dispatch = useDispatch();
+  const monthNames = [
+    "", // monthNames[0] will be unused since months start from 1
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
 
   const [startMonth, setStartMonth] = useState("");
   const [startYear, setStartYear] = useState("");
@@ -41,6 +57,8 @@ const SessionManagement = () => {
   const [selectedBranchId, setSelectedBranchId] = useState("");
   const [selectedCourseId, setSelectedCourseId] = useState("");
   const [allBranches, setAllBranches] = useState([]);
+  const [semesters, setSemesters] = useState("");
+  const [selectedSemester, setSelectedSemester] = useState("");
 
   const months = [
     { label: "January", value: 1 },
@@ -110,7 +128,7 @@ const SessionManagement = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const sessionRes = await fetch(`${BACKEND_URL}/api/session/download?session_id=${selectedSessionId}&branch_id=${selectedBranchId}&course_id=${selectedCourseId}`, {
+        const sessionRes = await fetch(`${BACKEND_URL}/api/session/all`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const branchRes = await fetch(
@@ -122,27 +140,32 @@ const SessionManagement = () => {
         const courseRes = await fetch(`${BACKEND_URL}/api/course/get-courses`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        const semesterRes = await fetch(`${BACKEND_URL}/api/semester/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         const sessionsData = await sessionRes.json();
         const branches = await branchRes.json();
         const courses = await courseRes.json();
+        const semesters = await semesterRes.json();
 
         const allSessions = sessionsData.sessions || [];
         setAllSessions(allSessions);
         setAllBranches(branches || []);
-        setAllCourses(courses.courses || []); // Adjust based on actual response key
+        setAllCourses(courses.courses || []);
+        setSemesters(semesters || []);
 
         if (allSessions.length > 0) {
-        const sorted = [...allSessions].sort((a, b) => {
-          if (a.start_year !== b.start_year) {
-            return b.start_year - a.start_year;
-          }
-          return b.start_month - a.start_month;
-        });
-        dispatch(setSession(sorted[0]));
-      }
+          const sorted = [...allSessions].sort((a, b) => {
+            if (a.start_year !== b.start_year) {
+              return b.start_year - a.start_year;
+            }
+            return b.start_month - a.start_month;
+          });
+          dispatch(setSession(sorted[0]));
+        }
       } catch (err) {
-        toast.error("Failed to load session, branch, or course data");
+        toast.error("Failed to load session, branch, semester or course data");
       }
     };
 
@@ -233,7 +256,11 @@ const SessionManagement = () => {
                 <p className="session-text">
                   Current Session:{" "}
                   {currentSession
-                    ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                    ? `${monthNames[currentSession.start_month]} ${
+                        currentSession.start_year
+                      } - ${monthNames[currentSession.end_month]} ${
+                        currentSession.end_year
+                      }`
                     : "Loading..."}
                 </p>
 
@@ -296,7 +323,9 @@ const SessionManagement = () => {
               <Dropdown
                 label="Session"
                 options={allSessions.map((s) => ({
-                  label: `${s.start_month}/${s.start_year} - ${s.end_month}/${s.end_year}`,
+                  label: `${monthNames[s.start_month]} ${s.start_year} - ${
+                    monthNames[s.end_month]
+                  } ${s.end_year}`,
                   value: s.session_id,
                 }))}
                 selectedValue={selectedSessionId}
@@ -326,6 +355,16 @@ const SessionManagement = () => {
                 onChange={setSelectedCourseId}
               />
 
+              <Dropdown
+                label="Semester"
+                options={semesters.map((s) => ({
+                  label: `Semester ${s}`,
+                  value: s,
+                }))}
+                selectedValue={selectedSemester}
+                onChange={setSelectedSemester}
+              />
+
               <div className="modal-actions">
                 <button
                   className="upload-button"
@@ -341,7 +380,7 @@ const SessionManagement = () => {
 
                     try {
                       const res = await fetch(
-                        `${BACKEND_URL}/api/session/download-data?----`,
+                        `${BACKEND_URL}/api/session/download?session_id=${selectedSessionId}&branch_id=${selectedBranchId}&course_id=${selectedCourseId}`,
                         {
                           headers: { Authorization: `Bearer ${token}` },
                         }
@@ -353,7 +392,7 @@ const SessionManagement = () => {
                       const url = window.URL.createObjectURL(blob);
                       const a = document.createElement("a");
                       a.href = url;
-                      a.download = "session_data.zip";
+                      a.download = "session_data.csv";
                       document.body.appendChild(a);
                       a.click();
                       a.remove();

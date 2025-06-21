@@ -139,7 +139,19 @@ const downloadSessionData = async (req, res) => {
   }
 };
 
+const getAllSessions = async (req, res) => {
+  try {
+    const sessions = await db("session").orderBy("start_year", "desc").orderBy("start_month", "desc");
+    res.status(200).json({ sessions });
+  } catch (err) {
+    console.error("Error fetching sessions:", err);
+    res.status(500).json({ error: "Failed to fetch sessions" });
+  }
+}
+
 module.exports = {
   createSession,
   getLatestSession,
+  downloadSessionData,
+  getAllSessions
 };

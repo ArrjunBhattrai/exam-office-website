@@ -24,5 +24,11 @@ router.get(
   sessionController.downloadSessionData
 );
 
+router.get(
+  "/all",
+  authenticateUser,
+  authorizeRole(["admin"]),
+  sessionController.getAllSessions
+);
 
 module.exports = router
