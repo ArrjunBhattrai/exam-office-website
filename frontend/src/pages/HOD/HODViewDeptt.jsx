@@ -118,12 +118,10 @@ const HODViewDeptt = () => {
   const [enrolledStudents, setEnrolledStudents] = useState([]);
   const [studentsModalOpen, setStudentsModalOpen] = useState(false);
 
-  const handleViewStudents = async (subjectId, subjectType, section) => {
+  const handleViewStudents = async (subjectId, subjectType, facultyId) => {
     try {
       const res = await fetch(
-        `${BACKEND_URL}/api/student/?subject_id=${subjectId}&subject_type=${subjectType}${
-          section ? `&section=${section}` : ""
-        }`,
+        `${BACKEND_URL}/api/student/?subject_id=${subjectId}&subject_type=${subjectType}&faculty_id=${facultyId}`,
         {
           method: "GET",
           headers: {
@@ -133,7 +131,7 @@ const HODViewDeptt = () => {
       );
       const data = await res.json();
       if (res.ok) {
-        setEnrolledStudents(data.students);
+        setEnrolledStudents(data||[]);
         setStudentsModalOpen(true);
       } else {
         toast.error(data.error || "Failed to fetch students");
@@ -146,7 +144,7 @@ const HODViewDeptt = () => {
 
   return (
     <div className="home-container">
-      <Toaster />
+      <Toaster position="top-right"/>
       <div className="user-bg">
         <RedHeader />
         <div className="user-content">
@@ -174,11 +172,6 @@ const HODViewDeptt = () => {
                     name: "Upload Electives Data",
                     path: "/hod/elective-data",
                   },
-                  {
-                    name: "View Correction Requests",
-                    path: "/hod/correction-request",
-                  },
-                  { name: "Progress Report", path: "/hod/progress-report" },
                 ]}
               />
             </div>
@@ -307,7 +300,7 @@ const HODViewDeptt = () => {
                             handleViewStudents(
                               subject.subject_id,
                               subject.subject_type,
-                              subject.section
+                              selectedFaculty.faculty_id
                             )
                           }
                           className="view-btn"

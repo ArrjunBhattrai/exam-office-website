@@ -12,7 +12,6 @@ import RedFooter from "../../components/RedFooter";
 import "./admin.css";
 import { useDispatch } from "react-redux";
 import { setSession } from "../../redux/sessionSlice";
-import { label } from "framer-motion/client";
 
 const SessionManagement = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -112,7 +111,7 @@ const SessionManagement = () => {
     };
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/session/`, {
+      const res = await fetch(`${BACKEND_URL}/api/session`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -178,10 +177,12 @@ const SessionManagement = () => {
       const semesterRes = await fetch(`${BACKEND_URL}/api/semester/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const componentRes = await fetch(`${BACKEND_URL}/api/assesment/components`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-      
+      const componentRes = await fetch(
+        `${BACKEND_URL}/api/assesment/components`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       const sessionsData = await sessionRes.json();
       const branches = await branchRes.json();
@@ -212,6 +213,7 @@ const SessionManagement = () => {
 
   return (
     <div className="home-container">
+      <Toaster position="top-right" />
       <div className="user-bg">
         <RedHeader />
         <div className="user-content">

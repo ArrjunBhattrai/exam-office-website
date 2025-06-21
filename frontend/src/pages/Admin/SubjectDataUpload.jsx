@@ -47,7 +47,7 @@ const SubjectDataUpload = () => {
   const fetchCoursesByBranch = async (branchId) => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/course/get-courses-by-branch?branch_id=${branchId}`,
+        `${BACKEND_URL}/api/course/?branch_id=${branchId}`,
         {
           method: "GET",
           headers: { authorization: token, "Content-Type": "application/json" },

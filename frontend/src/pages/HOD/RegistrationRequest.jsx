@@ -123,11 +123,6 @@ const RegistrationRequest = () => {
                     name: "Upload Electives Data",
                     path: "/hod/elective-data",
                   },
-                  {
-                    name: "View Correction Requests",
-                    path: "/hod/correction-request",
-                  },
-                  { name: "Progress Report", path: "/hod/progress-report" },
                 ]}
               />
             </div>

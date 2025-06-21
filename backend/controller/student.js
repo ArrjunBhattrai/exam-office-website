@@ -207,7 +207,6 @@ const studentBySubject = async (req, res) => {
     if (!subject) {
       return res.status(404).json({ error: "Subject not found" });
     }
-
     const { branch_id, course_id, specialization, semester } = subject;
 
     // Check for section bifurcation for the course
@@ -271,9 +270,7 @@ const studentBySubject = async (req, res) => {
         studentsQuery.whereIn("section", assignedSections);
       }
     }
-
     const students = await studentsQuery.select("student.enrollment_no", "student.student_name");
-
     return res.json(students);
   } catch (err) {
     console.error("Error in studentBySubject:", err);

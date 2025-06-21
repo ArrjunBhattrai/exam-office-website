@@ -31,7 +31,8 @@ const subjectDataUpload = async (req, res) => {
 
     if (!courseExists) {
       return res.status(400).json({
-        error: "Provided branch, course, and specialization combination does not exist.",
+        error:
+          "Provided branch, course, and specialization combination does not exist.",
       });
     }
 
@@ -42,14 +43,17 @@ const subjectDataUpload = async (req, res) => {
     const filePath = req.file.path;
 
     fs.createReadStream(filePath)
-      .pipe(csv({ mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/, "") }))
+      .pipe(
+        csv({ mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/, "") })
+      )
       .on("data", (row) => {
         const subjectId = row["Subject Id"]?.trim();
         const subjectName = row["Subject Name"]?.trim();
         const subjectType = row["Subject Type"]?.trim();
         const semester = parseInt(row["Semester"]);
 
-        if (!subjectId || !subjectName || !subjectType || isNaN(semester)) return;
+        if (!subjectId || !subjectName || !subjectType || isNaN(semester))
+          return;
 
         results.push([
           session_id,
@@ -68,7 +72,9 @@ const subjectDataUpload = async (req, res) => {
         try {
           if (results.length === 0) {
             fs.unlinkSync(filePath);
-            return res.status(400).json({ error: "No valid data found in CSV." });
+            return res
+              .status(400)
+              .json({ error: "No valid data found in CSV." });
           }
 
           const subjectKeys = Array.from(subjectKeySet).map((key) => {
@@ -81,18 +87,24 @@ const subjectDataUpload = async (req, res) => {
             .where("session_id", session_id)
             .whereIn(
               db.raw("(subject_id, subject_type)"),
-              subjectKeys.map(({ subject_id, subject_type }) => [subject_id, subject_type])
+              subjectKeys.map(({ subject_id, subject_type }) => [
+                subject_id,
+                subject_type,
+              ])
             );
 
           if (existingSubjects.length > 0) {
             fs.unlinkSync(filePath);
             return res.status(409).json({
-              error: "Some subjects already exist for this session. Upload aborted.",
+              error:
+                "Some subjects already exist for this session. Upload aborted.",
               existingSubjects,
             });
           }
 
-          const valuesPlaceholders = results.map(() => "(?, ?, ?, ?, ?, ?, ?, ?)").join(", ");
+          const valuesPlaceholders = results
+            .map(() => "(?, ?, ?, ?, ?, ?, ?, ?)")
+            .join(", ");
           const flatValues = results.flat();
 
           const rawQuery = `
@@ -104,10 +116,14 @@ const subjectDataUpload = async (req, res) => {
           await db.raw(rawQuery, flatValues);
 
           fs.unlinkSync(filePath);
-          return res.status(200).json({ message: "Academic scheme uploaded successfully!" });
+          return res
+            .status(200)
+            .json({ message: "Academic scheme uploaded successfully!" });
         } catch (err) {
           console.error("Insert Error:", err);
-          return res.status(500).json({ message: "DB Insert failed", error: err.message });
+          return res
+            .status(500)
+            .json({ message: "DB Insert failed", error: err.message });
         }
       })
       .on("error", (error) => {
@@ -124,35 +140,55 @@ const subjectDataUpload = async (req, res) => {
 const getAllSubjectsForCourse = async (req, res) => {
   const { branch_id, course_id, specialization, section } = req.query;
 
-  if (!branch_id || !course_id || !specialization || !section) {
+  if (!branch_id || !course_id || !specialization) {
     return res.status(400).json({
-      error: "branch_id, course_id and section specialization are required",
+      error: "branch_id, course_id and specialization are required",
     });
   }
 
   try {
     const session_id = await getLatestSessionId();
-    if(!session_id) {
-      return res.status(400).json({ error: "Session Not Found"});
+    if (!session_id) {
+      return res.status(400).json({ error: "Session Not Found" });
     }
 
-    const rows = await db("subject as s")
-      .leftJoin("faculty_subject as fs", function () {
-        this.on("s.subject_id", "=", "fs.subject_id").andOn(
-          "s.subject_type",
-          "=",
-          "fs.subject_type"
-        )
-        andOn("s.session_id", "=", "fs.session_id");
-      })
-      .leftJoin("faculty as f", "fs.faculty_id", "f.faculty_id")
+    // Check if section exists for this course/branch/specialization
+    const sectionExists = await db("section")
       .where({
-        "s.branch_id": branch_id,
-        "s.course_id": course_id,
-        "s.specialization": specialization,
-        "s.section": section,
-        "s.session_id": session_id
+        branch_id,
+        course_id,
+        specialization,
       })
+      .first();
+
+    // If section is required but not provided, throw error
+    if (sectionExists && !section) {
+      return res.status(400).json({
+        error: "Section is required for this course/branch/specialization",
+      });
+    }
+
+    // Start building the query
+    const query = db("subject as s")
+  .leftJoin("faculty_subject as fs", function () {
+    this.on("s.subject_id", "=", "fs.subject_id")
+      .andOn("s.subject_type", "=", "fs.subject_type")
+      .andOn("s.session_id", "=", "fs.session_id");
+
+    if (sectionExists && section) {
+      this.andOnVal("fs.section", "=", section); 
+    }
+  })
+  .leftJoin("faculty as f", "fs.faculty_id", "f.faculty_id")
+  .where({
+    "s.branch_id": branch_id,
+    "s.course_id": course_id,
+    "s.specialization": specialization,
+    "s.session_id": session_id,
+  });
+
+
+    const rows = await query
       .select(
         "s.subject_id",
         "s.subject_name",
@@ -163,7 +199,7 @@ const getAllSubjectsForCourse = async (req, res) => {
       )
       .orderBy("s.semester");
 
-    // Group by subject and accumulate faculty info
+    // Grouping logic as before...
     const subjectsMap = new Map();
 
     for (const row of rows) {
@@ -185,7 +221,6 @@ const getAllSubjectsForCourse = async (req, res) => {
         subject.faculty_names.push(row.faculty_name);
       }
     }
-
     return res.status(200).json({ subjects: Array.from(subjectsMap.values()) });
   } catch (error) {
     console.error("Error fetching subjects:", error);
@@ -212,8 +247,16 @@ const getAssignedSubject = async (req, res) => {
       })
       .leftJoin("course_outcome", function () {
         this.on("faculty_subject.subject_id", "=", "course_outcome.subject_id")
-          .andOn("faculty_subject.subject_type", "=", "course_outcome.subject_type")
-          .andOn("faculty_subject.session_id", "=", "course_outcome.session_id");
+          .andOn(
+            "faculty_subject.subject_type",
+            "=",
+            "course_outcome.subject_type"
+          )
+          .andOn(
+            "faculty_subject.session_id",
+            "=",
+            "course_outcome.session_id"
+          );
       })
       .where("faculty_subject.faculty_id", faculty_id)
       .andWhere("faculty_subject.session_id", session_id)
@@ -224,8 +267,8 @@ const getAssignedSubject = async (req, res) => {
         "subject.semester",
         "subject.course_id",
         "subject.specialization",
-        "subject.branch_id",         
-        "faculty_subject.section"    
+        "subject.branch_id",
+        "faculty_subject.section"
       )
       .select(
         "subject.subject_id",
@@ -234,7 +277,7 @@ const getAssignedSubject = async (req, res) => {
         "subject.semester",
         "subject.course_id",
         "subject.specialization",
-        "subject.branch_id",         
+        "subject.branch_id",
         "faculty_subject.section",
         db.raw("GROUP_CONCAT(course_outcome.co_name) as co_names")
       );
@@ -277,7 +320,8 @@ const getCourseOutcomes = async (req, res) => {
 
 // Assign COs for a subject
 const assignCO = async (req, res) => {
-  try {
+  const faculty_id = req.user.userId;
+    try {
     const { subject_id, subject_type, co_names } = req.body;
 
     if (
@@ -297,6 +341,7 @@ const assignCO = async (req, res) => {
         subject_id,
         subject_type,
         session_id,
+        faculty_id
       }))
     );
 
@@ -309,7 +354,7 @@ const assignCO = async (req, res) => {
 
 // Get subjects for particular course of a branch
 const getSubjectsForCourse = async (req, res) => {
-  const { branch_id, course_id, specialization, semester} = req.query;
+  const { branch_id, course_id, specialization, semester } = req.query;
 
   if (!branch_id || !course_id || !specialization || !semester) {
     return res.status(400).json({
@@ -336,7 +381,6 @@ const getSubjectsForCourse = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
-
 
 module.exports = {
   subjectDataUpload,

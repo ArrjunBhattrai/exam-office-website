@@ -23,7 +23,6 @@ import HODViewDeptt from "./pages/HOD/HODViewDeptt";
 import RegistrationRequest from "./pages/HOD/RegistrationRequest";
 import FacultyAllocation from "./pages/HOD/FacultyAllocation";
 import ElectiveDataUpload from "./pages/HOD/ElectiveDataUpload";
-import HODCorrectionReq from "./pages/HOD/HODCorrectionReq";
 
 import FacultyHome from "./pages/Faculty/FacultyHome";
 import ViewSubjects from "./pages/Faculty/ViewSubjects";
@@ -42,7 +41,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPass />} />
           <Route path="/reset-password" element={<ResetPass />} />
           <Route path="/edit-user-information" element={<EditProfile />} />
-          
+
           <Route path="/admin/home" element={<AdminHome />} />
           <Route
             path="/admin/session-management"
@@ -78,11 +77,6 @@ function App() {
           />
           <Route path="/hod/department-details" element={<HODViewDeptt />} />
           <Route path="/hod/elective-data" element={<ElectiveDataUpload />} />
-
-          <Route
-            path="/hod/correction-request"
-            element={<HODCorrectionReq />}
-          />
           <Route
             path="/hod/registration-request"
             element={<RegistrationRequest />}

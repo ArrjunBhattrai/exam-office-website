@@ -13,7 +13,7 @@ router.post(
 router.get(
     "/",
     authenticateUser,
-    authorizeRole(["faculty"]),
+    authorizeRole(["admin","faculty"]),
     requestController.getCorrectionRequests
 );
 
