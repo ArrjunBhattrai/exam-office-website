@@ -27,7 +27,7 @@ const AdminRequest = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/req/correction-requests`, {
+        const res = await fetch(`${BACKEND_URL}/api/request`, {
           method: "GET",
           headers: {
             authorization: token,
@@ -46,9 +46,9 @@ const AdminRequest = () => {
   const handleUpdateStatus = async (request_id, newStatus) => {
     try {
       const res = await fetch(
-        `${BACKEND_URL}/api/req/correction-requests/${request_id}/status`,
+        `${BACKEND_URL}/api/request/${request_id}`,
         {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             authorization: token,
