@@ -10,6 +10,7 @@ import Button from "../../components/Button";
 import "./faculty.css";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import { BACKEND_URL } from "../../../config";
+import SessionDisplay from "../../components/SessionDisplay";
 
 const FacCorrectionReq = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -18,8 +19,7 @@ const FacCorrectionReq = () => {
   if (!isAuthenticated || role !== "faculty") {
     return <div>You are not authorized to view this page.</div>;
   }
-  const currentSession = useSelector((state) => state.session.currentSession);
-
+  
   const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState({});
   const [component, setComponent] = useState("");
@@ -271,12 +271,7 @@ const FacCorrectionReq = () => {
 
               <div className="fac-alloc">
                 <h3>Correction Request</h3>
-                <p className="session-text">
-                  Current Session:{" "}
-                  {currentSession
-                    ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
-                    : "Loading..."}
-                </p>
+                <SessionDisplay className="session-text" />
                 <span className="box-overlay-text">Draft a request</span>
 
                 <div className="faculty-box">

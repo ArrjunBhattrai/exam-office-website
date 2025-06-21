@@ -8,6 +8,7 @@ import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
 import Button from "../../components/Button";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
+import SessionDisplay from "../../components/SessionDisplay";
 
 const AdminProgressReport = () => {
   const { officer_name, user_type, token } = useSelector((state) => state.auth);
@@ -100,12 +101,8 @@ const AdminProgressReport = () => {
                 {/* here */}
                 <div className="fac-alloc">
                   <h3>Progress Report</h3>
-                  <p className="session-text">
-                    Current Session:{" "}
-                    {currentSession
-                      ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
-                      : "Loading..."}
-                  </p>
+
+                  <SessionDisplay className="session-text" />
 
                   <span className="box-overlay-text">Select to view</span>
 
