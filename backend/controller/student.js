@@ -119,6 +119,10 @@ const studentDataUpload = async (req, res) => {
           .whereIn("enrollment_no", enrollmentNos)
           .andWhere("session_id", session_id);
 
+        const valuesPlaceholders = results
+          .map(() => "(?, ?, ?, ?, ?, ?, ?, ?)")
+          .join(", ");
+        const flatValues = results.flat();
         if (existing.length > 0) {
           return res.status(400).json({
             error: `One or more students already exist for session ${session_id}. Duplicate data not allowed.`,

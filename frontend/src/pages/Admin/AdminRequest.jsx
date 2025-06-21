@@ -18,6 +18,22 @@ const AdminRequest = () => {
   if (!isAuthenticated || role != "admin") {
     return <div>Please log in to access this page.</div>;
   }
+  const currentSession = useSelector((state) => state.session.currentSession);
+  const monthNames = [
+    "", // monthNames[0] will be unused since months start from 1
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
 
   const [requests, setRequests] = useState([]);
   const [selectedReason, setSelectedReason] = useState("");
@@ -167,7 +183,11 @@ const AdminRequest = () => {
                   {/* <p className="session-text">
                     Current Session:{" "}
                     {currentSession
-                      ? `${currentSession.start_month}/${currentSession.start_year} - ${currentSession.end_month}/${currentSession.end_year}`
+                      ? `${monthNames[currentSession.start_month]} ${
+                          currentSession.start_year
+                        } - ${monthNames[currentSession.end_month]} ${
+                          currentSession.end_year
+                        }`
                       : "Loading..."}
                   </p> */}
 
