@@ -178,7 +178,10 @@ const getATKTStudentBySubject = async (req, res) => {
       .status(400)
       .json({ error: "subject_id and subject_type are required." });
   }
+
   try {
+    const session_id = await getLatestSessionId();
+
     const students = await db("atkt_students")
       .select(
         "enrollment_no",
@@ -187,7 +190,11 @@ const getATKTStudentBySubject = async (req, res) => {
         "course_id",
         "specialization"
       )
-      .where({ subject_id, subject_type });
+      .where({
+        session_id,
+        subject_id,
+        subject_type,
+      });
 
     res.status(200).json(students);
   } catch (error) {
@@ -204,14 +211,17 @@ const insertTestDetails = async (req, res) => {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
-  const insertData = co_marks.map(({ co_name, max_marks }) => ({
-    subject_id,
-    subject_type,
-    co_name,
-    max_marks,
-  }));
-
   try {
+    const session_id = await getLatestSessionId();
+
+    const insertData = co_marks.map(({ co_name, max_marks }) => ({
+      session_id,
+      subject_id,
+      subject_type,
+      co_name,
+      max_marks,
+    }));
+
     await db("atkt_test_details").insert(insertData);
     return res.status(201).json({ message: "Max marks inserted successfully" });
   } catch (error) {
@@ -229,9 +239,12 @@ const fetchTestDetails = async (req, res) => {
   }
 
   try {
+    const session_id = await getLatestSessionId();
+
     const existingRecords = await db("atkt_test_details").where({
       subject_id,
       subject_type,
+      session_id,
     });
 
     if (existingRecords.length > 0) {
@@ -294,6 +307,7 @@ const saveATKTMarks = async (req, res) => {
         .json({ error: "Invalid input format, expected array" });
     }
 
+    const session_id = await getLatestSessionId();
     const rowsToUpsert = [];
 
     for (const entry of data) {
@@ -311,7 +325,12 @@ const saveATKTMarks = async (req, res) => {
       }
 
       const isATKT = await db("atkt_students")
-        .where({ enrollment_no, subject_id, subject_type })
+        .where({
+          enrollment_no,
+          subject_id,
+          subject_type,
+          session_id,
+        })
         .first();
 
       if (!isATKT) {
@@ -322,6 +341,7 @@ const saveATKTMarks = async (req, res) => {
 
       for (const [co_name, marks_obtained] of Object.entries(co_marks)) {
         rowsToUpsert.push({
+          session_id,
           enrollment_no,
           subject_id,
           subject_type,
@@ -335,7 +355,13 @@ const saveATKTMarks = async (req, res) => {
     for (const row of rowsToUpsert) {
       await db("atkt_marks")
         .insert(row)
-        .onConflict(["enrollment_no", "subject_id", "subject_type", "co_name"])
+        .onConflict([
+          "session_id",
+          "enrollment_no",
+          "subject_id",
+          "subject_type",
+          "co_name",
+        ])
         .merge({
           marks_obtained: row.marks_obtained,
           status: row.status,
@@ -354,7 +380,6 @@ const submitATKTMarks = async (req, res) => {
   try {
     const { data } = req.body;
 
-    // Basic structure check
     if (!Array.isArray(data) || data.length === 0) {
       return res.status(400).json({ error: "Invalid or empty input array" });
     }
@@ -364,9 +389,9 @@ const submitATKTMarks = async (req, res) => {
       return res.status(400).json({ error: "Missing subject/component identifiers" });
     }
 
+    const session_id = await getLatestSessionId();
     const rowsToInsert = [];
 
-    // Validate all entries before doing any DB operation
     for (const entry of data) {
       const { enrollment_no, co_marks } = entry;
 
@@ -380,6 +405,7 @@ const submitATKTMarks = async (req, res) => {
         }
 
         rowsToInsert.push({
+          session_id,
           enrollment_no,
           subject_id,
           subject_type,
@@ -390,9 +416,8 @@ const submitATKTMarks = async (req, res) => {
       }
     }
 
-    // ✅ Now data is valid: proceed to delete and insert
     await db("atkt_marks")
-      .where({ subject_id, subject_type })
+      .where({ subject_id, subject_type, session_id })
       .del();
 
     await db("atkt_marks").insert(rowsToInsert);
@@ -415,9 +440,10 @@ const fetchATKTMarksData = async (req, res) => {
   }
 
   try {
-    // Check if any row is submitted
+    const session_id = await getLatestSessionId();
+
     const submittedRow = await db("atkt_marks")
-      .where({ subject_id, subject_type })
+      .where({ subject_id, subject_type, session_id })
       .andWhere("status", "submitted")
       .first();
 
@@ -428,27 +454,14 @@ const fetchATKTMarksData = async (req, res) => {
       });
     }
 
-    // Check for saved rows
     const savedMarks = await db("atkt_marks")
-      .select(
-        "atkt_marks.enrollment_no",
-        "atkt_marks.co_name",
-        "atkt_marks.marks_obtained"
-      )
-      .where({
-        "atkt_marks.subject_id": subject_id,
-        "atkt_marks.subject_type": subject_type,
-        "atkt_marks.status": "saved",
-      });
+      .select("enrollment_no", "co_name", "marks_obtained")
+      .where({ subject_id, subject_type, session_id, status: "saved" });
 
     if (savedMarks.length > 0) {
-      // Fetch test_details
       const testDetails = await db("atkt_test_details")
         .select("co_name", "max_marks")
-        .where({
-          subject_id,
-          subject_type,
-        });
+        .where({ subject_id, subject_type, session_id });
 
       return res.status(200).json({
         status: "saved",
@@ -457,6 +470,7 @@ const fetchATKTMarksData = async (req, res) => {
         message: "Saved marks and test details found.",
       });
     }
+
     return res.status(200).json({
       status: "not_found",
       message: "No saved or submitted data found for the selected inputs.",

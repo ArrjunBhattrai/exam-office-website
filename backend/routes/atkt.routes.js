@@ -12,25 +12,25 @@ router.post(
   atktController.atktStudentUpload
 );
 router.get(
-  "/get-atkt-students",
+  "/students",
   authenticateUser,
   authorizeRole(["faculty"]),
   atktController.getATKTStudentBySubject
 );
 router.post(
-  "/insert-test-details",
+  "/test-details",
   authenticateUser,
   authorizeRole(["faculty"]),
   atktController.insertTestDetails
 );
 router.get(
-  "/fetch-test-details",
+  "/test-details",
   authenticateUser,
   authorizeRole(["faculty"]),
   atktController.fetchTestDetails
 );
 router.delete(
-  "/delete-test-details",
+  "/test-details",
   authenticateUser,
   authorizeRole(["faculty"]),
   atktController.deleteTestDetails
@@ -48,7 +48,7 @@ router.post(
   atktController.submitATKTMarks
 );
 router.get(
-  "/fetch-atkt-marks-data",
+  "/fetch-marks",
   authenticateUser,
   authorizeRole(["faculty"]),
   atktController.fetchATKTMarksData

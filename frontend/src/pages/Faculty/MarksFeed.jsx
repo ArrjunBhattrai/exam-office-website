@@ -126,7 +126,7 @@ function MarksFeed() {
 
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/student/?subject_id=${selectedSubject.subject_id}&subject_type=${selectedSubject.subject_type}`,
+        `${BACKEND_URL}/api/student/?subject_id=${selectedSubject.subject_id}&subject_type=${selectedSubject.subject_type}&faculty_id=${userId}`,
         {
           method: "GET",
           headers: {

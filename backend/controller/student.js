@@ -188,10 +188,10 @@ const getStudentsForCourse = async (req, res) => {
 // Get students enrolled in a subject
 const studentBySubject = async (req, res) => {
   try {
-    const { subject_id, subject_type, section } = req.query;
+    const { subject_id, subject_type, faculty_id } = req.query;
 
-    if (!subject_id || !subject_type) {
-      return res.status(400).json({ error: "Subject ID and type are required" });
+    if (!subject_id || !subject_type || !faculty_id) {
+      return res.status(400).json({ error: "Subject ID, type, and faculty ID are required" });
     }
 
     const session_id = await getLatestSessionId();
@@ -204,55 +204,71 @@ const studentBySubject = async (req, res) => {
       return res.status(404).json({ error: "Subject not found" });
     }
 
-    // Check for section bifurcation
+    const { branch_id, course_id, specialization, semester } = subject;
+
+    // Check for section bifurcation for the course
     const existingSections = await db("section")
-      .where({
-        branch_id: subject.branch_id,
-        course_id: subject.course_id,
-        specialization: subject.specialization,
-      });
+      .where({ branch_id, course_id, specialization });
 
     const isSectioned = existingSections.length > 0;
 
-    if (isSectioned && !section) {
+    // Get sections assigned to this faculty for this subject
+    const facultyAssignments = await db("faculty_subject")
+      .where({ session_id, subject_id, subject_type, faculty_id })
+      .select("section");
+
+    if (facultyAssignments.length === 0) {
+      return res.status(403).json({ error: "Unauthorized: Faculty not assigned to this subject" });
+    }
+
+    const assignedSections = facultyAssignments.map(row => row.section).filter(Boolean); // only non-null
+
+    if (isSectioned && assignedSections.length === 0) {
       return res.status(400).json({
-        error: "Section is required because section-wise bifurcation exists.",
+        error: "Section bifurcation exists but no section is assigned to this faculty",
       });
     }
 
-    let students;
+    let studentsQuery;
 
     if (subject_type.toLowerCase() === "elective") {
-      // Elective subjects
-      const query = db("elective_data")
-        .join("student", "elective_data.enrollment_no", "student.enrollment_no")
+      // Elective students
+      studentsQuery = db("elective_data")
+        .join("student", function () {
+          this.on("elective_data.enrollment_no", "=", "student.enrollment_no")
+              .andOn("student.session_id", "=", db.raw("?", [session_id]));
+        })
         .where({
           "elective_data.subject_id": subject_id,
           "elective_data.subject_type": subject_type,
           "elective_data.session_id": session_id,
+          "student.branch_id": branch_id,
+          "student.course_id": course_id,
+          "student.specialization": specialization,
+          "student.semester": semester,
         });
 
-      if (isSectioned && section) {
-        query.andWhere("student.section", section);
+      if (isSectioned) {
+        studentsQuery.whereIn("student.section", assignedSections);
       }
 
-      students = await query.select("student.enrollment_no", "student.student_name");
     } else {
-      // Regular subjects
-      const query = db("student").where({
-        branch_id: subject.branch_id,
-        course_id: subject.course_id,
-        specialization: subject.specialization,
-        semester: subject.semester,
-        session_id,
-      });
+      // Regular subject students
+      studentsQuery = db("student")
+        .where({
+          session_id,
+          branch_id,
+          course_id,
+          specialization,
+          semester,
+        });
 
-      if (isSectioned && section) {
-        query.andWhere("section", section);
+      if (isSectioned) {
+        studentsQuery.whereIn("section", assignedSections);
       }
-
-      students = await query.select("enrollment_no", "student_name");
     }
+
+    const students = await studentsQuery.select("student.enrollment_no", "student.student_name");
 
     return res.json(students);
   } catch (err) {
@@ -260,7 +276,6 @@ const studentBySubject = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
-
 
 module.exports = {
   studentDataUpload,

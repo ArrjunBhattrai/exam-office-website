@@ -94,16 +94,18 @@ const fetchTestDetails = async (req, res) => {
 
 // Delete test details
 const deleteTestDetails = async (req, res) => {
-  const { subject_id, subject_type, component_name, sub_component_name } =
-    req.query;
+  const { subject_id, subject_type, component_name, sub_component_name } = req.query;
 
   if (!subject_id || !subject_type || !component_name || !sub_component_name) {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
   try {
+    const session_id = await getLatestSessionId(); 
+
     const deletedRows = await db("test_details")
       .where({
+        session_id, 
         subject_id,
         subject_type,
         component_name,
@@ -112,13 +114,9 @@ const deleteTestDetails = async (req, res) => {
       .del();
 
     if (deletedRows > 0) {
-      return res
-        .status(200)
-        .json({ message: "Test details deleted successfully" });
+      return res.status(200).json({ message: "Test details deleted successfully" });
     } else {
-      return res
-        .status(404)
-        .json({ message: "No matching test details found" });
+      return res.status(404).json({ message: "No matching test details found" });
     }
   } catch (error) {
     console.error("Error deleting test details:", error);
@@ -274,13 +272,11 @@ const submitMarks = async (req, res) => {
 
 // Check if marks exist
 const fetchMarksData = async (req, res) => {
-  const { subject_id, subject_type, component_name, sub_component_name } =
-    req.query;
+  const { subject_id, subject_type, component_name, sub_component_name } = req.query;
 
   if (!subject_id || !subject_type || !component_name || !sub_component_name) {
     return res.status(400).json({
-      error:
-        "Subject ID, Subject Type, Component Name, and Sub Component Name are required",
+      error: "Subject ID, Subject Type, Component Name, and Sub Component Name are required",
     });
   }
 
@@ -288,22 +284,59 @@ const fetchMarksData = async (req, res) => {
     const session_id = await getLatestSessionId();
     const faculty_id = req.userId;
 
-    // Check faculty_subject entry to get sections (if any)
+    // Check faculty_subject entry
     const facultyAssignments = await db("faculty_subject")
       .where({ session_id, subject_id, subject_type, faculty_id })
       .select("section");
 
     if (facultyAssignments.length === 0) {
-      return res
-        .status(403)
-        .json({ error: "Unauthorized: Faculty not assigned to this subject" });
+      return res.status(403).json({ error: "Unauthorized: Faculty not assigned to this subject" });
     }
 
-    const assignedSections = facultyAssignments
-      .map((row) => row.section)
-      .filter(Boolean); // non-null sections
+    const assignedSections = facultyAssignments.map(row => row.section).filter(Boolean);
 
-      
+    // Fetch subject info to get branch, course, specialization, semester
+    const subjectData = await db("subject")
+      .where({ session_id, subject_id, subject_type })
+      .select("branch_id", "course_id", "specialization", "semester")
+      .first();
+
+    if (!subjectData) {
+      return res.status(404).json({ error: "Subject not found" });
+    }
+
+    const { branch_id, course_id, specialization, semester } = subjectData;
+
+    // Build base student query
+    let studentQuery = db("student")
+      .select("enrollment_no")
+      .where({ session_id, branch_id, course_id, specialization, semester });
+
+    // Filter by section if sections are assigned
+    if (assignedSections.length > 0) {
+      studentQuery.whereIn("section", assignedSections);
+    }
+
+    // For elective subjects, filter using elective_data
+    if (subject_type.toLowerCase() === "elective") {
+      studentQuery.whereIn("enrollment_no", function () {
+        this.select("enrollment_no")
+          .from("elective_data")
+          .where({ session_id, subject_id, subject_type });
+      });
+    }
+
+    const students = await studentQuery;
+    const enrollmentNos = students.map((s) => s.enrollment_no);
+
+    if (enrollmentNos.length === 0) {
+      return res.status(200).json({
+        status: "not_found",
+        message: "No students found for this subject and faculty assignment.",
+      });
+    }
+
+    // Check if marks have been submitted
     const submittedRow = await db("marks")
       .where({
         session_id,
@@ -313,6 +346,7 @@ const fetchMarksData = async (req, res) => {
         sub_component_name,
         status: "submitted",
       })
+      .whereIn("enrollment_no", enrollmentNos)
       .first();
 
     if (submittedRow) {
@@ -322,6 +356,7 @@ const fetchMarksData = async (req, res) => {
       });
     }
 
+    // Get saved marks
     const savedMarks = await db("marks")
       .select("enrollment_no", "co_name", "marks_obtained")
       .where({
@@ -331,7 +366,8 @@ const fetchMarksData = async (req, res) => {
         component_name,
         sub_component_name,
         status: "saved",
-      });
+      })
+      .whereIn("enrollment_no", enrollmentNos);
 
     if (savedMarks.length > 0) {
       const testDetails = await db("test_details")
