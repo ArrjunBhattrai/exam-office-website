@@ -4,19 +4,19 @@ const { authenticateUser, authorizeRole } = require("../middleware/auth");
 const assesmentController = require("../controller/assesment");
 
 router.post(
-  "/insert-test-details",
+  "/test-details",
   authenticateUser,
   authorizeRole(["faculty"]),
   assesmentController.insertTestDetails
 );
 router.get(
-  "/fetch-test-details",
+  "/test-details",
   authenticateUser,
   authorizeRole(["faculty"]),
   assesmentController.fetchTestDetails
 );
 router.delete(
-  "/delete-test-details",
+  "/test-details",
   authenticateUser,
   authorizeRole(["faculty"]),
   assesmentController.deleteTestDetails
@@ -34,7 +34,7 @@ router.post(
   assesmentController.submitMarks
 );
 router.get(
-  "/fetch-marks-data",
+  "/marks",
   authenticateUser,
   authorizeRole(["faculty"]),
   assesmentController.fetchMarksData

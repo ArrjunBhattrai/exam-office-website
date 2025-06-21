@@ -5,41 +5,41 @@ const { upload } = require("../middleware/upload");
 const subjectController = require("../controller/subject");
 
 router.post(
-  "/upload/subject-data",
+  "/",
   authenticateUser,
   authorizeRole(["admin"]),
   upload.single("file"),
   subjectController.subjectDataUpload
 );
 router.get(
-  "/get-subject-byCourse",
+  "/",
   authenticateUser,
   authorizeRole(["hod"]),
-  subjectController.getSubjectsForCourse
+  subjectController.getAllSubjectsForCourse
 );
 router.get(
-  "/faculty-subjects/:faculty_id",
+  "/:faculty_id",
   authenticateUser,
   authorizeRole(["faculty", "hod"]),
   subjectController.getAssignedSubject
 );
 router.post(
-  "/assign-cos",
+  "/assign-co",
   authenticateUser,
   authorizeRole(["faculty"]),
   subjectController.assignCO
 );
 router.get(
-  "/get-co/:subject_id/:subject_type",
+  "/co/:subject_id/:subject_type",
   authenticateUser,
   authorizeRole(["faculty"]),
   subjectController.getCourseOutcomes
 );
 router.get(
-  "/get-subjects-by-course",
+  "/get-subject-byCourse",
   authenticateUser,
   authorizeRole(["hod"]),
-  subjectController.getAllSubjectsForCourse
+  subjectController.getSubjectsForCourse
 );
 
 module.exports = router;

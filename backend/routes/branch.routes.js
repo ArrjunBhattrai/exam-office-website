@@ -4,22 +4,22 @@ const { authenticateUser, authorizeRole } = require("../middleware/auth");
 const branchController = require("../controller/branch");
 
 router.post(
-  "/create-branch",
+  "/",
   authenticateUser,
   authorizeRole(["admin"]),
   branchController.createBranch
 );
-router.delete(
-  "/delete-branch/:branch_id",
-  authenticateUser,
-  authorizeRole(["admin"]),
-  branchController.deleteBranch
-);
 router.get(
-  "/get-branches",
+  "/",
   authenticateUser,
   authorizeRole(["admin"]),
   branchController.getBranches
+);
+router.delete(
+  "/:branch_id",
+  authenticateUser,
+  authorizeRole(["admin"]),
+  branchController.deleteBranch
 );
 router.patch(
   "/update/:branch_id",

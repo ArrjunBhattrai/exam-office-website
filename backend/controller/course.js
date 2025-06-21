@@ -67,10 +67,14 @@ const deleteCourse = async (req, res) => {
   }
 };
 
-// Get all courses with branch name and specialization
+// Get courses with branch name and specialization(all branch data for admin and specific branch data for hod)
 const getCourses = async (req, res) => {
   try {
-    const courses = await db("course")
+    const userRole = req.user.role;
+    const userBranchId = req.user.branchId;
+    const queryBranchId = req.query.branch_id;
+    
+    let query = db("course")
       .join("branch", "course.branch_id", "branch.branch_id")
       .select(
         "course.course_id",
@@ -80,27 +84,43 @@ const getCourses = async (req, res) => {
         "branch.branch_name"
       );
 
-    res.status(200).json({ courses });
+    if (userRole === "hod") {
+      if (!userBranchId) {
+        return res.status(400).json({ error: "Branch ID not found for HOD" });
+      }
+      query = query.where("course.branch_id", userBranchId);
+    } else if (userRole === "admin" && queryBranchId) {
+      query = query.where("course.branch_id", queryBranchId);
+    }
+
+    const courses = await query;
+    console.log(courses);
+
+    // Fetch all sections relevant to the returned courses
+    const allSections = await db("section")
+      .select("branch_id", "course_id", "specialization", "section");
+
+    // Organize sections into a map for fast lookup
+    const sectionMap = {};
+    for (const sec of allSections) {
+      const key = `${sec.branch_id}-${sec.course_id}-${sec.specialization}`;
+      if (!sectionMap[key]) sectionMap[key] = [];
+      sectionMap[key].push(sec.section);
+    }
+
+    // Append sections to each course
+    const coursesWithSections = courses.map((course) => {
+      const key = `${course.branch_id}-${course.course_id}-${course.specialization}`;
+      return {
+        ...course,
+        sections: sectionMap[key] || ["No Sections Created"], // array of sections or empty
+      };
+    });
+
+    return res.status(200).json({ courses: coursesWithSections });
   } catch (error) {
     console.error("Get Courses Error:", error);
-    res.status(500).json({ error: "Error retrieving courses" });
-  }
-};
-
-const getCourseByBranch = async (req, res) => {
-  const { branch_id } = req.query;
-
-  if (!branch_id) {
-    return res.status(400).json({ error: "branch_id is required" });
-  }
-
-  try {
-    const courses = await db("course").select("*").where({ branch_id });
-
-    res.status(200).json({ courses });
-  } catch (error) {
-    console.error("Get Course By Branch Error:", error);
-    res.status(500).json({ error: "Error fetching courses by branch_id" });
+    return res.status(500).json({ error: "Error retrieving courses" });
   }
 };
 
@@ -108,5 +128,4 @@ module.exports = {
   createCourse,
   deleteCourse,
   getCourses,
-  getCourseByBranch,
 };

@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const { authenticateUser, authorizeRole } = require("../middleware/auth");
 const requestController = require("../controller/correctionrequest");
-const { auth } = require("cassandra-driver");
 
 // router.get(
 //   "/submitted-form",

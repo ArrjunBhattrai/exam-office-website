@@ -12,9 +12,8 @@ const getLatestSessionId = async () => {
   return latestSession.session_id;
 };
 
-
 const getElectiveSubject = async (req, res) => {
-  const { branch_id } = req.params;
+  const { branch_id } = req.user.branchId;
 
   if (!branch_id) {
     res.status(400).json({ error: "Branch Id is required" });

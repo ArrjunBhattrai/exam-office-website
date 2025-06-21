@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import "./hod.css";
 import Sidebar from "../../components/Sidebar";
@@ -34,7 +34,7 @@ const ElectiveDataUpload = () => {
   const fetchElectiveSubjects = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/elective/get-details/${branchId}`,
+        `${BACKEND_URL}/api/elective`,
         {
           method: "GET",
           headers: {
@@ -78,7 +78,7 @@ const ElectiveDataUpload = () => {
     formData.append("subject_type", selectedSubjectData.subject_type);
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/elective/upload`, {
+      const res = await fetch(`${BACKEND_URL}/api/elective`, {
         method: "POST",
         headers: {
           authorization: token,

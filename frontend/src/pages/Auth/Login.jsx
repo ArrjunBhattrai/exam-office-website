@@ -9,7 +9,7 @@ import { BACKEND_URL } from "../../../config";
 import "./Auth.css";
 
 function generateCaptcha(length = 6) {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; 
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let captcha = "";
   for (let i = 0; i < length; i++) {
     captcha += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -197,7 +197,6 @@ const Login = () => {
 
             {/* Captcha Field */}
             <div className="captcha-box">
-              
               <canvas ref={captchaCanvasRef} width={150} height={50} />
               {/* <button onClick={generateCaptcha} style={{ marginLeft: "8px" }}>
                 🔄

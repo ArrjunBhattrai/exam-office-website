@@ -4,6 +4,7 @@ module.exports = function (app) {
   app.use("/api/user", require("../routes/user.routes"));
   app.use("/api/branch", require("../routes/branch.routes"));
   app.use("/api/course", require("../routes/course.routes"));
+  app.use("/api/section", require("../routes/section.routes"));
   app.use("/api/student", require("../routes/student.routes"));
   app.use("/api/subject", require("../routes/subject.routes"));
   app.use("/api/elective", require("../routes/electives.routes"));

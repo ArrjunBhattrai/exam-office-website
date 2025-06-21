@@ -73,7 +73,7 @@ function MarksFeed() {
   const fetchAssignedSubjects = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/subject/faculty-subjects/${userId}`,
+        `${BACKEND_URL}/api/subject/${userId}`,
         {
           method: "GET",
           headers: {
@@ -100,7 +100,7 @@ function MarksFeed() {
   const fetchCos = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/subject/get-co/${selectedSubject.subject_id}/${selectedSubject.subject_type}`,
+        `${BACKEND_URL}/api/subject/co/${selectedSubject.subject_id}/${selectedSubject.subject_type}`,
         {
           method: "GET",
           headers: {
@@ -126,7 +126,7 @@ function MarksFeed() {
 
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/student/getStudents?subject_id=${selectedSubject.subject_id}&subject_type=${selectedSubject.subject_type}`,
+        `${BACKEND_URL}/api/student/?subject_id=${selectedSubject.subject_id}&subject_type=${selectedSubject.subject_type}&faculty_id=${userId}`,
         {
           method: "GET",
           headers: {
@@ -161,7 +161,7 @@ function MarksFeed() {
       }).toString();
 
       const marksRes = await fetch(
-        `${BACKEND_URL}/api/assesment/fetch-marks-data?${queryParams}`,
+        `${BACKEND_URL}/api/assesment/marks?${queryParams}`,
         {
           method: "GET",
           headers: {
@@ -210,7 +210,7 @@ function MarksFeed() {
       }
 
       const testDetailsRes = await fetch(
-        `${BACKEND_URL}/api/assesment/fetch-test-details?${queryParams}`,
+        `${BACKEND_URL}/api/assesment/test-details?${queryParams}`,
         {
           method: "GET",
           headers: {
@@ -286,7 +286,7 @@ function MarksFeed() {
 
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/assesment/insert-test-details`,
+        `${BACKEND_URL}/api/assesment/test-details`,
         {
           method: "POST",
           headers: {
@@ -475,7 +475,7 @@ function MarksFeed() {
         }).toString();
 
         const deleteRes = await fetch(
-          `${BACKEND_URL}/api/assesment/delete-test-details?${queryParams}`,
+          `${BACKEND_URL}/api/assesment/test-details?${queryParams}`,
           {
             method: "DELETE",
             headers: {
