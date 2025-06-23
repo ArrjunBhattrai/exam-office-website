@@ -196,22 +196,36 @@ const ViewSubjects = () => {
                           <th>Subject</th>
                           <th>Subject Name</th>
                           <th>Semester</th>
+                          <th>Section(s)</th>
                           <th>No. of COs</th>
                           <th>Action</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {assignedSubjects.map((subject) => {
+                        {Object.values(
+                          assignedSubjects.reduce((acc, subject) => {
+                            const key = `${subject.subject_id}-${subject.subject_type}-${subject.course_id}-${subject.specialization}`;
+
+                            if (!acc[key]) {
+                              acc[key] = {
+                                ...subject,
+                                sections: [subject.section],
+                              };
+                            } else {
+                              acc[key].sections.push(subject.section);
+                            }
+
+                            return acc;
+                          }, {})
+                        ).map((subject) => {
                           const key = `${subject.subject_id}-${subject.subject_type}`;
 
-                          // Build course name
                           const courseDisplay =
                             subject.specialization?.toLowerCase() !== "none"
                               ? `${subject.course_id} - ${subject.specialization}`
                               : subject.course_id;
 
-                          // Build subject code display
-                          const subjectDisplay = `${subject.subject_id} - ${subject.subject_type}`;
+                          const subjectDisplay =` ${subject.subject_id} - ${subject.subject_type}`;
 
                           return (
                             <tr key={key}>
@@ -219,6 +233,7 @@ const ViewSubjects = () => {
                               <td>{subjectDisplay}</td>
                               <td>{subject.subject_name}</td>
                               <td>{subject.semester}</td>
+                              <td>{subject.sections.join(", ")}</td>
                               <td>
                                 {subject.co_names.length > 0 ? (
                                   subject.co_names.length

@@ -337,7 +337,7 @@ th, td {
   position: relative;
   background: white;
   padding: 25px;
-  width: 400px;
+  width: 800px;
   border-radius: 5px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
@@ -356,6 +356,19 @@ th, td {
   font-size: 14px;
   color: #333;
 }
+
+.custom-modal{
+    width: 900px;
+    min-width: 800px;
+  }
+  .view-btn {
+    background-color: #8b0000;
+    border-radius: 5px;
+  }
+
+    .view-btn:hover{
+      background-color: #5a0000;
+    }
 
 .modal-buttons {
   margin-top: 10px;
@@ -423,6 +436,7 @@ th, td {
 
   .custom-modal{
     width: 95%;
+    min-width: 900px;
   }
   .user-main {
     flex-direction: column;
@@ -483,6 +497,14 @@ th, td {
     width: 100%;
   }
 
+  .custom-modal {
+   width: 90%;
+    max-width: 90%;
+    padding: 1rem;
+    font-size: 14px;
+}
+
+
   .input-group input {
     width: 100%;
   }
@@ -512,3 +534,5 @@ th, td {
   font-weight: bold;
   border-left: 4px solid #3b82f6;
 }
+
+

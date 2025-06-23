@@ -200,7 +200,6 @@ const ATKTDataUpload = () => {
 
               <div className="fac-alloc">
                 <h3>ATKT Data Upload</h3>
-                <p className="session-text">
                   <SessionDisplay className="session-text" />
 
                 <span className="box-overlay-text">Upload</span>

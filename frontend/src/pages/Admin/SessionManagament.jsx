@@ -10,7 +10,9 @@ import Dropdown from "../../components/Dropdown";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import RedFooter from "../../components/RedFooter";
 import "./admin.css";
-import SessionDisplay from "../../components/SessionDisplay";
+import { useDispatch } from "react-redux";
+import { setSession } from "../../redux/sessionSlice";
+import { label } from "framer-motion/client";
 
 const SessionManagement = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -25,7 +27,24 @@ const SessionManagement = () => {
       </div>
     );
   }
-  
+  const currentSession = useSelector((state) => state.session.currentSession);
+  const dispatch = useDispatch();
+  const monthNames = [
+    "", // monthNames[0] will be unused since months start from 1
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
   const [startMonth, setStartMonth] = useState("");
   const [startYear, setStartYear] = useState("");
   const [endMonth, setEndMonth] = useState("");
@@ -93,7 +112,7 @@ const SessionManagement = () => {
     };
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/session`, {
+      const res = await fetch(`${BACKEND_URL}/api/session/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -159,12 +178,10 @@ const SessionManagement = () => {
       const semesterRes = await fetch(`${BACKEND_URL}/api/semester/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const componentRes = await fetch(
-        `${BACKEND_URL}/api/assesment/components`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const componentRes = await fetch(`${BACKEND_URL}/api/assesment/components`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+      
 
       const sessionsData = await sessionRes.json();
       const branches = await branchRes.json();
@@ -195,7 +212,6 @@ const SessionManagement = () => {
 
   return (
     <div className="home-container">
-      <Toaster position="top-right" />
       <div className="user-bg">
         <RedHeader />
         <div className="user-content">
@@ -275,7 +291,17 @@ const SessionManagement = () => {
               </div>
               <div className="fac-alloc">
                 <h3>Session Management</h3>
-                <SessionDisplay className="session-text" />
+                <p className="session-text">
+                  Current Session:{" "}
+                  {currentSession
+                    ? `${monthNames[currentSession.start_month]} ${
+                        currentSession.start_year
+                      } - ${monthNames[currentSession.end_month]} ${
+                        currentSession.end_year
+                      }`
+                    : "Loading..."}
+                </p>
+
                 <span className="box-overlay-text">Add Details</span>
                 <div className="faculty-box">
                   <div className="session-form">
