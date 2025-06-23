@@ -325,3 +325,10 @@
     min-width: 500px;
     padding: 1rem;
   }
+  .student-checkbox-list label{
+    color: #333;
+  }
+  .student-checkbox-list{
+    display:flex;
+    flex-direction: column;
+    }

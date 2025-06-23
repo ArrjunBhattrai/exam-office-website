@@ -12,7 +12,7 @@ import RedFooter from "../../components/RedFooter";
 import "./admin.css";
 import { useDispatch } from "react-redux";
 import { setSession } from "../../redux/sessionSlice";
-import { label } from "framer-motion/client";
+import SessionDisplay from "../../components/SessionDisplay";
 
 const SessionManagement = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -27,7 +27,8 @@ const SessionManagement = () => {
       </div>
     );
   }
-  const currentSession = useSelector((state) => state.session.currentSession);
+  
+   const currentSession = useSelector((state) => state.session.currentSession);
   const dispatch = useDispatch();
   const monthNames = [
     "", // monthNames[0] will be unused since months start from 1
@@ -408,7 +409,7 @@ const SessionManagement = () => {
                   }
                 }}
               />
-
+{/*
               <Dropdown
                 label="Semester"
                 options={semesters.map((s) => ({
@@ -425,7 +426,7 @@ const SessionManagement = () => {
                 selectedValue={selectedSection}
                 onChange={setSelectedSection}
               />
-
+*/}
               <h5>Choose What to Include in Download:</h5>
               <div className="checkbox-wrapper">
                 <div className="checkbox-group">
@@ -473,19 +474,6 @@ const SessionManagement = () => {
 
                 <div className="checkbox-group">
                   <strong>Marks</strong>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={dataToDownload.testMarks}
-                      onChange={(e) =>
-                        setDataToDownload({
-                          ...dataToDownload,
-                          testMarks: e.target.checked,
-                        })
-                      }
-                    />
-                    Test Marks (MST1, Viva etc.)
-                  </label>
                   <label>
                     <input
                       type="checkbox"

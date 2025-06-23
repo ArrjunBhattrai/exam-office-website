@@ -138,6 +138,7 @@ function MarksFeed() {
       if (!response.ok) throw new Error("Failed to fetch students");
 
       const data = await response.json();
+      console.log(data);
       return data;
     } catch (err) {
       toast.error(err.message || "Failed to fetch students");
