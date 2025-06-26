@@ -131,7 +131,7 @@ const HODViewDeptt = () => {
       );
       const data = await res.json();
       if (res.ok) {
-        setEnrolledStudents(data||[]);
+        setEnrolledStudents(data || []);
         setStudentsModalOpen(true);
       } else {
         toast.error(data.error || "Failed to fetch students");
@@ -144,7 +144,7 @@ const HODViewDeptt = () => {
 
   return (
     <div className="home-container">
-      <Toaster position="top-right"/>
+      <Toaster position="top-right" />
       <div className="user-bg">
         <RedHeader />
         <div className="user-content">
@@ -276,31 +276,47 @@ const HODViewDeptt = () => {
                     <th>Type</th>
                     <th>Semester</th>
                     <th>COs</th>
-                    <th>Section</th>
+                    <th>Section(s)</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredSubjects.map((subject) => (
-                    <tr key={subject.subject_id + subject.subject_type}>
+                  {Object.values(
+                    filteredSubjects.reduce((acc, subject) => {
+                      const key = ` ${subject.subject_id}-${subject.subject_type}-${subject.semester}`;
+                      if (!acc[key]) {
+                        acc[key] = {
+                          ...subject,
+                          sections: [subject.section],
+                        };
+                      } else {
+                        acc[key].sections.push(subject.section);
+                      }
+                      return acc;
+                    }, {})
+                  ).map((subject) => (
+                    <tr
+                      key={`${subject.subject_id}-${subject.subject_type}-${subject.semester}`}
+                    >
                       <td>{subject.subject_id}</td>
                       <td>{subject.subject_name}</td>
                       <td>{subject.subject_type}</td>
                       <td>{subject.semester}</td>
                       <td>{subject.co_names.length}</td>
-                      <td>{subject.section || "—"}</td>
+                      <td>{subject.sections.join(", ")}</td>
                       <td>
                         <button
                           onClick={() =>
                             handleViewStudents(
                               subject.subject_id,
                               subject.subject_type,
-                              selectedFaculty.faculty_id
+                              selectedFaculty.faculty_id // pass faculty_id instead of section
                             )
                           }
                           className="view-btn"
+                          style={{ marginBottom: "5px", display: "block" }}
                         >
-                          View Students
+                          View Students ({subject.sections.join(", ")})
                         </button>
                       </td>
                     </tr>

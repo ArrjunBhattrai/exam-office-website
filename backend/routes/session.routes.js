@@ -24,4 +24,11 @@ router.get(
   sessionController.getAllSessions
 );
 
+router.get(
+  "/latest",
+  authenticateUser,
+  authorizeRole(["admin", "hod", "faculty"]),
+  sessionController.getLatestSession
+)
+
 module.exports = router
