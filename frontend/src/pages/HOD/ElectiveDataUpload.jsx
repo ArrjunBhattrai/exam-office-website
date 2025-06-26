@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch,useSelector } from "react-redux";
+import { logoutUser } from "../../utils/logout";
 import "./hod.css";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
@@ -24,7 +25,10 @@ const ElectiveDataUpload = () => {
       </div>
     );
   }
-  
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    logoutUser(dispatch);
+  };
   const [subjects, setSubjects] = useState([]);
   const [electiveOptions, setElectiveOptions] = useState([]);
   const [selectedElective, setSelectedElective] = useState("");
@@ -144,7 +148,7 @@ const ElectiveDataUpload = () => {
                 </button>
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={handleLogout}
                 >
                   <FaSignOutAlt className="icon" />
                   Logout

@@ -26,9 +26,9 @@ const FacultyHome = () => {
 
   const dispatch = useDispatch();
 
-const handleLogout = () => {
-  logoutUser(dispatch);      
-}
+  const handleLogout = () => {
+    logoutUser(dispatch);
+  };
 
   return (
     <div className="home-container">
@@ -81,10 +81,7 @@ const handleLogout = () => {
                   <FaPen className="icon" />
                   Edit Info
                 </button>
-                <button
-                  className="icon-btn"
-                  onClick={handleLogout}
-                >
+                <button className="icon-btn" onClick={handleLogout}>
                   <FaSignOutAlt className="icon" />
                   Logout
                 </button>

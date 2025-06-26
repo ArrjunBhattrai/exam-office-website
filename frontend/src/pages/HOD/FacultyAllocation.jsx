@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../../utils/logout";
 import { toast } from "react-toastify";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import "./hod.css";
@@ -25,8 +26,11 @@ const FacultyAllocation = () => {
       </div>
     );
   }
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    logoutUser(dispatch);
+  };
 
-  
   const [subjectDetails, setSubjectDetails] = useState([]);
   const [faculties, setFaculties] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState(null);
@@ -61,16 +65,13 @@ const FacultyAllocation = () => {
     const query = `?branch_id=${branchId}&course_id=${course_id}&specialization=${specialization}&section=${section}`;
 
     try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/subject/${query}`,
-        {
-          method: "GET",
-          headers: {
-            authorization: token,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/api/subject/${query}`, {
+        method: "GET",
+        headers: {
+          authorization: token,
+          "Content-Type": "application/json",
+        },
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch subjects");
@@ -88,16 +89,13 @@ const FacultyAllocation = () => {
 
   const fetchFaculties = async () => {
     try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/faculty`,
-        {
-          method: "GET",
-          headers: {
-            authorization: token,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/api/faculty`, {
+        method: "GET",
+        headers: {
+          authorization: token,
+          "Content-Type": "application/json",
+        },
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch faculties");
@@ -117,16 +115,13 @@ const FacultyAllocation = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/course`,
-        {
-          method: "GET",
-          headers: {
-            authorization: token,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/api/course`, {
+        method: "GET",
+        headers: {
+          authorization: token,
+          "Content-Type": "application/json",
+        },
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch courses");
@@ -169,18 +164,15 @@ const FacultyAllocation = () => {
     };
 
     try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/faculty/assign`,
-        {
-          method: "POST",
-          headers: {
-            authorization: token,
-            "Content-Type": "application/json",
-            "Cache-Control": "no-cache",
-          },
-          body: JSON.stringify(body),
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/api/faculty/assign`, {
+        method: "POST",
+        headers: {
+          authorization: token,
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache",
+        },
+        body: JSON.stringify(body),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to assign faculty");
@@ -249,7 +241,7 @@ const FacultyAllocation = () => {
                 </button>
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={handleLogout}
                 >
                   <FaSignOutAlt className="icon" />
                   Logout

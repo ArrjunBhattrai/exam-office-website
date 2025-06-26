@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../../utils/logout";
 import { Toaster, toast } from "react-hot-toast";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
@@ -24,6 +25,11 @@ const ViewSubjects = () => {
     );
   }
 
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    logoutUser(dispatch);
+  };
+  
   const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState(null);
@@ -42,16 +48,13 @@ const ViewSubjects = () => {
 
   const fetchAssignedSubjects = async () => {
     try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/subject/${userId}`,
-        {
-          method: "GET",
-          headers: {
-            authorization: token,
-            "Content-Type": "Application/json",
-          },
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/api/subject/${userId}`, {
+        method: "GET",
+        headers: {
+          authorization: token,
+          "Content-Type": "Application/json",
+        },
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch assigned Subjects");
@@ -162,10 +165,7 @@ const ViewSubjects = () => {
                   <FaPen className="icon" />
                   Edit Info
                 </button>
-                <button
-                  className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
-                >
+                <button className="icon-btn" onClick={handleLogout}>
                   <FaSignOutAlt className="icon" /> Logout
                 </button>
               </div>
@@ -225,7 +225,7 @@ const ViewSubjects = () => {
                               ? `${subject.course_id} - ${subject.specialization}`
                               : subject.course_id;
 
-                          const subjectDisplay =` ${subject.subject_id} - ${subject.subject_type}`;
+                          const subjectDisplay = ` ${subject.subject_id} - ${subject.subject_type}`;
 
                           return (
                             <tr key={key}>

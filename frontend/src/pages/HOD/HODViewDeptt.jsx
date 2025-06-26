@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch,useSelector } from "react-redux";
 import "./hod.css";
 import { BACKEND_URL } from "../../../config";
+import { logoutUser } from "../../utils/logout";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
@@ -27,6 +28,10 @@ const HODViewDeptt = () => {
     );
   }
 
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    logoutUser(dispatch);
+  };
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedFaculty, setSelectedFaculty] = useState(null);
   const [courses, setCourses] = useState([]);
@@ -196,7 +201,7 @@ const HODViewDeptt = () => {
                 </button>
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={handleLogout}
                 >
                   <FaSignOutAlt className="icon" />
                   Logout

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, UserPlus } from "lucide-react";
 import { Toaster, toast } from "react-hot-toast";
 import { BACKEND_URL } from "../../../config";
-import { useSelector } from "react-redux";
+import { useDispatch,useSelector } from "react-redux";
+import { logoutUser } from "../../utils/logout";
 import RedHeader from "../../components/RedHeader";
 import ActivityHeader from "../../components/ActivityHeader";
 import Sidebar from "../../components/Sidebar";
@@ -10,7 +11,6 @@ import Dropdown from "../../components/Dropdown";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import RedFooter from "../../components/RedFooter";
 import "./admin.css";
-import { useDispatch } from "react-redux";
 import { setSession } from "../../redux/sessionSlice";
 import SessionDisplay from "../../components/SessionDisplay";
 
@@ -30,6 +30,9 @@ const SessionManagement = () => {
   
    const currentSession = useSelector((state) => state.session.currentSession);
   const dispatch = useDispatch();
+  const handleLogout = () => {
+    logoutUser(dispatch);
+  };
   const monthNames = [
     "", // monthNames[0] will be unused since months start from 1
     "January",
@@ -271,7 +274,7 @@ const SessionManagement = () => {
                 </button>
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={handleLogout}
                 >
                   <FaSignOutAlt className="icon" />
                   Logout
