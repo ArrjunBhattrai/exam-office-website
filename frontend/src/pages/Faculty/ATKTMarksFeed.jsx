@@ -51,7 +51,7 @@ const ATKTMarksFeed = () => {
   const fetchAssignedSubjects = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/subject/faculty-subjects/${userId}`,
+        `${BACKEND_URL}/api/subject/${userId}`,
         {
           method: "GET",
           headers: {

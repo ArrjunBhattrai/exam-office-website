@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../../utils/logout";
 import { setSession } from "../../redux/sessionSlice";
 import "./faculty.css";
 import Sidebar from "../../components/Sidebar";
@@ -22,6 +23,13 @@ const FacultyHome = () => {
       </div>
     );
   }
+
+  const dispatch = useDispatch();
+
+const handleLogout = () => {
+  logoutUser(dispatch);      
+}
+
   return (
     <div className="home-container">
       <div className="user-bg">
@@ -75,7 +83,7 @@ const FacultyHome = () => {
                 </button>
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={handleLogout}
                 >
                   <FaSignOutAlt className="icon" />
                   Logout
