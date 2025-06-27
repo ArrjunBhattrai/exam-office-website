@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch,useSelector } from "react-redux";
+import { logoutUser } from "../../utils/logout";
 import "./admin.css";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
@@ -19,6 +20,10 @@ const AdminRequest = () => {
   if (!isAuthenticated || role != "admin") {
     return <div>Please log in to access this page.</div>;
   }
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    logoutUser(dispatch);
+  };
   const currentSession = useSelector((state) => state.session.currentSession);
   const monthNames = [
     "", // monthNames[0] will be unused since months start from 1
@@ -157,7 +162,7 @@ const AdminRequest = () => {
                 </button>
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={handleLogout}
                 >
                   <FaSignOutAlt className="icon" />
                   Logout

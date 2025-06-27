@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../../utils/logout";
 import { toast, ToastContainer } from "react-toastify";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
@@ -19,7 +20,11 @@ const FacCorrectionReq = () => {
   if (!isAuthenticated || role !== "faculty") {
     return <div>You are not authorized to view this page.</div>;
   }
-  
+
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    logoutUser(dispatch);
+  };
   const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState({});
   const [component, setComponent] = useState("");
@@ -67,16 +72,13 @@ const FacCorrectionReq = () => {
 
   const fetchAssignedSubjects = async () => {
     try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/subject/${userId}`,
-        {
-          method: "GET",
-          headers: {
-            authorization: token,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/api/subject/${userId}`, {
+        method: "GET",
+        headers: {
+          authorization: token,
+          "Content-Type": "application/json",
+        },
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch assigned Subjects");
@@ -262,7 +264,7 @@ const FacCorrectionReq = () => {
               <div className="user-icons">
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/fac-home")}
+                  onClick={() => (window.location.href = "/faculty/home")}
                 >
                   <FaHome className="icon" />
                   Home
@@ -278,7 +280,7 @@ const FacCorrectionReq = () => {
                 </button>
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={handleLogout}
                 >
                   <FaSignOutAlt className="icon" />
                   Logout
@@ -446,7 +448,7 @@ const FacCorrectionReq = () => {
 
                       const data = await response.json();
 
-                      if (!response.ok ) {
+                      if (!response.ok) {
                         toast.error("Form not submitted yet.");
                         return;
                       }
@@ -595,7 +597,9 @@ const FacCorrectionReq = () => {
                       <input
                         type="number"
                         value={entry.marks_obtained}
-                        onChange={(e) => handleMarkChange(e.target.value, index)}
+                        onChange={(e) =>
+                          handleMarkChange(e.target.value, index)
+                        }
                       />
                     </td>
                   </tr>

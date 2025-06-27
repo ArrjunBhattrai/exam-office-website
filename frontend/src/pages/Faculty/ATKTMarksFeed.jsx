@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../../utils/logout";
 import { Toaster, toast } from "react-hot-toast";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
@@ -25,7 +26,11 @@ const ATKTMarksFeed = () => {
       </div>
     );
   }
-  
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    logoutUser(dispatch);
+  };
+
   const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState({});
   const [showModal, setShowModal] = useState(false);
@@ -50,16 +55,13 @@ const ATKTMarksFeed = () => {
 
   const fetchAssignedSubjects = async () => {
     try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/subject/faculty-subjects/${userId}`,
-        {
-          method: "GET",
-          headers: {
-            authorization: token,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/api/subject/${userId}`, {
+        method: "GET",
+        headers: {
+          authorization: token,
+          "Content-Type": "application/json",
+        },
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch assigned Subjects");
@@ -265,21 +267,18 @@ const ATKTMarksFeed = () => {
     }
 
     try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/atkt/test-details`,
-        {
-          method: "POST",
-          headers: {
-            authorization: token,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            subject_id: selectedSubject.subject_id,
-            subject_type: selectedSubject.subject_type,
-            co_marks,
-          }),
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/api/atkt/test-details`, {
+        method: "POST",
+        headers: {
+          authorization: token,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          subject_id: selectedSubject.subject_id,
+          subject_type: selectedSubject.subject_type,
+          co_marks,
+        }),
+      });
 
       if (!response.ok) throw new Error("Submission failed");
 
@@ -590,7 +589,7 @@ const ATKTMarksFeed = () => {
                 </button>
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={handleLogout}
                 >
                   <FaSignOutAlt className="icon" />
                   Logout

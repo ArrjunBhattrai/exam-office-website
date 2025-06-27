@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch,useSelector } from "react-redux";
+import { logoutUser } from "../../utils/logout";
 import { Toaster, toast } from "react-hot-toast";
 import { BACKEND_URL } from "../../../config";
 import "./admin.css";
@@ -24,6 +25,10 @@ const ATKTDataUpload = () => {
       </div>
     );
   }
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    logoutUser(dispatch);
+  };
 
   const [branches, setBranches] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -31,7 +36,7 @@ const ATKTDataUpload = () => {
   const [selectedCourse, setSelectedCourse] = useState("");
   const [file, setFile] = useState(null);
   const [fileInputKey, setFileInputKey] = useState(Date.now());
-  
+
   const fetchBranches = async () => {
     try {
       const response = await fetch(`${BACKEND_URL}/api/branch`, {
@@ -181,7 +186,7 @@ const ATKTDataUpload = () => {
                 </button>
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={logoutUser}
                 >
                   <FaSignOutAlt className="icon" /> Logout
                 </button>

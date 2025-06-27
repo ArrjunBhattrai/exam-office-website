@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, UserPlus } from "lucide-react";
 import { Toaster, toast } from "react-hot-toast";
 import { BACKEND_URL } from "../../../config";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../../utils/logout";
 import RedHeader from "../../components/RedHeader";
 import ActivityHeader from "../../components/ActivityHeader";
 import Sidebar from "../../components/Sidebar";
@@ -25,6 +26,10 @@ const BranchManagement = () => {
     );
   }
 
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    logoutUser(dispatch);
+  };
   const currentSession = useSelector((state) => state.session.currentSession);
 
   const [branches, setBranches] = useState([]);
@@ -91,16 +96,13 @@ const BranchManagement = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/branch/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            authorization: token,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/api/branch/${id}`, {
+        method: "DELETE",
+        headers: {
+          authorization: token,
+          "Content-Type": "application/json",
+        },
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -174,7 +176,7 @@ const BranchManagement = () => {
                 </button>
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={handleLogout}
                 >
                   <FaSignOutAlt className="icon" />
                   Logout

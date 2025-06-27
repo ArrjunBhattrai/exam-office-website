@@ -1,5 +1,6 @@
-import { useSelector } from "react-redux";
+import { useDispatch,useSelector } from "react-redux";
 import "./hod.css";
+import {logoutUser} from "../../utils/logout"
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
@@ -20,6 +21,10 @@ const HODHome = () => {
       </div>
     );
   }
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    logoutUser(dispatch);
+  };
 
   return (
     <div className="home-container">
@@ -74,7 +79,7 @@ const HODHome = () => {
                 </button>
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={handleLogout}
                 >
                   <FaSignOutAlt className="icon" />
                   Logout
