@@ -13,6 +13,7 @@ import "./admin.css";
 import { useDispatch } from "react-redux";
 import { setSession } from "../../redux/sessionSlice";
 import SessionDisplay from "../../components/SessionDisplay";
+import { ToastContainer } from "react-toastify";
 
 const SessionManagement = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -636,6 +637,7 @@ const SessionManagement = () => {
           </div>
         )}
       </div>
+      <ToastContainer/>
     </div>
   );
 };
