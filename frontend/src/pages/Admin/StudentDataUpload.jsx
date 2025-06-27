@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch,useSelector } from "react-redux";
+import {logoutUser} from "../../utils/logout"
 import { Toaster, toast } from "react-hot-toast";
 import { BACKEND_URL } from "../../../config";
 import "./admin.css";
@@ -24,6 +25,10 @@ const StudentDataUpload = () => {
       </div>
     );
   }
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    logoutUser(dispatch);
+  };
   
   const [branches, setBranches] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -229,7 +234,7 @@ const StudentDataUpload = () => {
                 </button>
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={handleLogout}
                 >
                   <FaSignOutAlt className="icon" />
                   Logout

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Toaster, toast } from "react-hot-toast";
-import { useSelector } from "react-redux";
+import { useDispatch,useSelector } from "react-redux";
+import { logoutUser } from "../../utils/logout";
 import { BACKEND_URL } from "../../../config";
 import RedHeader from "../../components/RedHeader";
 import ActivityHeader from "../../components/ActivityHeader";
@@ -24,6 +25,10 @@ const CourseManagement = () => {
       </div>
     );
   }
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    logoutUser(dispatch);
+  };
   const currentSession = useSelector((state) => state.session.currentSession);
 
   const [courses, setCourses] = useState([]);
@@ -207,7 +212,7 @@ const CourseManagement = () => {
                 </button>
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={handleLogout}
                 >
                   <FaSignOutAlt className="icon" />
                   Logout

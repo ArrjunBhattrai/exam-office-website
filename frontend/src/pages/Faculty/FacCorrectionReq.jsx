@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../../utils/logout";
 import { toast, ToastContainer } from "react-toastify";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
@@ -19,7 +20,11 @@ const FacCorrectionReq = () => {
   if (!isAuthenticated || role !== "faculty") {
     return <div>You are not authorized to view this page.</div>;
   }
-  
+
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    logoutUser(dispatch);
+  };
   const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState({});
   const [component, setComponent] = useState("");
@@ -64,6 +69,30 @@ const FacCorrectionReq = () => {
     : [];
 
   const subComponentOptions = component ? subComponentMap[component] || [] : [];
+
+  const fetchAssignedSubjects = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/subject/${userId}`, {
+        method: "GET",
+        headers: {
+          authorization: token,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch assigned Subjects");
+      }
+
+      const data = await response.json();
+      setAssignedSubjects(data.subjects);
+    } catch (error) {
+      toast.error(error.message || "Failed to fetch Assigned Subjects");
+    }
+  };
+  useEffect(() => {
+    fetchAssignedSubjects();
+  }, [token]);
 
   useEffect(() => {
     const fetchPastRequests = async () => {
@@ -235,7 +264,7 @@ const FacCorrectionReq = () => {
               <div className="user-icons">
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/fac-home")}
+                  onClick={() => (window.location.href = "/faculty/home")}
                 >
                   <FaHome className="icon" />
                   Home
@@ -251,7 +280,7 @@ const FacCorrectionReq = () => {
                 </button>
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={handleLogout}
                 >
                   <FaSignOutAlt className="icon" />
                   Logout
@@ -292,7 +321,7 @@ const FacCorrectionReq = () => {
                       <tbody>
                         {pastRequests.map((req) => (
                           <tr key={req.request_id}>
-                            <td>{req.subject_name}</td>
+                            <td>{req.subject_id}</td>
                             <td>{req.subject_type}</td>
                             <td>{req.component_name || "-"}</td>
                             <td>{req.sub_component_name || "-"}</td>
@@ -419,7 +448,7 @@ const FacCorrectionReq = () => {
 
                       const data = await response.json();
 
-                      if (!response.ok || !data.submitted) {
+                      if (!response.ok) {
                         toast.error("Form not submitted yet.");
                         return;
                       }
@@ -464,7 +493,6 @@ const FacCorrectionReq = () => {
                   onChange={(e) => setReason(e.target.value)}
                 ></textarea>
 
-                <h5>Select Students (Enrollment Numbers)</h5>
                 <h4>Select Students (Enrollment Numbers)</h4>
                 <div className="student-checkbox-list">
                   {students.map((stu) => (
@@ -569,7 +597,9 @@ const FacCorrectionReq = () => {
                       <input
                         type="number"
                         value={entry.marks_obtained}
-                        onChange={(e) => handleMarkChange(e.target.value, index)}
+                        onChange={(e) =>
+                          handleMarkChange(e.target.value, index)
+                        }
                       />
                     </td>
                   </tr>

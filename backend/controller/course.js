@@ -94,7 +94,6 @@ const getCourses = async (req, res) => {
     }
 
     const courses = await query;
-    console.log(courses);
 
     // Fetch all sections relevant to the returned courses
     const allSections = await db("section")

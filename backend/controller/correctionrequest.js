@@ -11,7 +11,7 @@ const getLatestSessionId = async () => {
 };
 
 const submitCorrectionRequest = async (req, res) => {
-  const facultyId = req.user.id;
+  const facultyId = req.user.userId;
   const {
     subject_id,
     subject_type,

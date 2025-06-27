@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch,useSelector } from "react-redux";
 import "./hod.css";
 import { BACKEND_URL } from "../../../config";
+import { logoutUser } from "../../utils/logout";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
@@ -27,6 +28,10 @@ const HODViewDeptt = () => {
     );
   }
 
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    logoutUser(dispatch);
+  };
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedFaculty, setSelectedFaculty] = useState(null);
   const [courses, setCourses] = useState([]);
@@ -118,12 +123,10 @@ const HODViewDeptt = () => {
   const [enrolledStudents, setEnrolledStudents] = useState([]);
   const [studentsModalOpen, setStudentsModalOpen] = useState(false);
 
-  const handleViewStudents = async (subjectId, subjectType, section) => {
+  const handleViewStudents = async (subjectId, subjectType, facultyId) => {
     try {
       const res = await fetch(
-        `${BACKEND_URL}/api/student/?subject_id=${subjectId}&subject_type=${subjectType}${
-          section ? `&section=${section}` : ""
-        }`,
+        `${BACKEND_URL}/api/student/?subject_id=${subjectId}&subject_type=${subjectType}&faculty_id=${facultyId}`,
         {
           method: "GET",
           headers: {
@@ -133,7 +136,7 @@ const HODViewDeptt = () => {
       );
       const data = await res.json();
       if (res.ok) {
-        setEnrolledStudents(data.students);
+        setEnrolledStudents(data || []);
         setStudentsModalOpen(true);
       } else {
         toast.error(data.error || "Failed to fetch students");
@@ -146,7 +149,7 @@ const HODViewDeptt = () => {
 
   return (
     <div className="home-container">
-      <Toaster />
+      <Toaster position="top-right" />
       <div className="user-bg">
         <RedHeader />
         <div className="user-content">
@@ -174,11 +177,6 @@ const HODViewDeptt = () => {
                     name: "Upload Electives Data",
                     path: "/hod/elective-data",
                   },
-                  {
-                    name: "View Correction Requests",
-                    path: "/hod/correction-request",
-                  },
-                  { name: "Progress Report", path: "/hod/progress-report" },
                 ]}
               />
             </div>
@@ -203,7 +201,7 @@ const HODViewDeptt = () => {
                 </button>
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={handleLogout}
                 >
                   <FaSignOutAlt className="icon" />
                   Logout
@@ -283,31 +281,47 @@ const HODViewDeptt = () => {
                     <th>Type</th>
                     <th>Semester</th>
                     <th>COs</th>
-                    <th>Section</th>
+                    <th>Section(s)</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredSubjects.map((subject) => (
-                    <tr key={subject.subject_id + subject.subject_type}>
+                  {Object.values(
+                    filteredSubjects.reduce((acc, subject) => {
+                      const key = ` ${subject.subject_id}-${subject.subject_type}-${subject.semester}`;
+                      if (!acc[key]) {
+                        acc[key] = {
+                          ...subject,
+                          sections: [subject.section],
+                        };
+                      } else {
+                        acc[key].sections.push(subject.section);
+                      }
+                      return acc;
+                    }, {})
+                  ).map((subject) => (
+                    <tr
+                      key={`${subject.subject_id}-${subject.subject_type}-${subject.semester}`}
+                    >
                       <td>{subject.subject_id}</td>
                       <td>{subject.subject_name}</td>
                       <td>{subject.subject_type}</td>
                       <td>{subject.semester}</td>
                       <td>{subject.co_names.length}</td>
-                      <td>{subject.section || "—"}</td>
+                      <td>{subject.sections.join(", ")}</td>
                       <td>
                         <button
                           onClick={() =>
                             handleViewStudents(
                               subject.subject_id,
                               subject.subject_type,
-                              subject.section
+                              selectedFaculty.faculty_id // pass faculty_id instead of section
                             )
                           }
                           className="view-btn"
+                          style={{ marginBottom: "5px", display: "block" }}
                         >
-                          View Students
+                          View Students ({subject.sections.join(", ")})
                         </button>
                       </td>
                     </tr>

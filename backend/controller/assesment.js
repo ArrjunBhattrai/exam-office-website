@@ -289,7 +289,7 @@ const fetchMarksData = async (req, res) => {
 
   try {
     const session_id = await getLatestSessionId();
-    const faculty_id = req.userId;
+    const faculty_id = req.user.userId;
 
     // Check faculty_subject entry
     const facultyAssignments = await db("faculty_subject")

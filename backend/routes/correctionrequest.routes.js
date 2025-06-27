@@ -13,7 +13,7 @@ router.post(
 router.get(
     "/",
     authenticateUser,
-    authorizeRole(["faculty"]),
+    authorizeRole(["admin","faculty"]),
     requestController.getCorrectionRequests
 );
 
@@ -39,7 +39,7 @@ router.get(
 );
 
 router.get(
-  "/marks",
+  "/marks/:request_id",
   authenticateUser,
   authorizeRole(["faculty"]),
   requestController.fetchMarksData

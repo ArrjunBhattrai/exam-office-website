@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../../utils/logout";
 import { setSession } from "../../redux/sessionSlice";
 import "./admin.css";
 import Sidebar from "../../components/Sidebar";
@@ -24,6 +25,10 @@ const AdminHome = () => {
   }
 
   const dispatch = useDispatch();
+  const handleLogout = () => {
+    logoutUser(dispatch);
+  };
+
   useEffect(() => {
     const fetchCurrentSession = async () => {
       try {
@@ -51,7 +56,6 @@ const AdminHome = () => {
     (state) => state.session
   );
 
- 
   return (
     <div className="home-container">
       <div className="user-bg">
@@ -90,7 +94,6 @@ const AdminHome = () => {
                     path: "/admin/atkt-data-upload",
                   },
                   { name: "Address Requests", path: "/admin/req" },
-                  { name: "Edit Information", path: "/admin/req" },
                 ]}
               />
             </div>
@@ -117,7 +120,7 @@ const AdminHome = () => {
 
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={handleLogout}
                 >
                   <FaSignOutAlt className="icon" />
                   Logout
@@ -135,7 +138,7 @@ const AdminHome = () => {
               </div>
 
               <div className="fac-alloc">
-               <SessionDisplay className="session-text" />
+                <SessionDisplay className="session-text" />
               </div>
             </div>
           </div>

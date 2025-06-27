@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch,useSelector } from "react-redux";
+import { logoutUser } from "../../utils/logout";
 import { Toaster, toast } from "react-hot-toast";
 import "./hod.css";
 import Sidebar from "../../components/Sidebar";
@@ -23,21 +24,22 @@ const RegistrationRequest = () => {
       </div>
     );
   }
-  
+
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    logoutUser(dispatch);
+  };
   const [pendingRequests, setPendingRequests] = useState([]);
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/faculty/request`,
-        {
-          method: "GET",
-          headers: {
-            authorization: token,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/api/faculty/request`, {
+        method: "GET",
+        headers: {
+          authorization: token,
+          "Content-Type": "application/json",
+        },
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch registration requests");
@@ -123,11 +125,6 @@ const RegistrationRequest = () => {
                     name: "Upload Electives Data",
                     path: "/hod/elective-data",
                   },
-                  {
-                    name: "View Correction Requests",
-                    path: "/hod/correction-request",
-                  },
-                  { name: "Progress Report", path: "/hod/progress-report" },
                 ]}
               />
             </div>
@@ -152,7 +149,7 @@ const RegistrationRequest = () => {
                 </button>
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={logoutUser}
                 >
                   <FaSignOutAlt className="icon" />
                   Logout
