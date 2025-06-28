@@ -11,6 +11,8 @@ import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import SessionDisplay from "../../components/SessionDisplay";
+import { fetchLatestSession } from "../../utils/fetchSession"; // adjust path if needed
+import { setSession } from "../../redux/sessionSlice";
 
 const SubjectDataUpload = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -26,6 +28,20 @@ const SubjectDataUpload = () => {
     );
   }
   const dispatch = useDispatch();
+
+  useEffect(() => {
+  const loadSession = async () => {
+    try {
+      const session = await fetchLatestSession(token);
+      dispatch(setSession(session));
+    } catch (error) {
+      console.error("Failed to load session", error);
+    }
+  };
+
+  loadSession();
+}, [dispatch, token]);
+
   const handleLogout = () => {
     logoutUser(dispatch);
   };

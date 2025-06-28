@@ -7,16 +7,21 @@ const months = [
 ];
 
 const SessionDisplay = ({ className = "" }) => {
-  const currentSession = useSelector((state) => state.session.currentSession);
+  const { start_month, start_year, end_month, end_year } = useSelector(
+    (state) => state.session
+  );
+
+  if (!start_month || !start_year || !end_month || !end_year) {
+    return <p className={className}>No current session</p>;
+  }
 
   return (
     <p className={className}>
-      Current Session:{" "}
-      {currentSession
-        ? `${months[currentSession.start_month]} ${currentSession.start_year} - ${months[currentSession.end_month]} ${currentSession.end_year}`
-        : "Loading..."}
+      Current Session: {months[start_month]} {start_year} -{" "}
+      {months[end_month]} {end_year}
     </p>
   );
 };
+
 
 export default SessionDisplay;

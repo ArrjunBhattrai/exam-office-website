@@ -12,6 +12,7 @@ import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import RedFooter from "../../components/RedFooter";
 import "./admin.css";
 import { setSession } from "../../redux/sessionSlice";
+import { fetchLatestSession } from "../../utils/fetchSession"; 
 import SessionDisplay from "../../components/SessionDisplay";
 import { ToastContainer } from "react-toastify";
 
@@ -28,9 +29,21 @@ const SessionManagement = () => {
       </div>
     );
   }
-  
-   const currentSession = useSelector((state) => state.session.currentSession);
+
   const dispatch = useDispatch();
+
+  useEffect(() => {
+  const loadSession = async () => {
+    try {
+      const session = await fetchLatestSession(token);
+      dispatch(setSession(session));
+    } catch {}
+  };
+
+  loadSession();
+}, [dispatch, token]);
+
+  
   const handleLogout = () => {
     logoutUser(dispatch);
   };
@@ -201,15 +214,6 @@ const SessionManagement = () => {
       setSemesters(semesters || []);
       setTestComponents(componentData.components || []);
 
-      if (allSessions.length > 0) {
-        const sorted = [...allSessions].sort((a, b) => {
-          if (a.start_year !== b.start_year) {
-            return b.start_year - a.start_year;
-          }
-          return b.start_month - a.start_month;
-        });
-        dispatch(setSession(sorted[0]));
-      }
     } catch (err) {
       toast.error("Failed to load session, branch, semester or course data");
     }
@@ -296,16 +300,8 @@ const SessionManagement = () => {
               </div>
               <div className="fac-alloc">
                 <h3>Session Management</h3>
-                <p className="session-text">
-                  Current Session:{" "}
-                  {currentSession
-                    ? `${monthNames[currentSession.start_month]} ${
-                        currentSession.start_year
-                      } - ${monthNames[currentSession.end_month]} ${
-                        currentSession.end_year
-                      }`
-                    : "Loading..."}
-                </p>
+                <SessionDisplay className="session-text" />
+
 
                 <span className="box-overlay-text">Add Details</span>
                 <div className="faculty-box">

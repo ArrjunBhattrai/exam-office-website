@@ -11,6 +11,8 @@ import { BACKEND_URL } from "../../../config";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import SessionDisplay from "../../components/SessionDisplay";
+import { fetchLatestSession } from "../../utils/fetchSession";
+import { setSession } from "../../redux/sessionSlice";
 
 const AdminRequest = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -24,22 +26,19 @@ const AdminRequest = () => {
   const handleLogout = () => {
     logoutUser(dispatch);
   };
-  const currentSession = useSelector((state) => state.session.currentSession);
-  const monthNames = [
-    "", // monthNames[0] will be unused since months start from 1
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
+
+  useEffect(() => {
+  const loadSession = async () => {
+    try {
+      const session = await fetchLatestSession(token);
+      dispatch(setSession(session));
+    } catch (error) {
+      console.error("Failed to load session", error);
+    }
+  };
+
+  loadSession();
+}, [dispatch, token]);
 
   const [requests, setRequests] = useState([]);
   const [selectedReason, setSelectedReason] = useState("");

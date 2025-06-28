@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../utils/logout";
-import { setSession } from "../../redux/sessionSlice";
 import "./faculty.css";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
@@ -9,6 +8,8 @@ import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import SessionDisplay from "../../components/SessionDisplay";
+import { fetchLatestSession } from "../../utils/fetchSession"; // adjust path if needed
+import { setSession } from "../../redux/sessionSlice";
 
 const FacultyHome = () => {
   const { userId, isAuthenticated, role, token, branchId } = useSelector(
@@ -25,6 +26,19 @@ const FacultyHome = () => {
   }
 
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const loadSession = async () => {
+      try {
+        const session = await fetchLatestSession(token);
+        dispatch(setSession(session));
+      } catch (error) {
+        console.error("Failed to load session", error);
+      }
+    };
+
+    loadSession();
+  }, [dispatch, token]);
 
   const handleLogout = () => {
     logoutUser(dispatch);
@@ -96,6 +110,10 @@ const FacultyHome = () => {
                   <span className="user-role">Role: </span>
                   <span className="user-name">[{role && `${role}`}]</span>
                 </p>
+
+                <div className="fac-alloc">
+                  <SessionDisplay className="session-text" />
+                </div>
               </div>
             </div>
           </div>

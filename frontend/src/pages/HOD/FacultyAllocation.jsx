@@ -12,6 +12,8 @@ import Dropdown from "../../components/Dropdown";
 import Button from "../../components/Button";
 import { BACKEND_URL } from "../../../config";
 import SessionDisplay from "../../components/SessionDisplay";
+import { fetchLatestSession } from "../../utils/fetchSession"; // adjust path if needed
+import { setSession } from "../../redux/sessionSlice";
 
 const FacultyAllocation = () => {
   const { userId, isAuthenticated, role, token, branchId } = useSelector(
@@ -27,6 +29,20 @@ const FacultyAllocation = () => {
     );
   }
   const dispatch = useDispatch();
+
+  useEffect(() => {
+  const loadSession = async () => {
+    try {
+      const session = await fetchLatestSession(token);
+      dispatch(setSession(session));
+    } catch (error) {
+      console.error("Failed to load session", error);
+    }
+  };
+
+  loadSession();
+}, [dispatch, token]);
+
   const handleLogout = () => {
     logoutUser(dispatch);
   };

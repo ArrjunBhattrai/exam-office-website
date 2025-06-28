@@ -57,7 +57,7 @@ const StudentDataUpload = () => {
   const fetchCoursesByBranch = async (branchId) => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/course/`,
+        `${BACKEND_URL}/api/course/?branch_id=${branchId}`,
         {
           method: "GET",
           headers: { authorization: token, "Content-Type": "application/json" },

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Plus, Edit2, Trash2, UserPlus } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Trash2 } from "lucide-react";
 import { Toaster, toast } from "react-hot-toast";
 import { BACKEND_URL } from "../../../config";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,6 +11,8 @@ import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import RedFooter from "../../components/RedFooter";
 import "./admin.css";
 import SessionDisplay from "../../components/SessionDisplay";
+import { fetchLatestSession } from "../../utils/fetchSession"; // adjust path if needed
+import { setSession } from "../../redux/sessionSlice";
 
 const BranchManagement = () => {
   const { userId, role, token, isAuthenticated } = useSelector(
@@ -27,10 +29,23 @@ const BranchManagement = () => {
   }
 
   const dispatch = useDispatch();
+
+  useEffect(() => {
+  const loadSession = async () => {
+    try {
+      const session = await fetchLatestSession(token);
+      dispatch(setSession(session));
+    } catch (error) {
+      console.error("Failed to load session", error);
+    }
+  };
+
+  loadSession();
+}, [dispatch, token]);
+
   const handleLogout = () => {
     logoutUser(dispatch);
   };
-  const currentSession = useSelector((state) => state.session.currentSession);
 
   const [branches, setBranches] = useState([]);
   const [formData, setFormData] = useState({

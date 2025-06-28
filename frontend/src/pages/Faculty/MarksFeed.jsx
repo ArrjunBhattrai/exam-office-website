@@ -13,6 +13,8 @@ import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import "./faculty.css";
 import { BACKEND_URL } from "../../../config";
 import SessionDisplay from "../../components/SessionDisplay";
+import { fetchLatestSession } from "../../utils/fetchSession"; // adjust path if needed
+import { setSession } from "../../redux/sessionSlice";
 
 function MarksFeed() {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -28,12 +30,26 @@ function MarksFeed() {
     );
   }
   const dispatch = useDispatch();
+
+  useEffect(() => {
+  const loadSession = async () => {
+    try {
+      const session = await fetchLatestSession(token);
+      dispatch(setSession(session));
+    } catch (error) {
+      console.error("Failed to load session", error);
+    }
+  };
+
+  loadSession();
+}, [dispatch, token]);
+
   const handleLogout = () => {
     logoutUser(dispatch);
   };
 
   const [assignedSubjects, setAssignedSubjects] = useState([]);
-  const [selectedSubject, setSelectedSubject] = useState({});
+  const [selectedSubject, setSelectedSubject] = useState("");
   const [component, setComponent] = useState("");
   const [subComponent, setSubComponent] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -45,16 +61,42 @@ function MarksFeed() {
   const [savedMarks, setSavedMarks] = useState({});
   const [inputWarnings, setInputWarnings] = useState({});
 
-  const subjectOptions = assignedSubjects.length
-    ? assignedSubjects.map((subject) => ({
-        value: JSON.stringify({
-          subject_id: subject.subject_id,
-          subject_type: subject.subject_type,
-          subject_name: subject.subject_name,
-        }),
-        label: `${subject.subject_id} -${subject.subject_type.charAt(0)}`,
-      }))
-    : [{ value: "", label: "No subjects assigned" }];
+  const mergedSubjects = {};
+
+assignedSubjects.forEach((subject) => {
+  const key = `${subject.subject_id}-${subject.subject_type}`;
+
+  if (!mergedSubjects[key]) {
+    mergedSubjects[key] = {
+      ...subject,
+      sections: Array.isArray(subject.sections)
+        ? [...subject.sections]
+        : [subject.sections],
+    };
+  } else {
+    const existingSections = mergedSubjects[key].sections || [];
+    const newSections = Array.isArray(subject.sections)
+      ? subject.sections
+      : [subject.sections];
+
+    mergedSubjects[key].sections = Array.from(
+      new Set([...existingSections, ...newSections])
+    );
+  }
+});
+
+const subjectOptions = Object.values(mergedSubjects).length
+  ? Object.values(mergedSubjects).map((subject) => ({
+      value: JSON.stringify({
+        subject_id: subject.subject_id,
+        subject_type: subject.subject_type,
+        subject_name: subject.subject_name,
+      }),
+      label: `${subject.subject_id} - ${subject.subject_type.charAt(0)} - ${
+        subject.sections?.join(", ") || ""
+      }`,
+    }))
+  : [{ value: "", label: "No subjects assigned" }];
 
   const componentMap = {
     Elective: ["CW", "Theory"],
@@ -75,29 +117,33 @@ function MarksFeed() {
 
   const subComponentOptions = component ? subComponentMap[component] || [] : [];
 
-  const fetchAssignedSubjects = async () => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/subject/${userId}`, {
-        method: "GET",
-        headers: {
-          authorization: token,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch assigned Subjects");
-      }
-
-      const data = await response.json();
-      setAssignedSubjects(data.subjects);
-    } catch (error) {
-      toast.error(error.message || "Failed to fetch Assigned Subjects");
-    }
-  };
   useEffect(() => {
-    fetchAssignedSubjects();
-  }, [token]);
+    const fetchAssignedSubjects = async () => {
+      console.log("Fetching assigned subjects...");
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/subject/${userId}`, {
+          method: "GET",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch assigned Subjects");
+        }
+
+        const data = await response.json();
+        console.log("Received subjects:", data.subjects);
+        setAssignedSubjects(data.subjects);
+      } catch (error) {
+        toast.error(error.message || "Failed to fetch Assigned Subjects");
+      }
+    };
+
+    if (userId && token) fetchAssignedSubjects();
+  }, [userId, token]);
 
   const fetchCos = async () => {
     try {
@@ -663,7 +709,9 @@ function MarksFeed() {
                       <Dropdown
                         label="Subject"
                         options={subjectOptions}
-                        selectedValue={JSON.stringify(selectedSubject)}
+                        selectedValue={
+                          selectedSubject ? JSON.stringify(selectedSubject) : ""
+                        }
                         onChange={(value) => {
                           const parsedValue = JSON.parse(value);
                           setSelectedSubject(parsedValue);

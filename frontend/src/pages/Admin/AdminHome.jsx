@@ -35,6 +35,12 @@ const AdminHome = () => {
         const res = await fetch(`${BACKEND_URL}/api/session/latest`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+
+        if (!res.ok) {
+          dispatch(clearSession());
+          return;
+        }
+
         const data = await res.json();
         dispatch(
           setSession({
@@ -46,6 +52,7 @@ const AdminHome = () => {
         );
       } catch (err) {
         console.error("Session fetch failed", err);
+         dispatch(clearSession());
       }
     };
 
@@ -118,10 +125,7 @@ const AdminHome = () => {
                   Edit Info
                 </button>
 
-                <button
-                  className="icon-btn"
-                  onClick={handleLogout}
-                >
+                <button className="icon-btn" onClick={handleLogout}>
                   <FaSignOutAlt className="icon" />
                   Logout
                 </button>
