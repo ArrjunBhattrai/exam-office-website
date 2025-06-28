@@ -47,8 +47,9 @@ const SessionManagement = () => {
   const handleLogout = () => {
     logoutUser(dispatch);
   };
+
   const monthNames = [
-    "", // monthNames[0] will be unused since months start from 1
+    "",
     "January",
     "February",
     "March",
@@ -333,7 +334,7 @@ const SessionManagement = () => {
 
                     <button
                       className="upload-button"
-                      onClick={handleAddSession}
+                      onClick={() => handleAddSession}
                     >
                       Add Session
                     </button>
@@ -457,19 +458,6 @@ const SessionManagement = () => {
                     />
                     Elective Subjects
                   </label>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={dataToDownload.subjectCOs}
-                      onChange={(e) =>
-                        setDataToDownload({
-                          ...dataToDownload,
-                          subjectCOs: e.target.checked,
-                        })
-                      }
-                    />
-                    Subject COs
-                  </label>
                 </div>
 
                 <div className="checkbox-group">
@@ -503,43 +491,6 @@ const SessionManagement = () => {
                 </div>
 
                 <div className="checkbox-group">
-                  <strong>Test Components</strong>
-                  {testComponents.map((component) => {
-                    const label = component.sub_component_name
-                      ? `${component.component_name} (${component.sub_component_name})`
-                      : component.component_name;
-
-                    const key = `${component.component_name}::${
-                      component.sub_component_name || ""
-                    }`;
-
-                    return (
-                      <label key={key}>
-                        <input
-                          type="checkbox"
-                          checked={selectedComponents.includes(key)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedComponents([
-                                ...selectedComponents,
-                                key,
-                              ]);
-                            } else {
-                              setSelectedComponents(
-                                selectedComponents.filter(
-                                  (item) => item !== key
-                                )
-                              );
-                            }
-                          }}
-                        />
-                        {label}
-                      </label>
-                    );
-                  })}
-                </div>
-
-                <div className="checkbox-group">
                   <strong>Students</strong>
                   <label>
                     <input
@@ -553,19 +504,6 @@ const SessionManagement = () => {
                       }
                     />
                     Enrolled Students
-                  </label>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={dataToDownload.studentElectives}
-                      onChange={(e) =>
-                        setDataToDownload({
-                          ...dataToDownload,
-                          studentElectives: e.target.checked,
-                        })
-                      }
-                    />
-                    Student Electives (From Elective Data)
                   </label>
                 </div>
               </div>
