@@ -9,10 +9,23 @@ import RedHeader from "../../components/RedHeader";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import { BACKEND_URL } from "../../../config";
 import "./faculty.css";
-import SessionDisplay from "../../components/SessionDisplay";
 import { fetchLatestSession } from "../../utils/fetchSession"; 
-import { setSession } from "../../redux/sessionSlice";
 
+const monthNames = [
+  "",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 const ViewSubjects = () => {
   const { userId, isAuthenticated, role, token, branchId } = useSelector(
@@ -28,20 +41,24 @@ const ViewSubjects = () => {
     );
   }
 
+  const [session, setSession] = useState(null);
+  const [error, setError] = useState("");
+
   const dispatch = useDispatch();
 
   useEffect(() => {
-  const loadSession = async () => {
-    try {
-      const session = await fetchLatestSession(token);
-      dispatch(setSession(session));
-    } catch (error) {
-      console.error("Failed to load session", error);
-    }
-  };
+    const loadSession = async () => {
+      try {
+        const data = await fetchLatestSession(token);
+        setSession(data);
+      } catch (err) {
+        setError("No current session found");
+        setSession(null);
+      }
+    };
 
-  loadSession();
-}, [dispatch, token]);
+    loadSession();
+  }, [token]);
 
   const handleLogout = () => {
     logoutUser(dispatch);
@@ -201,8 +218,14 @@ const ViewSubjects = () => {
               <div>
                 <div className="fac-alloc">
                   <h3>View Assigned Subjects</h3>
-                  <SessionDisplay className="session-text" />
-
+                  {session ? (
+                  <p className="session-text">
+                    Current Session: {monthNames[session.start_month]} {session.start_year} -{" "}
+                    {monthNames[session.end_month]} {session.end_year}
+                  </p>
+                ) : (
+                  <p className="session-text">{error}</p>
+                )}
                   <span className="box-overlay-text">Select to view</span>
                   <div className="faculty-box">
                     <h4>Assigned Subjects Table</h4>
