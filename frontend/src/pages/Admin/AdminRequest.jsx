@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useDispatch,useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../utils/logout";
 import "./admin.css";
 import Sidebar from "../../components/Sidebar";
@@ -28,17 +28,17 @@ const AdminRequest = () => {
   };
 
   useEffect(() => {
-  const loadSession = async () => {
-    try {
-      const session = await fetchLatestSession(token);
-      dispatch(setSession(session));
-    } catch (error) {
-      console.error("Failed to load session", error);
-    }
-  };
+    const loadSession = async () => {
+      try {
+        const session = await fetchLatestSession(token);
+        dispatch(setSession(session));
+      } catch (error) {
+        console.error("Failed to load session", error);
+      }
+    };
 
-  loadSession();
-}, [dispatch, token]);
+    loadSession();
+  }, [dispatch, token]);
 
   const [requests, setRequests] = useState([]);
   const [selectedReason, setSelectedReason] = useState("");
@@ -159,10 +159,7 @@ const AdminRequest = () => {
                   <FaPen className="icon" />
                   Edit Info
                 </button>
-                <button
-                  className="icon-btn"
-                  onClick={handleLogout}
-                >
+                <button className="icon-btn" onClick={handleLogout}>
                   <FaSignOutAlt className="icon" />
                   Logout
                 </button>
@@ -187,7 +184,6 @@ const AdminRequest = () => {
 
                   <SessionDisplay className="session-text" />
 
-
                   <span className="box-overlay-text">View request</span>
 
                   <div className="faculty-box">
@@ -209,36 +205,54 @@ const AdminRequest = () => {
                           <tr key={req.request_id}>
                             <td>{req.request_id}</td>
                             <td>
-                              {req.faculty_id} - {req.faculty_name}
+                              {req.faculty_id}
+                              {req.faculty_name && ` - ${req.faculty_name}`}
                             </td>
+
                             <td>{req.subject_name}</td>
                             <td>{req.subject_type}</td>
                             <td>{req.component_name}</td>
                             <td>{req.sub_component_name}</td>
                             <td>{req.status}</td>
                             <td>
-                              <Button
-                                text="View"
-                                onClick={() =>
-                                  handleView(
-                                    req.reason,
-                                    req.request_id,
-                                    req.enrollment_nos
-                                  )
-                                }
-                              />
-                              <Button
-                                text="Approve"
-                                onClick={() =>
-                                  handleUpdateStatus(req.request_id, "Approved")
-                                }
-                              />
-                              <Button
-                                text="Reject"
-                                onClick={() =>
-                                  handleUpdateStatus(req.request_id, "Rejected")
-                                }
-                              />
+                              {["Approved", "Rejected"].includes(req.status) ? (
+                                <span
+                                  style={{ color: "green", fontWeight: "bold" }}
+                                >
+                                  Action Completed
+                                </span>
+                              ) : (
+                                <>
+                                  <Button
+                                    text="View"
+                                    onClick={() =>
+                                      handleView(
+                                        req.reason,
+                                        req.request_id,
+                                        req.enrollment_nos
+                                      )
+                                    }
+                                  />
+                                  <Button
+                                    text="Approve"
+                                    onClick={() =>
+                                      handleUpdateStatus(
+                                        req.request_id,
+                                        "Approved"
+                                      )
+                                    }
+                                  />
+                                  <Button
+                                    text="Reject"
+                                    onClick={() =>
+                                      handleUpdateStatus(
+                                        req.request_id,
+                                        "Rejected"
+                                      )
+                                    }
+                                  />
+                                </>
+                              )}
                             </td>
                           </tr>
                         ))}
