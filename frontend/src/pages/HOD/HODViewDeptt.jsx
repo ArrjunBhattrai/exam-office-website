@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch,useSelector } from "react-redux";
+import ReactModal from "react-modal";
+import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
+import { Toaster, toast } from "react-hot-toast";
 import "./hod.css";
 import { BACKEND_URL } from "../../../config";
 import { logoutUser } from "../../utils/logout";
@@ -9,12 +12,8 @@ import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
 import Button from "../../components/Button";
-import ReactModal from "react-modal";
-import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
-import { Toaster, toast } from "react-hot-toast";
 import SessionDisplay from "../../components/SessionDisplay";
-import { fetchLatestSession } from "../../utils/fetchSession"; // adjust path if needed
-import { setSession } from "../../redux/sessionSlice";
+import { fetchLatestSession } from "../../utils/fetchSession"; 
 
 const HODViewDeptt = () => {
   const { userId, isAuthenticated, role, token, branchId } = useSelector(
@@ -151,6 +150,7 @@ const HODViewDeptt = () => {
         }
       );
       const data = await res.json();
+      console.log(data);
       if (res.ok) {
         setEnrolledStudents(data || []);
         setStudentsModalOpen(true);

@@ -12,7 +12,7 @@ import "./faculty.css";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import { BACKEND_URL } from "../../../config";
 import SessionDisplay from "../../components/SessionDisplay";
-import { fetchLatestSession } from "../../utils/fetchSession"; // adjust path if needed
+import { fetchLatestSession } from "../../utils/fetchSession"; 
 import { setSession } from "../../redux/sessionSlice";
 
 const FacCorrectionReq = () => {
@@ -145,6 +145,7 @@ const FacCorrectionReq = () => {
       }
 
       const data = await response.json();
+
       setAssignedSubjects(data.subjects);
     } catch (error) {
       toast.error(error.message || "Failed to fetch Assigned Subjects");
@@ -449,6 +450,7 @@ const FacCorrectionReq = () => {
                   onChange={(value) => {
                     const parsed = JSON.parse(value);
                     setSelectedSubject(parsed);
+                    console.log(selectedSubject);
                     setComponent("");
                     setSubComponent("");
                   }}

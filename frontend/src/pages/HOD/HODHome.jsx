@@ -8,7 +8,7 @@ import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import SessionDisplay from "../../components/SessionDisplay";
-import { fetchLatestSession } from "../../utils/fetchSession"; // adjust path if needed
+import { fetchLatestSession } from "../../utils/fetchSession"; 
 import { setSession } from "../../redux/sessionSlice";
 
 const HODHome = () => {
