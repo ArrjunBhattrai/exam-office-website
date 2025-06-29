@@ -107,6 +107,7 @@ const getCorrectionRequests = async (req, res) => {
         "mur.reason",
         "mur.form_status",
         "mur.status",
+        "mur.faculty_id",
         "mus.enrollment_no"
       )
       .where("mur.session_id", session_id)

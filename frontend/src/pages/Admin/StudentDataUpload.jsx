@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useDispatch,useSelector } from "react-redux";
-import {logoutUser} from "../../utils/logout"
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../../utils/logout";
 import { Toaster, toast } from "react-hot-toast";
 import { BACKEND_URL } from "../../../config";
 import "./admin.css";
@@ -29,7 +29,7 @@ const StudentDataUpload = () => {
   const handleLogout = () => {
     logoutUser(dispatch);
   };
-  
+
   const [branches, setBranches] = useState([]);
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -152,13 +152,11 @@ const StudentDataUpload = () => {
       );
       const data = await response.json();
       const courses = data.courses || [];
-       const matchedCourse = courses.find(
-      (c) =>
-        c.course_id === courseId &&
-        c.specialization === specialization
-    );
+      const matchedCourse = courses.find(
+        (c) => c.course_id === courseId && c.specialization === specialization
+      );
 
-    setSections(matchedCourse?.sections || []);
+      setSections(matchedCourse?.sections || []);
     } catch (err) {
       toast.error(err.message || "Failed to fetch sections");
     }
@@ -232,10 +230,7 @@ const StudentDataUpload = () => {
                   <FaPen className="icon" />
                   Edit Info
                 </button>
-                <button
-                  className="icon-btn"
-                  onClick={handleLogout}
-                >
+                <button className="icon-btn" onClick={handleLogout}>
                   <FaSignOutAlt className="icon" />
                   Logout
                 </button>
@@ -283,9 +278,16 @@ const StudentDataUpload = () => {
 
                       <Dropdown
                         label="Section"
-                        options={sections.map((s) => ({ value: s, label: s }))}
+                        options={
+                          sections.length
+                            ? sections.map((s) => ({ value: s, label: s }))
+                            : [{ value: "", label: "No sections available" }]
+                        }
                         selectedValue={selectedSection}
-                        onChange={setSelectedSection}
+                        onChange={(val) => {
+                          if (sections.length > 0) setSelectedSection(val);
+                        }}
+                        disabled={sections.length === 0}
                       />
                     </div>
 
@@ -299,7 +301,11 @@ const StudentDataUpload = () => {
                       />
                       <button
                         className="upload-button"
-                        disabled={!selectedCourse || !selectedBranch || (sections.length > 0 && !selectedSection)}
+                        disabled={
+                          !selectedCourse ||
+                          !selectedBranch ||
+                          (sections.length > 0 && !selectedSection)
+                        }
                         onClick={handleUpload}
                       >
                         Upload

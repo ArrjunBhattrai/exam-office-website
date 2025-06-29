@@ -42,7 +42,7 @@ function App() {
           <Route path="/edit-user-information" element={<EditProfile />} />
 
           <Route path="/admin/home" element={<AdminHome />} />
-          <Route path="/admin/session-management" lement={<SessionManagement />} />
+          <Route path="/admin/session-management" element={<SessionManagement />} />
           <Route path="/admin/branch-management" element={<BranchManagement />} />
           <Route path="/admin/course-management" element={<CourseManagement />} />
           <Route path="/admin/subject-data-upload" element={<SubjectDataUpload />} />
@@ -55,7 +55,7 @@ function App() {
           <Route path="/hod/department-details" element={<HODViewDeptt />} />
           <Route path="/hod/elective-data" element={<ElectiveDataUpload />} />
           <Route path="/hod/registration-request" element={<RegistrationRequest />} />
-          
+
           <Route path="/faculty/home" element={<FacultyHome />} />
           <Route path="/faculty/view-subjects" element={<ViewSubjects />} />
           <Route path="/faculty/marks-feed" element={<MarksFeed />} />
