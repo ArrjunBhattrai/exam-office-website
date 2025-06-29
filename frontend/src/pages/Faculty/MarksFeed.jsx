@@ -91,10 +91,9 @@ const subjectOptions = Object.values(mergedSubjects).length
         subject_id: subject.subject_id,
         subject_type: subject.subject_type,
         subject_name: subject.subject_name,
+        sections: subject.sections,
       }),
-      label: `${subject.subject_id} - ${subject.subject_type.charAt(0)} - ${
-        subject.sections?.join(", ") || ""
-      }`,
+      label: `${subject.subject_id} - ${subject.subject_type.charAt(0)} - ${subject.sections.join(", ")}`,
     }))
   : [{ value: "", label: "No subjects assigned" }];
 

@@ -26,23 +26,23 @@ const FacCorrectionReq = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-  const loadSession = async () => {
-    try {
-      const session = await fetchLatestSession(token);
-      dispatch(setSession(session));
-    } catch (error) {
-      console.error("Failed to load session", error);
-    }
-  };
+    const loadSession = async () => {
+      try {
+        const session = await fetchLatestSession(token);
+        dispatch(setSession(session));
+      } catch (error) {
+        console.error("Failed to load session", error);
+      }
+    };
 
-  loadSession();
-}, [dispatch, token]);
+    loadSession();
+  }, [dispatch, token]);
 
   const handleLogout = () => {
     logoutUser(dispatch);
   };
   const [assignedSubjects, setAssignedSubjects] = useState([]);
-  const [selectedSubject, setSelectedSubject] = useState({});
+  const [selectedSubject, setSelectedSubject] = useState("");
   const [component, setComponent] = useState("");
   const [subComponent, setSubComponent] = useState("");
   const [reason, setReason] = useState("");
@@ -56,6 +56,7 @@ const FacCorrectionReq = () => {
   const [editingRequest, setEditingRequest] = useState(null);
   const [marks, setMarks] = useState([]);
   const [testDetails, setTestDetails] = useState([]);
+  const [componentOptions, setComponentOptions] = useState([])
 
   const componentMap = {
     Theory: ["CW", "Theory"],
@@ -69,20 +70,63 @@ const FacCorrectionReq = () => {
     Practical: ["External Viva", "External Submission"],
   };
 
-  const subjectOptions = assignedSubjects.length
-    ? assignedSubjects.map((subject) => ({
-        value: JSON.stringify({
-          subject_id: subject.subject_id,
-          subject_type: subject.subject_type,
-          subject_name: subject.subject_name,
-        }),
-        label: `${subject.subject_name} - ${subject.subject_type}`,
-      }))
-    : [{ value: "", label: "No subjects assigned" }];
+  useEffect(() => {
+  if (selectedSubject?.subject_type) {
+    setComponentOptions(componentMap[selectedSubject.subject_type] || []);
+  } else {
+    setComponentOptions([]);
+  }
+}, [selectedSubject]);
 
-  const componentOptions = selectedSubject?.subject_type
-    ? componentMap[selectedSubject.subject_type] || []
-    : [];
+
+  const mergedSubjects = {};
+
+  assignedSubjects.forEach((subject) => {
+    const key = `${subject.subject_id}-${subject.subject_type}`;
+
+    if (!mergedSubjects[key]) {
+      mergedSubjects[key] = {
+        ...subject,
+        sections: Array.isArray(subject.sections)
+          ? [...subject.sections]
+          : subject.sections
+          ? [subject.sections]
+          : [],
+      };
+    } else {
+      const existingSections = mergedSubjects[key].sections || [];
+      const newSections = Array.isArray(subject.sections)
+        ? subject.sections
+        : subject.sections
+        ? [subject.sections]
+        : [];
+
+      mergedSubjects[key].sections = Array.from(
+        new Set([...existingSections, ...newSections])
+      );
+    }
+  });
+
+  const subjectOptions = Object.values(mergedSubjects).length
+    ? Object.values(mergedSubjects).map((subject) => {
+        const sections =
+          Array.isArray(subject.sections) && subject.sections.length > 0
+            ? subject.sections.join(", ")
+            : "No section";
+
+        return {
+          value: JSON.stringify({
+            subject_id: subject.subject_id,
+            subject_type: subject.subject_type,
+            subject_name: subject.subject_name,
+            sections: subject.sections ?? [],
+          }),
+          label: `${subject.subject_id} - ${subject.subject_type.charAt(
+            0
+          )} - ${sections}`,
+        };
+      })
+    : [{ value: "", label: "No subjects assigned" }];
 
   const subComponentOptions = component ? subComponentMap[component] || [] : [];
 
@@ -294,10 +338,7 @@ const FacCorrectionReq = () => {
                   <FaPen className="icon" />
                   Edit Info
                 </button>
-                <button
-                  className="icon-btn"
-                  onClick={handleLogout}
-                >
+                <button className="icon-btn" onClick={handleLogout}>
                   <FaSignOutAlt className="icon" />
                   Logout
                 </button>
@@ -402,7 +443,9 @@ const FacCorrectionReq = () => {
                 <Dropdown
                   label="Subject"
                   options={subjectOptions}
-                  selectedValue={JSON.stringify(selectedSubject)}
+                  selectedValue={
+                    selectedSubject ? JSON.stringify(selectedSubject) : ""
+                  }
                   onChange={(value) => {
                     const parsed = JSON.parse(value);
                     setSelectedSubject(parsed);
