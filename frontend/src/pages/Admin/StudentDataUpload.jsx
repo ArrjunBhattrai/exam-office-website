@@ -331,6 +331,10 @@ const StudentDataUpload = () => {
                       />
                     </div>
 
+                    <div>
+                    <p>Headers of the file: Enrollment Number, Student Name, Semester, Status</p>
+                  </div>
+
                     <div className="upload-container">
                       <input
                         key={fileInputKey}

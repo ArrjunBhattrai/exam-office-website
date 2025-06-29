@@ -45,7 +45,7 @@ const AdminRequest = () => {
     logoutUser(dispatch);
   };
 
-  seEffect(() => {
+  useEffect(() => {
     const loadSession = async () => {
       try {
         const data = await fetchLatestSession(token);

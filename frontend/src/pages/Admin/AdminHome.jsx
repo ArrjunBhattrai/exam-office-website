@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../utils/logout";
 import "./admin.css";
@@ -7,7 +7,7 @@ import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
-import fetchLatestSession from "../../utils/fetchSession";
+import {fetchLatestSession} from "../../utils/fetchSession";
 
 const monthNames = [
   "",

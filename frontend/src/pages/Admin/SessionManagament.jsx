@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { Plus, Edit2, Trash2, UserPlus } from "lucide-react";
-import { Toaster, toast } from "react-hot-toast";
+import { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 import { BACKEND_URL } from "../../../config";
-import { useDispatch,useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../utils/logout";
 import RedHeader from "../../components/RedHeader";
 import ActivityHeader from "../../components/ActivityHeader";
@@ -11,7 +10,7 @@ import Dropdown from "../../components/Dropdown";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import RedFooter from "../../components/RedFooter";
 import "./admin.css";
-import { fetchLatestSession } from "../../utils/fetchSession"; 
+import { fetchLatestSession } from "../../utils/fetchSession";
 import { ToastContainer } from "react-toastify";
 
 const monthNames = [
@@ -63,7 +62,6 @@ const SessionManagement = () => {
     loadSession();
   }, [token]);
 
-  
   const handleLogout = () => {
     logoutUser(dispatch);
   };
@@ -95,6 +93,7 @@ const SessionManagement = () => {
   const [selectedSessionId, setSelectedSessionId] = useState("");
   const [selectedBranchId, setSelectedBranchId] = useState("");
   const [selectedCourseId, setSelectedCourseId] = useState("");
+  const [selectedSpecialization, setSelectedSpecialization] = useState("");
   const [allBranches, setAllBranches] = useState([]);
   const [semesters, setSemesters] = useState([]);
   const [selectedSemester, setSelectedSemester] = useState("");
@@ -217,10 +216,12 @@ const SessionManagement = () => {
       const semesterRes = await fetch(`${BACKEND_URL}/api/semester/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const componentRes = await fetch(`${BACKEND_URL}/api/assesment/components`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-      
+      const componentRes = await fetch(
+        `${BACKEND_URL}/api/assesment/components`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       const sessionsData = await sessionRes.json();
       const branches = await branchRes.json();
@@ -234,7 +235,6 @@ const SessionManagement = () => {
       setAllCourses(courses.courses || []);
       setSemesters(semesters || []);
       setTestComponents(componentData.components || []);
-
     } catch (err) {
       toast.error("Failed to load session, branch, semester or course data");
     }
@@ -298,10 +298,7 @@ const SessionManagement = () => {
                   <FaPen className="icon" />
                   Edit Info
                 </button>
-                <button
-                  className="icon-btn"
-                  onClick={handleLogout}
-                >
+                <button className="icon-btn" onClick={handleLogout}>
                   <FaSignOutAlt className="icon" />
                   Logout
                 </button>
@@ -323,8 +320,9 @@ const SessionManagement = () => {
                 <h3>Session Management</h3>
                 {session ? (
                   <p className="session-text">
-                    Current Session: {monthNames[session.start_month]} {session.start_year} -{" "}
-                    {monthNames[session.end_month]} {session.end_year}
+                    Current Session: {monthNames[session.start_month]}{" "}
+                    {session.start_year} - {monthNames[session.end_month]}{" "}
+                    {session.end_year}
                   </p>
                 ) : (
                   <p className="session-text">{error}</p>
@@ -359,7 +357,7 @@ const SessionManagement = () => {
 
                     <button
                       className="upload-button"
-                      onClick={() => handleAddSession}
+                      onClick={() => handleAddSession()}
                     >
                       Add Session
                     </button>
@@ -426,6 +424,11 @@ const SessionManagement = () => {
                   const selectedCourse = filteredCourses.find(
                     (c) => c.course_id === courseId
                   );
+                  if (selectedCourse) {
+                    setSelectedSpecialization(
+                      selectedCourse.specialization || ""
+                    );
+                  }
                   if (selectedBranchId && selectedCourse?.specialization) {
                     fetchSections(
                       selectedBranchId,
@@ -435,7 +438,7 @@ const SessionManagement = () => {
                   }
                 }}
               />
-{/*
+              {/*
               <Dropdown
                 label="Semester"
                 options={semesters.map((s) => ({
@@ -551,14 +554,12 @@ const SessionManagement = () => {
                         session_id: selectedSessionId,
                         branch_id: selectedBranchId,
                         course_id: selectedCourseId,
+                        specialization: selectedSpecialization,
+                        students: dataToDownload.students,
                         subjects: dataToDownload.subjects,
                         electives: dataToDownload.electives,
-                        subjectCOs: dataToDownload.subjectCOs,
-                        testMarks: dataToDownload.testMarks,
-                        coMarks: dataToDownload.coMarks,
+                        marks: dataToDownload.testMarks,
                         atktMarks: dataToDownload.atktMarks,
-                        students: dataToDownload.students,
-                        studentElectives: dataToDownload.studentElectives,
                       }).toString();
 
                       const res = await fetch(
@@ -599,7 +600,7 @@ const SessionManagement = () => {
           </div>
         )}
       </div>
-      <ToastContainer/>
+      <ToastContainer />
     </div>
   );
 };

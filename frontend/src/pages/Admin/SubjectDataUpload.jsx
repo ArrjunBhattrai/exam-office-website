@@ -282,6 +282,9 @@ const SubjectDataUpload = () => {
                       onChange={setSelectedCourse}
                     />
                   </div>
+                  <div>
+                    <p>Headers of the file: Subject ID, Subject Name, Sybject Type, Semester</p>
+                  </div>
 
                   <div className="upload-container">
                     <input

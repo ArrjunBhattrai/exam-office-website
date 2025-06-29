@@ -702,10 +702,10 @@ const FacCorrectionReq = () => {
                     const res = await fetch(
                       `${BACKEND_URL}/api/request/resubmit`,
                       {
-                        method: "POST",
+                        method: "PATCH",
                         headers: {
                           "Content-Type": "application/json",
-                          authorization: token,
+                          authorization: `Bearer ${token}`,
                         },
                         body: JSON.stringify({
                           request_id: editingRequest.request_id,
