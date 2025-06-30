@@ -12,7 +12,7 @@ import "./faculty.css";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import { BACKEND_URL } from "../../../config";
 import SessionDisplay from "../../components/SessionDisplay";
-import { fetchLatestSession } from "../../utils/fetchSession"; 
+import { fetchLatestSession } from "../../utils/fetchSession";
 import { setSession } from "../../redux/sessionSlice";
 
 const FacCorrectionReq = () => {
@@ -26,17 +26,17 @@ const FacCorrectionReq = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-  const loadSession = async () => {
-    try {
-      const session = await fetchLatestSession(token);
-      dispatch(setSession(session));
-    } catch (error) {
-      console.error("Failed to load session", error);
-    }
-  };
+    const loadSession = async () => {
+      try {
+        const session = await fetchLatestSession(token);
+        dispatch(setSession(session));
+      } catch (error) {
+        console.error("Failed to load session", error);
+      }
+    };
 
-  loadSession();
-}, [dispatch, token]);
+    loadSession();
+  }, [dispatch, token]);
 
   const handleLogout = () => {
     logoutUser(dispatch);
@@ -56,7 +56,6 @@ const FacCorrectionReq = () => {
   const [editingRequest, setEditingRequest] = useState(null);
   const [marks, setMarks] = useState([]);
   const [testDetails, setTestDetails] = useState([]);
-
   const componentMap = {
     Theory: ["CW", "Theory"],
     Practical: ["SW", "Practical"],
@@ -79,7 +78,7 @@ const FacCorrectionReq = () => {
         label: `${subject.subject_name} - ${subject.subject_type}`,
       }))
     : [{ value: "", label: "No subjects assigned" }];
-   
+
   const componentOptions = selectedSubject?.subject_type
     ? componentMap[selectedSubject.subject_type] || []
     : [];
@@ -124,8 +123,9 @@ const FacCorrectionReq = () => {
         const data = await response.json();
         if (!response.ok)
           throw new Error(data.error || "Failed to load past requests");
-
+        console.log(data);
         setPastRequests(data.requests || []);
+        console.log(pastRequests);
       } catch (err) {
         toast.error("Could not fetch past requests");
         console.error(err);
@@ -269,10 +269,6 @@ const FacCorrectionReq = () => {
                     name: "Make Correction Request",
                     path: "/faculty/correction-request",
                   },
-                  {
-                    name: "Edit Personal Info",
-                    path: "/faculty/edit-info",
-                  },
                 ]}
               />
             </div>
@@ -295,10 +291,7 @@ const FacCorrectionReq = () => {
                   <FaPen className="icon" />
                   Edit Info
                 </button>
-                <button
-                  className="icon-btn"
-                  onClick={handleLogout}
-                >
+                <button className="icon-btn" onClick={handleLogout}>
                   <FaSignOutAlt className="icon" />
                   Logout
                 </button>
@@ -336,32 +329,44 @@ const FacCorrectionReq = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {pastRequests.map((req) => (
-                          <tr key={req.request_id}>
-                            <td>{req.subject_id}</td>
-                            <td>{req.subject_type}</td>
-                            <td>{req.component_name || "-"}</td>
-                            <td>{req.sub_component_name || "-"}</td>
-                            <td>{req.status}</td>
-                            <td>
-                              {req.status === "Rejected" && (
-                                <span>Rejected</span>
-                              )}
-                              {req.status === "Pending" && (
-                                <Button
-                                  text="Withdraw"
-                                  onClick={() => handleWithdraw(req.request_id)}
-                                />
-                              )}
-                              {req.status === "Approved" && (
-                                <Button
-                                  text="Proceed"
-                                  onClick={() => handleProceed(req)}
-                                />
-                              )}
-                            </td>
-                          </tr>
-                        ))}
+                        {pastRequests.map((req, index) => {
+                          if (!req || !req.subject_id) {
+                            console.warn(
+                              `Skipping invalid request at index ${index}:`,
+                              req
+                            );
+                            return null;
+                          }
+
+                          return (
+                            <tr key={req.request_id}>
+                              <td>{req.subject_id}</td>
+                              <td>{req.subject_type}</td>
+                              <td>{req.component_name || "-"}</td>
+                              <td>{req.sub_component_name || "-"}</td>
+                              <td>{req.status}</td>
+                              <td>
+                                {req.status === "Rejected" && (
+                                  <span>Rejected</span>
+                                )}
+                                {req.status === "Pending" && (
+                                  <Button
+                                    text="Withdraw"
+                                    onClick={() =>
+                                      handleWithdraw(req.request_id)
+                                    }
+                                  />
+                                )}
+                                {req.status === "Approved" && (
+                                  <Button
+                                    text="Proceed"
+                                    onClick={() => handleProceed(req)}
+                                  />
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   )}
@@ -545,6 +550,16 @@ const FacCorrectionReq = () => {
                           toast.error("Please select at least one student");
                           return;
                         }
+
+                        if (
+                          !selectedSubject ||
+                          !selectedSubject.subject_id ||
+                          !selectedSubject.subject_type
+                        ) {
+                          toast.error("Please select a subject");
+                          return;
+                        }
+
                         const res = await fetch(`${BACKEND_URL}/api/request/`, {
                           method: "POST",
                           headers: {
@@ -574,7 +589,7 @@ const FacCorrectionReq = () => {
                         setStage(1);
                         setDraftStatus("");
                         setSelectedSubject({});
-                        setPastRequests((prev) => [data.newRequest, ...prev]); // optional: refresh manually
+                        setPastRequests((prev) => [data.newRequest, ...prev]);
                       } catch (err) {
                         toast.error(err.message);
                         console.error(err);
@@ -633,7 +648,7 @@ const FacCorrectionReq = () => {
                     const res = await fetch(
                       `${BACKEND_URL}/api/request/resubmit`,
                       {
-                        method: "POST",
+                        method: "PATCH",
                         headers: {
                           "Content-Type": "application/json",
                           authorization: token,

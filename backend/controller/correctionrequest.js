@@ -60,20 +60,17 @@ const submitCorrectionRequest = async (req, res) => {
 
     await db.transaction(async (trx) => {
       // Insert main request and get ID
-      const [request_id] = await trx("marks_update_request").insert(
-        {
-          faculty_id: facultyId,
-          subject_id,
-          subject_type,
-          component_name,
-          sub_component_name,
-          reason,
-          form_status,
-          session_id,
-        },
-        ["request_id"]
-      );
-
+      const result = await trx("marks_update_request").insert({
+        faculty_id: facultyId,
+        subject_id,
+        subject_type,
+        component_name,
+        sub_component_name,
+        reason,
+        form_status,
+        session_id,
+      });
+      const request_id = result[0];
       // Map and insert all enrollments
       const studentRows = enrollment_nos.map((enrollment_no) => ({
         request_id,
@@ -152,7 +149,6 @@ const getCorrectionRequests = async (req, res) => {
     }, {});
 
     const response = Object.values(grouped);
-
     res.status(200).json({ requests: response });
   } catch (error) {
     console.error("Error fetching correction requests:", error);
@@ -247,11 +243,9 @@ const checkFormExists = async (req, res) => {
         .json({ message: "Form exists and can be used to raise a request." });
     } else if (form_status === "Regular") {
       if (!component_name || !sub_component_name) {
-        return res
-          .status(400)
-          .json({
-            error: "Component and Sub-component are required for Regular form.",
-          });
+        return res.status(400).json({
+          error: "Component and Sub-component are required for Regular form.",
+        });
       }
 
       const rows = await db("marks").where({

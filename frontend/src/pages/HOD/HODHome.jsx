@@ -1,6 +1,5 @@
 import { useEffect } from "react"
 import { useDispatch,useSelector } from "react-redux";
-import { useEffect } from "react";
 import "./hod.css";
 import {logoutUser} from "../../utils/logout"
 import Sidebar from "../../components/Sidebar";

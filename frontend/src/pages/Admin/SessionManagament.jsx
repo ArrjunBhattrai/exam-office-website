@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, UserPlus } from "lucide-react";
 import { Toaster, toast } from "react-hot-toast";
 import { BACKEND_URL } from "../../../config";
-import { useDispatch,useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../utils/logout";
 import RedHeader from "../../components/RedHeader";
 import ActivityHeader from "../../components/ActivityHeader";
@@ -12,7 +12,7 @@ import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import RedFooter from "../../components/RedFooter";
 import "./admin.css";
 import { setSession } from "../../redux/sessionSlice";
-import { fetchLatestSession } from "../../utils/fetchSession"; 
+import { fetchLatestSession } from "../../utils/fetchSession";
 import SessionDisplay from "../../components/SessionDisplay";
 import { ToastContainer } from "react-toastify";
 
@@ -33,17 +33,16 @@ const SessionManagement = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-  const loadSession = async () => {
-    try {
-      const session = await fetchLatestSession(token);
-      dispatch(setSession(session));
-    } catch {}
-  };
+    const loadSession = async () => {
+      try {
+        const session = await fetchLatestSession(token);
+        dispatch(setSession(session));
+      } catch {}
+    };
 
-  loadSession();
-}, [dispatch, token]);
+    loadSession();
+  }, [dispatch, token]);
 
-  
   const handleLogout = () => {
     logoutUser(dispatch);
   };
@@ -75,6 +74,7 @@ const SessionManagement = () => {
   const [selectedSessionId, setSelectedSessionId] = useState("");
   const [selectedBranchId, setSelectedBranchId] = useState("");
   const [selectedCourseId, setSelectedCourseId] = useState("");
+  const [specialization, setSpecialization] = useState("");
   const [allBranches, setAllBranches] = useState([]);
   const [semesters, setSemesters] = useState([]);
   const [selectedSemester, setSelectedSemester] = useState("");
@@ -83,14 +83,12 @@ const SessionManagement = () => {
   const [testComponents, setTestComponents] = useState([]);
   const [selectedComponents, setSelectedComponents] = useState([]);
   const [dataToDownload, setDataToDownload] = useState({
-    subjects: false,
-    electives: false,
-    subjectCOs: false,
-    testMarks: false,
-    coMarks: false,
+    studentData: false,
+    subjectData: false,
+    electiveData: false,
+    atktStudents: false,
+    marks: false,
     atktMarks: false,
-    students: false,
-    studentElectives: false,
   });
 
   const months = [
@@ -197,10 +195,12 @@ const SessionManagement = () => {
       const semesterRes = await fetch(`${BACKEND_URL}/api/semester/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const componentRes = await fetch(`${BACKEND_URL}/api/assesment/components`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-      
+      const componentRes = await fetch(
+        `${BACKEND_URL}/api/assesment/components`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       const sessionsData = await sessionRes.json();
       const branches = await branchRes.json();
@@ -214,7 +214,6 @@ const SessionManagement = () => {
       setAllCourses(courses.courses || []);
       setSemesters(semesters || []);
       setTestComponents(componentData.components || []);
-
     } catch (err) {
       toast.error("Failed to load session, branch, semester or course data");
     }
@@ -278,10 +277,7 @@ const SessionManagement = () => {
                   <FaPen className="icon" />
                   Edit Info
                 </button>
-                <button
-                  className="icon-btn"
-                  onClick={handleLogout}
-                >
+                <button className="icon-btn" onClick={handleLogout}>
                   <FaSignOutAlt className="icon" />
                   Logout
                 </button>
@@ -302,7 +298,6 @@ const SessionManagement = () => {
               <div className="fac-alloc">
                 <h3>Session Management</h3>
                 <SessionDisplay className="session-text" />
-
 
                 <span className="box-overlay-text">Add Details</span>
                 <div className="faculty-box">
@@ -398,9 +393,15 @@ const SessionManagement = () => {
                 onChange={(courseId) => {
                   setSelectedCourseId(courseId);
                   setSelectedSection(""); // reset section
+
                   const selectedCourse = filteredCourses.find(
                     (c) => c.course_id === courseId
                   );
+
+                  if (selectedCourse?.specialization) {
+                    setSpecialization(selectedCourse.specialization);
+                  }
+
                   if (selectedBranchId && selectedCourse?.specialization) {
                     fetchSections(
                       selectedBranchId,
@@ -410,24 +411,7 @@ const SessionManagement = () => {
                   }
                 }}
               />
-{/*
-              <Dropdown
-                label="Semester"
-                options={semesters.map((s) => ({
-                  label: `Semester ${s}`,
-                  value: s,
-                }))}
-                selectedValue={selectedSemester}
-                onChange={setSelectedSemester}
-              />
 
-              <Dropdown
-                label="Section"
-                options={sections.map((s) => ({ value: s, label: s }))}
-                selectedValue={selectedSection}
-                onChange={setSelectedSection}
-              />
-*/}
               <h5>Choose What to Include in Download:</h5>
               <div className="checkbox-wrapper">
                 <div className="checkbox-group">
@@ -435,28 +419,28 @@ const SessionManagement = () => {
                   <label>
                     <input
                       type="checkbox"
-                      checked={dataToDownload.subjects}
+                      checked={dataToDownload.subjectData}
                       onChange={(e) =>
                         setDataToDownload({
                           ...dataToDownload,
-                          subjects: e.target.checked,
+                          subjectData: e.target.checked,
                         })
                       }
                     />
-                    Subjects List
+                    Subject Data
                   </label>
                   <label>
                     <input
                       type="checkbox"
-                      checked={dataToDownload.electives}
+                      checked={dataToDownload.electiveData}
                       onChange={(e) =>
                         setDataToDownload({
                           ...dataToDownload,
-                          electives: e.target.checked,
+                          electiveData: e.target.checked,
                         })
                       }
                     />
-                    Elective Subjects
+                    Elective Data
                   </label>
                 </div>
 
@@ -465,15 +449,15 @@ const SessionManagement = () => {
                   <label>
                     <input
                       type="checkbox"
-                      checked={dataToDownload.coMarks}
+                      checked={dataToDownload.marks}
                       onChange={(e) =>
                         setDataToDownload({
                           ...dataToDownload,
-                          coMarks: e.target.checked,
+                          marks: e.target.checked,
                         })
                       }
                     />
-                    CO-wise Marks
+                    CO-wise Marks(of regular students)
                   </label>
                   <label>
                     <input
@@ -486,7 +470,7 @@ const SessionManagement = () => {
                         })
                       }
                     />
-                    ATKT Marks
+                    CO-wise Marks(of ATKT students)
                   </label>
                 </div>
 
@@ -495,15 +479,28 @@ const SessionManagement = () => {
                   <label>
                     <input
                       type="checkbox"
-                      checked={dataToDownload.students}
+                      checked={dataToDownload.studentData}
                       onChange={(e) =>
                         setDataToDownload({
                           ...dataToDownload,
-                          students: e.target.checked,
+                          studentData: e.target.checked,
                         })
                       }
                     />
                     Enrolled Students
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={dataToDownload.atktStudents}
+                      onChange={(e) =>
+                        setDataToDownload({
+                          ...dataToDownload,
+                          atktStudents: e.target.checked,
+                        })
+                      }
+                    />
+                    ATKT students{" "}
                   </label>
                 </div>
               </div>
@@ -526,14 +523,13 @@ const SessionManagement = () => {
                         session_id: selectedSessionId,
                         branch_id: selectedBranchId,
                         course_id: selectedCourseId,
-                        subjects: dataToDownload.subjects,
-                        electives: dataToDownload.electives,
-                        subjectCOs: dataToDownload.subjectCOs,
-                        testMarks: dataToDownload.testMarks,
-                        coMarks: dataToDownload.coMarks,
+                        specialization:specialization,
+                        students: dataToDownload.studentData,
+                        subjects: dataToDownload.subjectData,
+                        atkt: dataToDownload.atktStudents,
+                        electives: dataToDownload.electiveData,
+                        marks: dataToDownload.marks,
                         atktMarks: dataToDownload.atktMarks,
-                        students: dataToDownload.students,
-                        studentElectives: dataToDownload.studentElectives,
                       }).toString();
 
                       const res = await fetch(
@@ -574,7 +570,7 @@ const SessionManagement = () => {
           </div>
         )}
       </div>
-      <ToastContainer/>
+      <ToastContainer />
     </div>
   );
 };
