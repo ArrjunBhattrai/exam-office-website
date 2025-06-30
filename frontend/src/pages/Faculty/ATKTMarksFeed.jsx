@@ -11,9 +11,23 @@ import Button from "../../components/Button";
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 import { BACKEND_URL } from "../../../config";
 import "./faculty.css";
-import SessionDisplay from "../../components/SessionDisplay";
 import { fetchLatestSession } from "../../utils/fetchSession"; // adjust path if needed
-import { setSession } from "../../redux/sessionSlice";
+
+const monthNames = [
+  "",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 const ATKTMarksFeed = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -28,27 +42,32 @@ const ATKTMarksFeed = () => {
       </div>
     );
   }
+
+  const [session, setSession] = useState(null);
+  const [error, setError] = useState("");
+
   const dispatch = useDispatch();
 
   useEffect(() => {
-  const loadSession = async () => {
-    try {
-      const session = await fetchLatestSession(token);
-      dispatch(setSession(session));
-    } catch (error) {
-      console.error("Failed to load session", error);
-    }
-  };
+    const loadSession = async () => {
+      try {
+        const data = await fetchLatestSession(token);
+        setSession(data);
+      } catch (err) {
+        setError("No current session found");
+        setSession(null);
+      }
+    };
 
-  loadSession();
-}, [dispatch, token]);
+    loadSession();
+  }, [token]);
 
   const handleLogout = () => {
     logoutUser(dispatch);
   };
 
   const [assignedSubjects, setAssignedSubjects] = useState([]);
-  const [selectedSubject, setSelectedSubject] = useState({});
+  const [selectedSubject, setSelectedSubject] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [cos, setCos] = useState([]);
   const [selectedCos, setSelectedCos] = useState({});
@@ -626,8 +645,14 @@ const ATKTMarksFeed = () => {
               <div>
                 <div className="fac-alloc">
                   <h3>ATKT Marks Feeding</h3>
-                  <SessionDisplay className="session-text" />
-
+                 {session ? (
+                  <p className="session-text">
+                    Current Session: {monthNames[session.start_month]} {session.start_year} -{" "}
+                    {monthNames[session.end_month]} {session.end_year}
+                  </p>
+                ) : (
+                  <p className="session-text">{error}</p>
+                )}
                   <span className="box-overlay-text">Select to view</span>
                   <div className="faculty-box">
                     <Toaster position="top-right" />
@@ -635,7 +660,7 @@ const ATKTMarksFeed = () => {
                       <Dropdown
                         label="Subject"
                         options={subjectOptions}
-                        selectedValue={JSON.stringify(selectedSubject)}
+                        selectedValue={selectedSubject ? JSON.stringify(selectedSubject) : ""}
                         onChange={(value) => {
                           const parsedValue = JSON.parse(value);
                           setSelectedSubject(parsedValue);

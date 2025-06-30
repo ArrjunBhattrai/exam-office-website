@@ -1,6 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
-import sessionReducer from "./sessionSlice";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // defaults to localStorage
 import { combineReducers } from "redux";
@@ -12,7 +11,6 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   auth: authReducer,
-  session: sessionReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

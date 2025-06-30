@@ -95,6 +95,12 @@ const getCorrectionRequests = async (req, res) => {
 
     let baseQuery = db("marks_update_request as mur")
       .join("marks_update_students as mus", "mur.request_id", "mus.request_id")
+      .leftJoin("faculty", "mur.faculty_id", "faculty.faculty_id")
+      .leftJoin("subject", function () {
+        this.on("mur.subject_id", "=", "subject.subject_id")
+          .andOn("mur.subject_type", "=", "subject.subject_type")
+          .andOn("mur.session_id", "=", "subject.session_id");
+      })
       .select(
         "mur.request_id",
         "mur.subject_id",
@@ -105,6 +111,8 @@ const getCorrectionRequests = async (req, res) => {
         "mur.form_status",
         "mur.status",
         "mur.faculty_id",
+        "faculty.faculty_name",
+        "subject.subject_name",
         "mus.enrollment_no"
       )
       .where("mur.session_id", session_id)
@@ -127,6 +135,9 @@ const getCorrectionRequests = async (req, res) => {
         reason,
         form_status,
         status,
+        faculty_id,
+        faculty_name,
+        subject_name,
         enrollment_no,
       } = row;
 
@@ -140,6 +151,9 @@ const getCorrectionRequests = async (req, res) => {
           reason,
           form_status,
           status,
+          faculty_id,
+          faculty_name,
+          subject_name,
           enrollment_nos: [],
         };
       }

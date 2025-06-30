@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../utils/logout";
 import "./faculty.css";
@@ -7,9 +7,23 @@ import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
-import SessionDisplay from "../../components/SessionDisplay";
 import { fetchLatestSession } from "../../utils/fetchSession"; // adjust path if needed
-import { setSession } from "../../redux/sessionSlice";
+
+const monthNames = [
+  "",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 const FacultyHome = () => {
   const { userId, isAuthenticated, role, token, branchId } = useSelector(
@@ -25,20 +39,24 @@ const FacultyHome = () => {
     );
   }
 
+  const [session, setSession] = useState(null);
+  const [error, setError] = useState("");
+
   const dispatch = useDispatch();
 
   useEffect(() => {
     const loadSession = async () => {
       try {
-        const session = await fetchLatestSession(token);
-        dispatch(setSession(session));
-      } catch (error) {
-        console.error("Failed to load session", error);
+        const data = await fetchLatestSession(token);
+        setSession(data);
+      } catch (err) {
+        setError("No current session found");
+        setSession(null);
       }
     };
 
     loadSession();
-  }, [dispatch, token]);
+  }, [token]);
 
   const handleLogout = () => {
     logoutUser(dispatch);
@@ -112,7 +130,14 @@ const FacultyHome = () => {
                 </p>
 
                 <div className="fac-alloc">
-                  <SessionDisplay className="session-text" />
+                  {session ? (
+                  <p className="session-text">
+                    Current Session: {monthNames[session.start_month]} {session.start_year} -{" "}
+                    {monthNames[session.end_month]} {session.end_year}
+                  </p>
+                ) : (
+                  <p className="session-text">{error}</p>
+                )}
                 </div>
               </div>
             </div>

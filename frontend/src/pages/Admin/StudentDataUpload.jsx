@@ -10,7 +10,23 @@ import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
-import SessionDisplay from "../../components/SessionDisplay";
+import { fetchLatestSession } from "../../utils/fetchSession";
+
+const monthNames = [
+  "",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 const StudentDataUpload = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -25,10 +41,28 @@ const StudentDataUpload = () => {
       </div>
     );
   }
+  
+  const [session, setSession] = useState(null);
+  const [error, setError] = useState("");
+
   const dispatch = useDispatch();
   const handleLogout = () => {
     logoutUser(dispatch);
   };
+
+  useEffect(() => {
+    const loadSession = async () => {
+      try {
+        const data = await fetchLatestSession(token);
+        setSession(data);
+      } catch (err) {
+        setError("No current session found");
+        setSession(null);
+      }
+    };
+
+    loadSession();
+  }, [token]);
 
   const [branches, setBranches] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -252,8 +286,14 @@ const StudentDataUpload = () => {
                 {/* here */}
                 <div className="fac-alloc">
                   <h3>Upload Student Data</h3>
-                  <SessionDisplay className="session-text" />
-
+                  {session ? (
+                  <p className="session-text">
+                    Current Session: {monthNames[session.start_month]} {session.start_year} -{" "}
+                    {monthNames[session.end_month]} {session.end_year}
+                  </p>
+                ) : (
+                  <p className="session-text">{error}</p>
+                )}
                   <span className="box-overlay-text">Upload</span>
 
                   <div className="faculty-box">
@@ -290,6 +330,10 @@ const StudentDataUpload = () => {
                         disabled={sections.length === 0}
                       />
                     </div>
+
+                    <div>
+                    <p>Headers of the file: Enrollment Number, Student Name, Semester, Status</p>
+                  </div>
 
                     <div className="upload-container">
                       <input
