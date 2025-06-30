@@ -16,7 +16,6 @@ import SubjectDataUpload from "./pages/Admin/SubjectDataUpload";
 import StudentDataUpload from "./pages/Admin/StudentDataUpload";
 import ATKTDataUpload from "./pages/Admin/ATKTDataUpload";
 import AdminRequest from "./pages/Admin/AdminRequest";
-import AdminProgressReport from "./pages/Admin/AdminProgressReport";
 
 import HODHome from "./pages/HOD/HODHome";
 import HODViewDeptt from "./pages/HOD/HODViewDeptt";
@@ -43,53 +42,25 @@ function App() {
           <Route path="/edit-user-information" element={<EditProfile />} />
 
           <Route path="/admin/home" element={<AdminHome />} />
-          <Route
-            path="/admin/session-management"
-            element={<SessionManagement />}
-          />
-          <Route
-            path="/admin/branch-management"
-            element={<BranchManagement />}
-          />
-          <Route
-            path="/admin/course-management"
-            element={<CourseManagement />}
-          />
-          <Route
-            path="/admin/subject-data-upload"
-            element={<SubjectDataUpload />}
-          />
-          <Route
-            path="/admin/student-data-upload"
-            element={<StudentDataUpload />}
-          />
+          <Route path="/admin/session-management" element={<SessionManagement />} />
+          <Route path="/admin/branch-management" element={<BranchManagement />} />
+          <Route path="/admin/course-management" element={<CourseManagement />} />
+          <Route path="/admin/subject-data-upload" element={<SubjectDataUpload />} />
+          <Route path="/admin/student-data-upload" element={<StudentDataUpload />} />
           <Route path="/admin/atkt-data-upload" element={<ATKTDataUpload />} />
           <Route path="/admin/req" element={<AdminRequest />} />
-          <Route
-            path="/admin/progress-report"
-            element={<AdminProgressReport />}
-          />
 
           <Route path="/hod/home" element={<HODHome />} />
-          <Route
-            path="/hod/faculty-allocation"
-            element={<FacultyAllocation />}
-          />
+          <Route path="/hod/faculty-allocation" element={<FacultyAllocation />} />
           <Route path="/hod/department-details" element={<HODViewDeptt />} />
           <Route path="/hod/elective-data" element={<ElectiveDataUpload />} />
-          <Route
-            path="/hod/registration-request"
-            element={<RegistrationRequest />}
-          />
+          <Route path="/hod/registration-request" element={<RegistrationRequest />} />
 
           <Route path="/faculty/home" element={<FacultyHome />} />
           <Route path="/faculty/view-subjects" element={<ViewSubjects />} />
           <Route path="/faculty/marks-feed" element={<MarksFeed />} />
           <Route path="/faculty/atkt-marks-feed" element={<ATKTMarksFeed />} />
-          <Route
-            path="/faculty/correction-request"
-            element={<FacCorrectionReq />}
-          />
+          <Route path="/faculty/correction-request" element={<FacCorrectionReq />} />
         </Routes>
       </div>
     </Router>

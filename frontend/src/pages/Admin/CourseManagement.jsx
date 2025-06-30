@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Toaster, toast } from "react-hot-toast";
-import { useDispatch,useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../utils/logout";
 import { BACKEND_URL } from "../../../config";
 import RedHeader from "../../components/RedHeader";
@@ -10,7 +10,23 @@ import Sidebar from "../../components/Sidebar";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import RedFooter from "../../components/RedFooter";
 import "./admin.css";
-import SessionDisplay from "../../components/SessionDisplay";
+import { fetchLatestSession } from "../../utils/fetchSession"; // adjust path if needed
+
+const monthNames = [
+  "",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 const CourseManagement = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -25,11 +41,29 @@ const CourseManagement = () => {
       </div>
     );
   }
+
+  const [session, setSession] = useState(null);
+  const [error, setError] = useState("");
+
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const loadSession = async () => {
+      try {
+        const data = await fetchLatestSession(token);
+        setSession(data);
+      } catch (err) {
+        setError("No current session found");
+        setSession(null);
+      }
+    };
+
+    loadSession();
+  }, [token]);
+
   const handleLogout = () => {
     logoutUser(dispatch);
   };
-  const currentSession = useSelector((state) => state.session.currentSession);
 
   const [courses, setCourses] = useState([]);
   const [formData, setFormData] = useState({
@@ -210,10 +244,7 @@ const CourseManagement = () => {
                   <FaPen className="icon" />
                   Edit Info
                 </button>
-                <button
-                  className="icon-btn"
-                  onClick={handleLogout}
-                >
+                <button className="icon-btn" onClick={handleLogout}>
                   <FaSignOutAlt className="icon" />
                   Logout
                 </button>
@@ -232,9 +263,15 @@ const CourseManagement = () => {
               </div>
               <div className="fac-alloc">
                 <h3>Course Management</h3>
-
-                <SessionDisplay className="session-text" />
-
+                {session ? (
+                  <p className="session-text">
+                    Current Session: {monthNames[session.start_month]}{" "}
+                    {session.start_year} - {monthNames[session.end_month]}{" "}
+                    {session.end_year}
+                  </p>
+                ) : (
+                  <p className="session-text">{error}</p>
+                )}
                 <span className="box-overlay-text">Add Details</span>
                 <div className="faculty-box">
                   <div className="space-y-6">

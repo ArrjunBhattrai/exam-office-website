@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useDispatch,useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../utils/logout";
 import "./admin.css";
 import Sidebar from "../../components/Sidebar";
@@ -10,7 +10,23 @@ import Button from "../../components/Button";
 import { BACKEND_URL } from "../../../config";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
-import SessionDisplay from "../../components/SessionDisplay";
+import { fetchLatestSession } from "../../utils/fetchSession";
+
+const monthNames = [
+  "",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 const AdminRequest = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -20,26 +36,28 @@ const AdminRequest = () => {
   if (!isAuthenticated || role != "admin") {
     return <div>Please log in to access this page.</div>;
   }
+
+  const [session, setSession] = useState(null);
+  const [error, setError] = useState("");
+
   const dispatch = useDispatch();
   const handleLogout = () => {
     logoutUser(dispatch);
   };
-  const currentSession = useSelector((state) => state.session.currentSession);
-  const monthNames = [
-    "", // monthNames[0] will be unused since months start from 1
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
+
+  useEffect(() => {
+    const loadSession = async () => {
+      try {
+        const data = await fetchLatestSession(token);
+        setSession(data);
+      } catch (err) {
+        setError("No current session found");
+        setSession(null);
+      }
+    };
+
+    loadSession();
+  }, [token]);
 
   const [requests, setRequests] = useState([]);
   const [selectedReason, setSelectedReason] = useState("");
@@ -160,10 +178,7 @@ const AdminRequest = () => {
                   <FaPen className="icon" />
                   Edit Info
                 </button>
-                <button
-                  className="icon-btn"
-                  onClick={handleLogout}
-                >
+                <button className="icon-btn" onClick={handleLogout}>
                   <FaSignOutAlt className="icon" />
                   Logout
                 </button>
@@ -186,8 +201,14 @@ const AdminRequest = () => {
                 <div className="fac-alloc">
                   <h3>Correction Request</h3>
 
-                  <SessionDisplay className="session-text" />
-
+                  {session ? (
+                  <p className="session-text">
+                    Current Session: {monthNames[session.start_month]} {session.start_year} -{" "}
+                    {monthNames[session.end_month]} {session.end_year}
+                  </p>
+                ) : (
+                  <p className="session-text">{error}</p>
+                )}
 
                   <span className="box-overlay-text">View request</span>
 
@@ -210,36 +231,54 @@ const AdminRequest = () => {
                           <tr key={req.request_id}>
                             <td>{req.request_id}</td>
                             <td>
-                              {req.faculty_id} - {req.faculty_name}
+                              {req.faculty_id}
+                              {req.faculty_name && ` - ${req.faculty_name}`}
                             </td>
+
                             <td>{req.subject_name}</td>
                             <td>{req.subject_type}</td>
                             <td>{req.component_name}</td>
                             <td>{req.sub_component_name}</td>
                             <td>{req.status}</td>
                             <td>
-                              <Button
-                                text="View"
-                                onClick={() =>
-                                  handleView(
-                                    req.reason,
-                                    req.request_id,
-                                    req.enrollment_nos
-                                  )
-                                }
-                              />
-                              <Button
-                                text="Approve"
-                                onClick={() =>
-                                  handleUpdateStatus(req.request_id, "Approved")
-                                }
-                              />
-                              <Button
-                                text="Reject"
-                                onClick={() =>
-                                  handleUpdateStatus(req.request_id, "Rejected")
-                                }
-                              />
+                              {["Approved", "Rejected"].includes(req.status) ? (
+                                <span
+                                  style={{ color: "green", fontWeight: "bold" }}
+                                >
+                                  Action Completed
+                                </span>
+                              ) : (
+                                <>
+                                  <Button
+                                    text="View"
+                                    onClick={() =>
+                                      handleView(
+                                        req.reason,
+                                        req.request_id,
+                                        req.enrollment_nos
+                                      )
+                                    }
+                                  />
+                                  <Button
+                                    text="Approve"
+                                    onClick={() =>
+                                      handleUpdateStatus(
+                                        req.request_id,
+                                        "Approved"
+                                      )
+                                    }
+                                  />
+                                  <Button
+                                    text="Reject"
+                                    onClick={() =>
+                                      handleUpdateStatus(
+                                        req.request_id,
+                                        "Rejected"
+                                      )
+                                    }
+                                  />
+                                </>
+                              )}
                             </td>
                           </tr>
                         ))}

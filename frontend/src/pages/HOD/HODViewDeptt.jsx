@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch,useSelector } from "react-redux";
+import ReactModal from "react-modal";
+import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
+import { Toaster, toast } from "react-hot-toast";
 import "./hod.css";
 import { BACKEND_URL } from "../../../config";
 import { logoutUser } from "../../utils/logout";
@@ -9,10 +12,23 @@ import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
 import Button from "../../components/Button";
-import ReactModal from "react-modal";
-import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
-import { Toaster, toast } from "react-hot-toast";
-import SessionDisplay from "../../components/SessionDisplay";
+import { fetchLatestSession } from "../../utils/fetchSession"; 
+
+const monthNames = [
+  "",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 const HODViewDeptt = () => {
   const { userId, isAuthenticated, role, token, branchId } = useSelector(
@@ -28,7 +44,25 @@ const HODViewDeptt = () => {
     );
   }
 
+  const [session, setSession] = useState(null);
+  const [error, setError] = useState("");
+
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const loadSession = async () => {
+      try {
+        const data = await fetchLatestSession(token);
+        setSession(data);
+      } catch (err) {
+        setError("No current session found");
+        setSession(null);
+      }
+    };
+
+    loadSession();
+  }, [token]);
+
   const handleLogout = () => {
     logoutUser(dispatch);
   };
@@ -135,6 +169,7 @@ const HODViewDeptt = () => {
         }
       );
       const data = await res.json();
+      console.log(data);
       if (res.ok) {
         setEnrolledStudents(data || []);
         setStudentsModalOpen(true);
@@ -221,8 +256,14 @@ const HODViewDeptt = () => {
 
               <div className="fac-alloc">
                 <h3>Department Details</h3>
-                <SessionDisplay className="session-text" />
-
+                {session ? (
+                  <p className="session-text">
+                    Current Session: {monthNames[session.start_month]} {session.start_year} -{" "}
+                    {monthNames[session.end_month]} {session.end_year}
+                  </p>
+                ) : (
+                  <p className="session-text">{error}</p>
+                )}
                 <span className="box-overlay-text">
                   Select Option To View Details
                 </span>

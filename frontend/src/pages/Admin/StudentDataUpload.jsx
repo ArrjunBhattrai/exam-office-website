@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useDispatch,useSelector } from "react-redux";
-import {logoutUser} from "../../utils/logout"
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../../utils/logout";
 import { Toaster, toast } from "react-hot-toast";
 import { BACKEND_URL } from "../../../config";
 import "./admin.css";
@@ -10,7 +10,23 @@ import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import Dropdown from "../../components/Dropdown";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
-import SessionDisplay from "../../components/SessionDisplay";
+import { fetchLatestSession } from "../../utils/fetchSession";
+
+const monthNames = [
+  "",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 const StudentDataUpload = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -25,11 +41,29 @@ const StudentDataUpload = () => {
       </div>
     );
   }
+  
+  const [session, setSession] = useState(null);
+  const [error, setError] = useState("");
+
   const dispatch = useDispatch();
   const handleLogout = () => {
     logoutUser(dispatch);
   };
-  
+
+  useEffect(() => {
+    const loadSession = async () => {
+      try {
+        const data = await fetchLatestSession(token);
+        setSession(data);
+      } catch (err) {
+        setError("No current session found");
+        setSession(null);
+      }
+    };
+
+    loadSession();
+  }, [token]);
+
   const [branches, setBranches] = useState([]);
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -57,7 +91,7 @@ const StudentDataUpload = () => {
   const fetchCoursesByBranch = async (branchId) => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/course/`,
+        `${BACKEND_URL}/api/course/?branch_id=${branchId}`,
         {
           method: "GET",
           headers: { authorization: token, "Content-Type": "application/json" },
@@ -152,13 +186,11 @@ const StudentDataUpload = () => {
       );
       const data = await response.json();
       const courses = data.courses || [];
-       const matchedCourse = courses.find(
-      (c) =>
-        c.course_id === courseId &&
-        c.specialization === specialization
-    );
+      const matchedCourse = courses.find(
+        (c) => c.course_id === courseId && c.specialization === specialization
+      );
 
-    setSections(matchedCourse?.sections || []);
+      setSections(matchedCourse?.sections || []);
     } catch (err) {
       toast.error(err.message || "Failed to fetch sections");
     }
@@ -232,10 +264,7 @@ const StudentDataUpload = () => {
                   <FaPen className="icon" />
                   Edit Info
                 </button>
-                <button
-                  className="icon-btn"
-                  onClick={handleLogout}
-                >
+                <button className="icon-btn" onClick={handleLogout}>
                   <FaSignOutAlt className="icon" />
                   Logout
                 </button>
@@ -257,8 +286,14 @@ const StudentDataUpload = () => {
                 {/* here */}
                 <div className="fac-alloc">
                   <h3>Upload Student Data</h3>
-                  <SessionDisplay className="session-text" />
-
+                  {session ? (
+                  <p className="session-text">
+                    Current Session: {monthNames[session.start_month]} {session.start_year} -{" "}
+                    {monthNames[session.end_month]} {session.end_year}
+                  </p>
+                ) : (
+                  <p className="session-text">{error}</p>
+                )}
                   <span className="box-overlay-text">Upload</span>
 
                   <div className="faculty-box">
@@ -283,11 +318,22 @@ const StudentDataUpload = () => {
 
                       <Dropdown
                         label="Section"
-                        options={sections.map((s) => ({ value: s, label: s }))}
+                        options={
+                          sections.length
+                            ? sections.map((s) => ({ value: s, label: s }))
+                            : [{ value: "", label: "No sections available" }]
+                        }
                         selectedValue={selectedSection}
-                        onChange={setSelectedSection}
+                        onChange={(val) => {
+                          if (sections.length > 0) setSelectedSection(val);
+                        }}
+                        disabled={sections.length === 0}
                       />
                     </div>
+
+                    <div>
+                    <p>Headers of the file: Enrollment Number, Student Name, Semester, Status</p>
+                  </div>
 
                     <div className="upload-container">
                       <input
@@ -299,7 +345,11 @@ const StudentDataUpload = () => {
                       />
                       <button
                         className="upload-button"
-                        disabled={!selectedCourse || !selectedBranch || (sections.length > 0 && !selectedSection)}
+                        disabled={
+                          !selectedCourse ||
+                          !selectedBranch ||
+                          (sections.length > 0 && !selectedSection)
+                        }
                         onClick={handleUpload}
                       >
                         Upload

@@ -11,7 +11,23 @@ import Button from "../../components/Button";
 import "./faculty.css";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
 import { BACKEND_URL } from "../../../config";
-import SessionDisplay from "../../components/SessionDisplay";
+import { fetchLatestSession } from "../../utils/fetchSession"; 
+
+const monthNames = [
+  "",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 const FacCorrectionReq = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -21,12 +37,31 @@ const FacCorrectionReq = () => {
     return <div>You are not authorized to view this page.</div>;
   }
 
+  const [session, setSession] = useState(null);
+  const [error, setError] = useState("");
+
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const loadSession = async () => {
+      try {
+        const data = await fetchLatestSession(token);
+        setSession(data);
+      } catch (err) {
+        setError("No current session found");
+        setSession(null);
+      }
+    };
+
+    loadSession();
+  }, [token]);
+
   const handleLogout = () => {
     logoutUser(dispatch);
   };
+
   const [assignedSubjects, setAssignedSubjects] = useState([]);
-  const [selectedSubject, setSelectedSubject] = useState({});
+  const [selectedSubject, setSelectedSubject] = useState("");
   const [component, setComponent] = useState("");
   const [subComponent, setSubComponent] = useState("");
   const [reason, setReason] = useState("");
@@ -40,6 +75,7 @@ const FacCorrectionReq = () => {
   const [editingRequest, setEditingRequest] = useState(null);
   const [marks, setMarks] = useState([]);
   const [testDetails, setTestDetails] = useState([]);
+  const [componentOptions, setComponentOptions] = useState([])
 
   const componentMap = {
     Theory: ["CW", "Theory"],
@@ -53,20 +89,63 @@ const FacCorrectionReq = () => {
     Practical: ["External Viva", "External Submission"],
   };
 
-  const subjectOptions = assignedSubjects.length
-    ? assignedSubjects.map((subject) => ({
-        value: JSON.stringify({
-          subject_id: subject.subject_id,
-          subject_type: subject.subject_type,
-          subject_name: subject.subject_name,
-        }),
-        label: `${subject.subject_name} - ${subject.subject_type}`,
-      }))
-    : [{ value: "", label: "No subjects assigned" }];
+  useEffect(() => {
+  if (selectedSubject?.subject_type) {
+    setComponentOptions(componentMap[selectedSubject.subject_type] || []);
+  } else {
+    setComponentOptions([]);
+  }
+}, [selectedSubject]);
 
-  const componentOptions = selectedSubject?.subject_type
-    ? componentMap[selectedSubject.subject_type] || []
-    : [];
+
+  const mergedSubjects = {};
+
+  assignedSubjects.forEach((subject) => {
+    const key = `${subject.subject_id}-${subject.subject_type}`;
+
+    if (!mergedSubjects[key]) {
+      mergedSubjects[key] = {
+        ...subject,
+        sections: Array.isArray(subject.sections)
+          ? [...subject.sections]
+          : subject.sections
+          ? [subject.sections]
+          : [],
+      };
+    } else {
+      const existingSections = mergedSubjects[key].sections || [];
+      const newSections = Array.isArray(subject.sections)
+        ? subject.sections
+        : subject.sections
+        ? [subject.sections]
+        : [];
+
+      mergedSubjects[key].sections = Array.from(
+        new Set([...existingSections, ...newSections])
+      );
+    }
+  });
+
+  const subjectOptions = Object.values(mergedSubjects).length
+    ? Object.values(mergedSubjects).map((subject) => {
+        const sections =
+          Array.isArray(subject.sections) && subject.sections.length > 0
+            ? subject.sections.join(", ")
+            : "No section";
+
+        return {
+          value: JSON.stringify({
+            subject_id: subject.subject_id,
+            subject_type: subject.subject_type,
+            subject_name: subject.subject_name,
+            sections: subject.sections ?? [],
+          }),
+          label: `${subject.subject_id} - ${subject.subject_type.charAt(
+            0
+          )} - ${sections}`,
+        };
+      })
+    : [{ value: "", label: "No subjects assigned" }];
 
   const subComponentOptions = component ? subComponentMap[component] || [] : [];
 
@@ -85,6 +164,7 @@ const FacCorrectionReq = () => {
       }
 
       const data = await response.json();
+
       setAssignedSubjects(data.subjects);
     } catch (error) {
       toast.error(error.message || "Failed to fetch Assigned Subjects");
@@ -107,8 +187,9 @@ const FacCorrectionReq = () => {
         const data = await response.json();
         if (!response.ok)
           throw new Error(data.error || "Failed to load past requests");
-
+        console.log(data);
         setPastRequests(data.requests || []);
+        console.log(pastRequests);
       } catch (err) {
         toast.error("Could not fetch past requests");
         console.error(err);
@@ -252,10 +333,6 @@ const FacCorrectionReq = () => {
                     name: "Make Correction Request",
                     path: "/faculty/correction-request",
                   },
-                  {
-                    name: "Edit Personal Info",
-                    path: "/faculty/edit-info",
-                  },
                 ]}
               />
             </div>
@@ -278,10 +355,7 @@ const FacCorrectionReq = () => {
                   <FaPen className="icon" />
                   Edit Info
                 </button>
-                <button
-                  className="icon-btn"
-                  onClick={handleLogout}
-                >
+                <button className="icon-btn" onClick={handleLogout}>
                   <FaSignOutAlt className="icon" />
                   Logout
                 </button>
@@ -300,7 +374,14 @@ const FacCorrectionReq = () => {
 
               <div className="fac-alloc">
                 <h3>Correction Request</h3>
-                <SessionDisplay className="session-text" />
+                {session ? (
+                  <p className="session-text">
+                    Current Session: {monthNames[session.start_month]} {session.start_year} -{" "}
+                    {monthNames[session.end_month]} {session.end_year}
+                  </p>
+                ) : (
+                  <p className="session-text">{error}</p>
+                )}
                 <span className="box-overlay-text">Draft a request</span>
 
                 <div className="faculty-box">
@@ -319,32 +400,44 @@ const FacCorrectionReq = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {pastRequests.map((req) => (
-                          <tr key={req.request_id}>
-                            <td>{req.subject_id}</td>
-                            <td>{req.subject_type}</td>
-                            <td>{req.component_name || "-"}</td>
-                            <td>{req.sub_component_name || "-"}</td>
-                            <td>{req.status}</td>
-                            <td>
-                              {req.status === "Rejected" && (
-                                <span>Rejected</span>
-                              )}
-                              {req.status === "Pending" && (
-                                <Button
-                                  text="Withdraw"
-                                  onClick={() => handleWithdraw(req.request_id)}
-                                />
-                              )}
-                              {req.status === "Approved" && (
-                                <Button
-                                  text="Proceed"
-                                  onClick={() => handleProceed(req)}
-                                />
-                              )}
-                            </td>
-                          </tr>
-                        ))}
+                        {pastRequests.map((req, index) => {
+                          if (!req || !req.subject_id) {
+                            console.warn(
+                              `Skipping invalid request at index ${index}:`,
+                              req
+                            );
+                            return null;
+                          }
+
+                          return (
+                            <tr key={req.request_id}>
+                              <td>{req.subject_id}</td>
+                              <td>{req.subject_type}</td>
+                              <td>{req.component_name || "-"}</td>
+                              <td>{req.sub_component_name || "-"}</td>
+                              <td>{req.status}</td>
+                              <td>
+                                {req.status === "Rejected" && (
+                                  <span>Rejected</span>
+                                )}
+                                {req.status === "Pending" && (
+                                  <Button
+                                    text="Withdraw"
+                                    onClick={() =>
+                                      handleWithdraw(req.request_id)
+                                    }
+                                  />
+                                )}
+                                {req.status === "Approved" && (
+                                  <Button
+                                    text="Proceed"
+                                    onClick={() => handleProceed(req)}
+                                  />
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   )}
@@ -386,10 +479,13 @@ const FacCorrectionReq = () => {
                 <Dropdown
                   label="Subject"
                   options={subjectOptions}
-                  selectedValue={JSON.stringify(selectedSubject)}
+                  selectedValue={
+                    selectedSubject ? JSON.stringify(selectedSubject) : ""
+                  }
                   onChange={(value) => {
                     const parsed = JSON.parse(value);
                     setSelectedSubject(parsed);
+                    console.log(selectedSubject);
                     setComponent("");
                     setSubComponent("");
                   }}
@@ -527,6 +623,16 @@ const FacCorrectionReq = () => {
                           toast.error("Please select at least one student");
                           return;
                         }
+
+                        if (
+                          !selectedSubject ||
+                          !selectedSubject.subject_id ||
+                          !selectedSubject.subject_type
+                        ) {
+                          toast.error("Please select a subject");
+                          return;
+                        }
+
                         const res = await fetch(`${BACKEND_URL}/api/request/`, {
                           method: "POST",
                           headers: {
@@ -556,7 +662,7 @@ const FacCorrectionReq = () => {
                         setStage(1);
                         setDraftStatus("");
                         setSelectedSubject({});
-                        setPastRequests((prev) => [data.newRequest, ...prev]); // optional: refresh manually
+                        setPastRequests((prev) => [data.newRequest, ...prev]);
                       } catch (err) {
                         toast.error(err.message);
                         console.error(err);
@@ -615,10 +721,10 @@ const FacCorrectionReq = () => {
                     const res = await fetch(
                       `${BACKEND_URL}/api/request/resubmit`,
                       {
-                        method: "POST",
+                        method: "PATCH",
                         headers: {
                           "Content-Type": "application/json",
-                          authorization: token,
+                          authorization: `Bearer ${token}`,
                         },
                         body: JSON.stringify({
                           request_id: editingRequest.request_id,

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import { useDispatch,useSelector } from "react-redux";
 import "./hod.css";
 import {logoutUser} from "../../utils/logout"
@@ -6,7 +7,23 @@ import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
-import SessionDisplay from "../../components/SessionDisplay";
+import { fetchLatestSession } from "../../utils/fetchSession"; 
+
+const monthNames = [
+  "",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 const HODHome = () => {
   const { userId, isAuthenticated, role, token, branchId } = useSelector(
@@ -21,7 +38,26 @@ const HODHome = () => {
       </div>
     );
   }
+
+  const [session, setSession] = useState(null);
+  const [error, setError] = useState("");
+
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const loadSession = async () => {
+      try {
+        const data = await fetchLatestSession(token);
+        setSession(data);
+      } catch (err) {
+        setError("No current session found");
+        setSession(null);
+      }
+    };
+
+    loadSession();
+  }, [token]);
+
   const handleLogout = () => {
     logoutUser(dispatch);
   };
@@ -97,7 +133,14 @@ const HODHome = () => {
                 </p>
               </div>
               <div className="fac-alloc">
-                <SessionDisplay className="session-text" />
+                {session ? (
+                  <p className="session-text">
+                    Current Session: {monthNames[session.start_month]} {session.start_year} -{" "}
+                    {monthNames[session.end_month]} {session.end_year}
+                  </p>
+                ) : (
+                  <p className="session-text">{error}</p>
+                )}
               </div>
             </div>
           </div>

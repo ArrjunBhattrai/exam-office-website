@@ -54,6 +54,8 @@ const getLatestSession = async (req, res) => {
     if (!latestSession) {
       return res.status(404).json({ error: "No sessions found" });
     }
+    
+    console.log(latestSession);
 
     res.json({ session: latestSession });
   } catch (err) {
