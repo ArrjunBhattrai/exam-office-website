@@ -45,5 +45,17 @@ router.get(
   authorizeRole(["admin", "hod", "faculty"]),
   assesmentController.getAssessmentComponent
 );
+router.post(
+  "/generate-marks-fill-req",
+  authenticateUser,
+  authorizeRole(["admin"]),
+  assesmentController.generateMarksFillRequest
+);
+router.get(
+  "/get-marks-fill-req",
+  authenticateUser,
+  authorizeRole(["admin", "hod", "faculty"]),
+  assesmentController.viewMarksFillRequest
+);
 
 module.exports = router;

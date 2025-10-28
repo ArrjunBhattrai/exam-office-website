@@ -16,6 +16,7 @@ import SubjectDataUpload from "./pages/Admin/SubjectDataUpload";
 import StudentDataUpload from "./pages/Admin/StudentDataUpload";
 import ATKTDataUpload from "./pages/Admin/ATKTDataUpload";
 import AdminRequest from "./pages/Admin/AdminRequest";
+import GenerateMarksRequest from "./pages/Admin/GenerateMarksRequest";
 
 import HODHome from "./pages/HOD/HODHome";
 import HODViewDeptt from "./pages/HOD/HODViewDeptt";
@@ -49,6 +50,7 @@ function App() {
           <Route path="/admin/student-data-upload" element={<StudentDataUpload />} />
           <Route path="/admin/atkt-data-upload" element={<ATKTDataUpload />} />
           <Route path="/admin/req" element={<AdminRequest />} />
+          <Route path="/admin/marks-req" element={<GenerateMarksRequest />} />
 
           <Route path="/hod/home" element={<HODHome />} />
           <Route path="/hod/faculty-allocation" element={<FacultyAllocation />} />

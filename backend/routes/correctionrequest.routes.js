@@ -16,7 +16,12 @@ router.get(
     authorizeRole(["admin","faculty"]),
     requestController.getCorrectionRequests
 );
-
+router.patch(
+  "/resubmit",
+  authenticateUser,
+  authorizeRole(["faculty"]),
+  requestController.resubmitForm
+);
 router.patch(
   "/:request_id", 
   authenticateUser,
@@ -43,13 +48,6 @@ router.get(
   authenticateUser,
   authorizeRole(["faculty"]),
   requestController.fetchMarksData
-);
-
-router.patch(
-  "/resubmit",
-  authenticateUser,
-  authorizeRole(["faculty"]),
-  requestController.resubmitForm
 );
 
 

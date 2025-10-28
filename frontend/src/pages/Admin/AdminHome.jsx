@@ -100,6 +100,7 @@ const AdminHome = () => {
                     path: "/admin/atkt-data-upload",
                   },
                   { name: "Address Requests", path: "/admin/req" },
+                  { name: "Generate Marks Request", path: "/admin/marks-req" },
                 ]}
               />
             </div>
@@ -108,7 +109,7 @@ const AdminHome = () => {
               <div className="user-icons">
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/admin-home")}
+                  onClick={() => (window.location.href = "/admin/home")}
                 >
                   <FaHome className="icon" />
                   Home
