@@ -60,19 +60,18 @@ const submitCorrectionRequest = async (req, res) => {
 
     await db.transaction(async (trx) => {
       // Insert main request and get ID
-      const [request_id] = await trx("marks_update_request").insert(
-        {
-          faculty_id: facultyId,
-          subject_id,
-          subject_type,
-          component_name,
-          sub_component_name,
-          reason,
-          form_status,
-          session_id,
-        },
-        ["request_id"]
-      );
+      const [requestIdResult] = await trx("marks_update_request").insert({
+        faculty_id: facultyId,
+        subject_id,
+        subject_type,
+        component_name,
+        sub_component_name,
+        reason,
+        form_status,
+        session_id,
+      });
+
+      const request_id = requestIdResult;
 
       // Map and insert all enrollments
       const studentRows = enrollment_nos.map((enrollment_no) => ({
@@ -98,6 +97,12 @@ const getCorrectionRequests = async (req, res) => {
 
     let baseQuery = db("marks_update_request as mur")
       .join("marks_update_students as mus", "mur.request_id", "mus.request_id")
+      .leftJoin("faculty", "mur.faculty_id", "faculty.faculty_id")
+      .leftJoin("subject", function () {
+        this.on("mur.subject_id", "=", "subject.subject_id")
+          .andOn("mur.subject_type", "=", "subject.subject_type")
+          .andOn("mur.session_id", "=", "subject.session_id");
+      })
       .select(
         "mur.request_id",
         "mur.subject_id",
@@ -107,6 +112,9 @@ const getCorrectionRequests = async (req, res) => {
         "mur.reason",
         "mur.form_status",
         "mur.status",
+        "mur.faculty_id",
+        "faculty.faculty_name",
+        "subject.subject_name",
         "mus.enrollment_no"
       )
       .where("mur.session_id", session_id)
@@ -129,6 +137,9 @@ const getCorrectionRequests = async (req, res) => {
         reason,
         form_status,
         status,
+        faculty_id,
+        faculty_name,
+        subject_name,
         enrollment_no,
       } = row;
 
@@ -142,6 +153,9 @@ const getCorrectionRequests = async (req, res) => {
           reason,
           form_status,
           status,
+          faculty_id,
+          faculty_name,
+          subject_name,
           enrollment_nos: [],
         };
       }
@@ -246,11 +260,9 @@ const checkFormExists = async (req, res) => {
         .json({ message: "Form exists and can be used to raise a request." });
     } else if (form_status === "Regular") {
       if (!component_name || !sub_component_name) {
-        return res
-          .status(400)
-          .json({
-            error: "Component and Sub-component are required for Regular form.",
-          });
+        return res.status(400).json({
+          error: "Component and Sub-component are required for Regular form.",
+        });
       }
 
       const rows = await db("marks").where({

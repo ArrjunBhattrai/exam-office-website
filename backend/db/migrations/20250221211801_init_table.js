@@ -308,6 +308,42 @@ exports.up = function (knex) {
         .references("request_id")
         .inTable("marks_update_request")
         .onDelete("CASCADE");
+    })
+    .createTable("marks_fill_request", (table) => {
+      table.increments("request_id").primary();
+      table.integer("session_id").unsigned().notNullable();
+      table.string("faculty_id").notNullable();
+      table.string("subject_id").notNullable();
+      table.string("subject_type").notNullable();
+      table.string("component_name").notNullable();
+      table.string("sub_component_name").notNullable();
+      table.timestamp("assigned_date").defaultTo(knex.fn.now());
+      table.date("last_date").notNullable();
+      table
+        .enu("status", ["Pending", "Submitted", "Due"])
+        .defaultTo("Pending");
+
+      table
+        .foreign("session_id")
+        .references("session_id")
+        .inTable("session")
+        .onDelete("CASCADE");
+
+      table
+        .foreign("faculty_id")
+        .references("faculty_id")
+        .inTable("faculty")
+        .onDelete("CASCADE");
+    })
+     .createTable("marks_fill_submission", (table) => {
+      table.integer("request_id").unsigned().primary();
+      table.timestamp("submitted_at").defaultTo(knex.fn.now());
+
+      table
+        .foreign("request_id")
+        .references("request_id")
+        .inTable("marks_fill_request")
+        .onDelete("CASCADE");
     });
 };
 
@@ -387,6 +423,8 @@ exports.down = async function (knex) {
 
   // Drop tables in reverse creation order
   await knex.schema
+    .dropTableIfExists("marks_fill_submission")
+    .dropTableIfExists("marks_fill_request")
     .dropTableIfExists("update_logs")
     .dropTableIfExists("marks_update_students")
     .dropTableIfExists("marks_update_request")

@@ -312,7 +312,11 @@ body {
   display: flex;
 }
 
-
+.due-date label{
+  color: #000;
+  margin-right: 10px;
+  margin-left: 10px;
+}
 
 .user-input {
   width: 80%;

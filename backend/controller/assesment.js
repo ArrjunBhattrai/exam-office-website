@@ -422,6 +422,76 @@ const getAssessmentComponent = async (req, res) => {
   }
 };
 
+const generateMarksFillRequest = async (req, res) => {
+  try {
+    const {
+      session_id,
+      faculty_id,
+      subject_id,
+      subject_type,
+      component_name,
+      sub_component_name,
+      last_date,
+    } = req.body;
+
+    const [request_id] = await knex("marks_fill_request")
+      .insert({
+        session_id,
+        faculty_id,
+        subject_id,
+        subject_type,
+        component_name,
+        sub_component_name,
+        last_date
+      })
+      .returning("request_id");
+
+     return res.status(201).json({
+      message: "Marks fill request created successfully",
+      request_id,
+    });
+  } catch (error) {
+    console.error("Error creating marks fill request:", error);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+const viewMarksFillRequest = async (req, res) => {
+  try {
+    const requests = await prisma.marks_correction_request.findMany({
+      orderBy: { created_at: "desc" },
+      include: {
+        student: {
+          select: {
+            id: true,
+            name: true,
+            enrollment_no: true,
+            email: true,
+          },
+        },
+        assessment: {
+          select: {
+            id: true,
+            name: true,
+            max_marks: true,
+          },
+        },
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      requests,
+    });
+  } catch (error) {
+    console.error("Error fetching requests:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching correction requests",
+    });
+  }
+};
+
 module.exports = {
   insertTestDetails,
   deleteTestDetails,
@@ -430,4 +500,6 @@ module.exports = {
   submitMarks,
   fetchMarksData,
   getAssessmentComponent,
+  generateMarksFillRequest,
+  viewMarksFillRequest,
 };

@@ -1,14 +1,29 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../utils/logout";
-import { setSession } from "../../redux/sessionSlice";
 import "./admin.css";
 import Sidebar from "../../components/Sidebar";
 import ActivityHeader from "../../components/ActivityHeader";
 import RedFooter from "../../components/RedFooter";
 import RedHeader from "../../components/RedHeader";
 import { FaHome, FaPen, FaSignOutAlt } from "react-icons/fa";
-import SessionDisplay from "../../components/SessionDisplay";
+import {fetchLatestSession} from "../../utils/fetchSession";
+
+const monthNames = [
+  "",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 const AdminHome = () => {
   const { userId, isAuthenticated, role, token } = useSelector(
@@ -24,37 +39,28 @@ const AdminHome = () => {
     );
   }
 
+  const [session, setSession] = useState(null);
+  const [error, setError] = useState("");
+
   const dispatch = useDispatch();
+
   const handleLogout = () => {
     logoutUser(dispatch);
   };
 
-  useEffect(() => {
-    const fetchCurrentSession = async () => {
+   useEffect(() => {
+    const loadSession = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/session/latest`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        dispatch(
-          setSession({
-            start_month: data.start_month,
-            start_year: data.start_year,
-            end_month: data.end_month,
-            end_year: data.end_year,
-          })
-        );
+        const data = await fetchLatestSession(token);
+        setSession(data);
       } catch (err) {
-        console.error("Session fetch failed", err);
+        setError("No current session found");
+        setSession(null);
       }
     };
 
-    fetchCurrentSession();
-  }, [token, dispatch]);
-
-  const { start_month, start_year, end_month, end_year } = useSelector(
-    (state) => state.session
-  );
+    loadSession();
+  }, [token]);
 
   return (
     <div className="home-container">
@@ -94,6 +100,7 @@ const AdminHome = () => {
                     path: "/admin/atkt-data-upload",
                   },
                   { name: "Address Requests", path: "/admin/req" },
+                  { name: "Generate Marks Request", path: "/admin/marks-req" },
                 ]}
               />
             </div>
@@ -102,7 +109,7 @@ const AdminHome = () => {
               <div className="user-icons">
                 <button
                   className="icon-btn"
-                  onClick={() => (window.location.href = "/admin-home")}
+                  onClick={() => (window.location.href = "/admin/home")}
                 >
                   <FaHome className="icon" />
                   Home
@@ -118,10 +125,7 @@ const AdminHome = () => {
                   Edit Info
                 </button>
 
-                <button
-                  className="icon-btn"
-                  onClick={handleLogout}
-                >
+                <button className="icon-btn" onClick={handleLogout}>
                   <FaSignOutAlt className="icon" />
                   Logout
                 </button>
@@ -138,7 +142,14 @@ const AdminHome = () => {
               </div>
 
               <div className="fac-alloc">
-                <SessionDisplay className="session-text" />
+                {session ? (
+                  <p className="session-text">
+                    Current Session: {monthNames[session.start_month]} {session.start_year} -{" "}
+                    {monthNames[session.end_month]} {session.end_year}
+                  </p>
+                ) : (
+                  <p className="session-text">{error}</p>
+                )}
               </div>
             </div>
           </div>

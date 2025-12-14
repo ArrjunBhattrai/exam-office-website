@@ -285,7 +285,10 @@ const getAssignedSubject = async (req, res) => {
     const formattedSubjects = subjects.map((subject) => ({
       ...subject,
       co_names: subject.co_names ? subject.co_names.split(",") : [],
+      sections: subject.section ? subject.section.split(",") : [],
     }));
+
+    // console.log(formattedSubjects)
 
     res.status(200).json({ subjects: formattedSubjects });
   } catch (error) {
