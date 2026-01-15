@@ -60,7 +60,7 @@ const submitCorrectionRequest = async (req, res) => {
 
     await db.transaction(async (trx) => {
       // Insert main request and get ID
-      const [requestIdResult] = await trx("marks_update_request").insert({
+      const result = await trx("marks_update_request").insert({
         faculty_id: facultyId,
         subject_id,
         subject_type,
@@ -70,9 +70,7 @@ const submitCorrectionRequest = async (req, res) => {
         form_status,
         session_id,
       });
-
-      const request_id = requestIdResult;
-
+      const request_id = result[0];
       // Map and insert all enrollments
       const studentRows = enrollment_nos.map((enrollment_no) => ({
         request_id,
@@ -165,7 +163,6 @@ const getCorrectionRequests = async (req, res) => {
     }, {});
 
     const response = Object.values(grouped);
-
     res.status(200).json({ requests: response });
   } catch (error) {
     console.error("Error fetching correction requests:", error);

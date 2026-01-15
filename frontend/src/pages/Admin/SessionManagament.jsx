@@ -93,7 +93,7 @@ const SessionManagement = () => {
   const [selectedSessionId, setSelectedSessionId] = useState("");
   const [selectedBranchId, setSelectedBranchId] = useState("");
   const [selectedCourseId, setSelectedCourseId] = useState("");
-  const [selectedSpecialization, setSelectedSpecialization] = useState("");
+  const [specialization, setSpecialization] = useState("");
   const [allBranches, setAllBranches] = useState([]);
   const [semesters, setSemesters] = useState([]);
   const [selectedSemester, setSelectedSemester] = useState("");
@@ -102,14 +102,12 @@ const SessionManagement = () => {
   const [testComponents, setTestComponents] = useState([]);
   const [selectedComponents, setSelectedComponents] = useState([]);
   const [dataToDownload, setDataToDownload] = useState({
-    subjects: false,
-    electives: false,
-    subjectCOs: false,
-    testMarks: false,
-    coMarks: false,
+    studentData: false,
+    subjectData: false,
+    electiveData: false,
+    atktStudents: false,
+    marks: false,
     atktMarks: false,
-    students: false,
-    studentElectives: false,
   });
 
   const months = [
@@ -421,14 +419,15 @@ const SessionManagement = () => {
                 onChange={(courseId) => {
                   setSelectedCourseId(courseId);
                   setSelectedSection(""); // reset section
+
                   const selectedCourse = filteredCourses.find(
                     (c) => c.course_id === courseId
                   );
-                  if (selectedCourse) {
-                    setSelectedSpecialization(
-                      selectedCourse.specialization || ""
-                    );
+
+                  if (selectedCourse?.specialization) {
+                    setSpecialization(selectedCourse.specialization);
                   }
+
                   if (selectedBranchId && selectedCourse?.specialization) {
                     fetchSections(
                       selectedBranchId,
@@ -438,24 +437,7 @@ const SessionManagement = () => {
                   }
                 }}
               />
-              {/*
-              <Dropdown
-                label="Semester"
-                options={semesters.map((s) => ({
-                  label: `Semester ${s}`,
-                  value: s,
-                }))}
-                selectedValue={selectedSemester}
-                onChange={setSelectedSemester}
-              />
 
-              <Dropdown
-                label="Section"
-                options={sections.map((s) => ({ value: s, label: s }))}
-                selectedValue={selectedSection}
-                onChange={setSelectedSection}
-              />
-*/}
               <h5>Choose What to Include in Download:</h5>
               <div className="checkbox-wrapper">
                 <div className="checkbox-group">
@@ -463,28 +445,28 @@ const SessionManagement = () => {
                   <label>
                     <input
                       type="checkbox"
-                      checked={dataToDownload.subjects}
+                      checked={dataToDownload.subjectData}
                       onChange={(e) =>
                         setDataToDownload({
                           ...dataToDownload,
-                          subjects: e.target.checked,
+                          subjectData: e.target.checked,
                         })
                       }
                     />
-                    Subjects List
+                    Subject Data
                   </label>
                   <label>
                     <input
                       type="checkbox"
-                      checked={dataToDownload.electives}
+                      checked={dataToDownload.electiveData}
                       onChange={(e) =>
                         setDataToDownload({
                           ...dataToDownload,
-                          electives: e.target.checked,
+                          electiveData: e.target.checked,
                         })
                       }
                     />
-                    Elective Subjects
+                    Elective Data
                   </label>
                 </div>
 
@@ -493,15 +475,15 @@ const SessionManagement = () => {
                   <label>
                     <input
                       type="checkbox"
-                      checked={dataToDownload.coMarks}
+                      checked={dataToDownload.marks}
                       onChange={(e) =>
                         setDataToDownload({
                           ...dataToDownload,
-                          coMarks: e.target.checked,
+                          marks: e.target.checked,
                         })
                       }
                     />
-                    CO-wise Marks
+                    CO-wise Marks(of regular students)
                   </label>
                   <label>
                     <input
@@ -514,7 +496,7 @@ const SessionManagement = () => {
                         })
                       }
                     />
-                    ATKT Marks
+                    CO-wise Marks(of ATKT students)
                   </label>
                 </div>
 
@@ -523,15 +505,28 @@ const SessionManagement = () => {
                   <label>
                     <input
                       type="checkbox"
-                      checked={dataToDownload.students}
+                      checked={dataToDownload.studentData}
                       onChange={(e) =>
                         setDataToDownload({
                           ...dataToDownload,
-                          students: e.target.checked,
+                          studentData: e.target.checked,
                         })
                       }
                     />
                     Enrolled Students
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={dataToDownload.atktStudents}
+                      onChange={(e) =>
+                        setDataToDownload({
+                          ...dataToDownload,
+                          atktStudents: e.target.checked,
+                        })
+                      }
+                    />
+                    ATKT students{" "}
                   </label>
                 </div>
               </div>
@@ -554,11 +549,12 @@ const SessionManagement = () => {
                         session_id: selectedSessionId,
                         branch_id: selectedBranchId,
                         course_id: selectedCourseId,
-                        specialization: selectedSpecialization,
-                        students: dataToDownload.students,
-                        subjects: dataToDownload.subjects,
-                        electives: dataToDownload.electives,
-                        marks: dataToDownload.testMarks,
+                        specialization:specialization,
+                        students: dataToDownload.studentData,
+                        subjects: dataToDownload.subjectData,
+                        atkt: dataToDownload.atktStudents,
+                        electives: dataToDownload.electiveData,
+                        marks: dataToDownload.marks,
                         atktMarks: dataToDownload.atktMarks,
                       }).toString();
 

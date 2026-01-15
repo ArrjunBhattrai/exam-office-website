@@ -187,8 +187,9 @@ const FacCorrectionReq = () => {
         const data = await response.json();
         if (!response.ok)
           throw new Error(data.error || "Failed to load past requests");
-
+        console.log(data);
         setPastRequests(data.requests || []);
+        console.log(pastRequests);
       } catch (err) {
         toast.error("Could not fetch past requests");
         console.error(err);
@@ -332,10 +333,6 @@ const FacCorrectionReq = () => {
                     name: "Make Correction Request",
                     path: "/faculty/correction-request",
                   },
-                  {
-                    name: "Edit Personal Info",
-                    path: "/faculty/edit-info",
-                  },
                 ]}
               />
             </div>
@@ -403,32 +400,44 @@ const FacCorrectionReq = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {pastRequests.map((req) => (
-                          <tr key={req.request_id}>
-                            <td>{req.subject_id}</td>
-                            <td>{req.subject_type}</td>
-                            <td>{req.component_name || "-"}</td>
-                            <td>{req.sub_component_name || "-"}</td>
-                            <td>{req.status}</td>
-                            <td>
-                              {req.status === "Rejected" && (
-                                <span>Rejected</span>
-                              )}
-                              {req.status === "Pending" && (
-                                <Button
-                                  text="Withdraw"
-                                  onClick={() => handleWithdraw(req.request_id)}
-                                />
-                              )}
-                              {req.status === "Approved" && (
-                                <Button
-                                  text="Proceed"
-                                  onClick={() => handleProceed(req)}
-                                />
-                              )}
-                            </td>
-                          </tr>
-                        ))}
+                        {pastRequests.map((req, index) => {
+                          if (!req || !req.subject_id) {
+                            console.warn(
+                              `Skipping invalid request at index ${index}:`,
+                              req
+                            );
+                            return null;
+                          }
+
+                          return (
+                            <tr key={req.request_id}>
+                              <td>{req.subject_id}</td>
+                              <td>{req.subject_type}</td>
+                              <td>{req.component_name || "-"}</td>
+                              <td>{req.sub_component_name || "-"}</td>
+                              <td>{req.status}</td>
+                              <td>
+                                {req.status === "Rejected" && (
+                                  <span>Rejected</span>
+                                )}
+                                {req.status === "Pending" && (
+                                  <Button
+                                    text="Withdraw"
+                                    onClick={() =>
+                                      handleWithdraw(req.request_id)
+                                    }
+                                  />
+                                )}
+                                {req.status === "Approved" && (
+                                  <Button
+                                    text="Proceed"
+                                    onClick={() => handleProceed(req)}
+                                  />
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   )}
@@ -614,6 +623,16 @@ const FacCorrectionReq = () => {
                           toast.error("Please select at least one student");
                           return;
                         }
+
+                        if (
+                          !selectedSubject ||
+                          !selectedSubject.subject_id ||
+                          !selectedSubject.subject_type
+                        ) {
+                          toast.error("Please select a subject");
+                          return;
+                        }
+
                         const res = await fetch(`${BACKEND_URL}/api/request/`, {
                           method: "POST",
                           headers: {
@@ -643,7 +662,7 @@ const FacCorrectionReq = () => {
                         setStage(1);
                         setDraftStatus("");
                         setSelectedSubject({});
-                        setPastRequests((prev) => [data.newRequest, ...prev]); // optional: refresh manually
+                        setPastRequests((prev) => [data.newRequest, ...prev]);
                       } catch (err) {
                         toast.error(err.message);
                         console.error(err);
