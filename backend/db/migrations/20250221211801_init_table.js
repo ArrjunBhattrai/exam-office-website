@@ -75,6 +75,30 @@ exports.up = function (knex) {
       table.integer("end_month").notNullable();
       table.integer("end_year").notNullable();
     })
+    .createTable("first_year_subject", (table) => {
+      table.integer("session_id").unsigned().notNullable();
+      table.string("subject_id").notNullable();
+      table.string("subject_type").notNullable();
+      table.string("subject_name").notNullable();
+      table.string("semester").notNullable();
+      table.string("branch_id").notNullable();
+      table.string("course_id").notNullable();
+      table.string("specialization").notNullable();
+
+      table
+        .foreign(["branch_id", "course_id", "specialization"])
+        .references(["branch_id", "course_id", "specialization"])
+        .inTable("course")
+        .onDelete("CASCADE");
+
+      table
+        .foreign("session_id")
+        .references("session_id")
+        .inTable("session")
+        .onDelete("CASCADE");
+
+      table.unique(["session_id", "subject_id", "subject_type"]);
+    })
     .createTable("subject", (table) => {
       table.integer("session_id").unsigned().notNullable();
       table.string("subject_id").notNullable();
@@ -118,6 +142,30 @@ exports.up = function (knex) {
         .references(["session_id"])
         .inTable("session")
         .onDelete("CASCADE");
+    })
+    .createTable("first_year_student", (table) => {
+      table.integer("session_id").unsigned().notNullable();
+      table.string("roll_no").notNullable();
+      table.string("enrollment_no");
+      table.string("student_name").notNullable();
+      table.string("branch_id").notNullable();
+      table.string("course_id").notNullable();
+      table.string("specialization").notNullable();
+      table.string("section", 1).notNullable();
+      table.string("semester", 1).notNullable();
+
+      table
+        .foreign(["branch_id", "course_id", "specialization"])
+        .references(["branch_id", "course_id", "specialization"])
+        .inTable("course")
+        .onDelete("CASCADE");
+
+      table
+        .foreign("session_id")
+        .references("session_id")
+        .inTable("session")
+        .onDelete("CASCADE");
+
     })
     .createTable("student", (table) => {
       table.integer("session_id").unsigned().notNullable();
@@ -348,6 +396,16 @@ exports.up = function (knex) {
 };
 
 exports.down = async function (knex) {
+
+    await knex.schema.alterTable("marks_fill_submission", (table) => {
+    table.dropForeign("request_id");
+  });
+
+  await knex.schema.alterTable("marks_fill_request", (table) => {
+    table.dropForeign("session_id");
+    table.dropForeign("faculty_id");
+  });
+
   await knex.schema.alterTable("update_logs", (table) => {
     table.dropForeign("request_id");
   });
@@ -395,12 +453,22 @@ exports.down = async function (knex) {
     table.dropForeign("session_id");
   });
 
+  await knex.schema.alterTable("first_year_student", (table) => {
+    table.dropForeign(["branch_id", "course_id", "specialization"]);
+    table.dropForeign("session_id");
+  });
+
   await knex.schema.alterTable("faculty_subject", (table) => {
     table.dropForeign("faculty_id");
     table.dropForeign("session_id");
   });
 
   await knex.schema.alterTable("subject", (table) => {
+    table.dropForeign(["branch_id", "course_id", "specialization"]);
+    table.dropForeign("session_id");
+  });
+
+  await knex.schema.alterTable("first_year_subject", (table) => {
     table.dropForeign(["branch_id", "course_id", "specialization"]);
     table.dropForeign("session_id");
   });
@@ -436,8 +504,10 @@ exports.down = async function (knex) {
     .dropTableIfExists("atkt_students")
     .dropTableIfExists("elective_data")
     .dropTableIfExists("student")
+    .dropTableIfExists("first_year_student")
     .dropTableIfExists("faculty_subject")
     .dropTableIfExists("subject")
+    .dropTableIfExists("first_year_subject")
     .dropTableIfExists("session")
     .dropTableIfExists("faculty")
     .dropTableIfExists("faculty_registration_request")
